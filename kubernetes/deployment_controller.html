@@ -1,0 +1,1582 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>deployment controller 源码分析 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="kube_scheduler_process.html" />
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.2.1" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >deployment controller 源码分析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <p>&#x5728;&#x524D;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x8FC7; kubernetes &#x4E2D;&#x591A;&#x4E2A;&#x7EC4;&#x4EF6;&#x7684;&#x6E90;&#x7801;&#x4E86;&#xFF0C;&#x672C;&#x7AE0;&#x4F1A;&#x7EE7;&#x7EED;&#x89E3;&#x8BFB; kube-controller-manager &#x6E90;&#x7801;&#xFF0C;kube-controller-manager  &#x4E2D;&#x6709;&#x6570;&#x5341;&#x4E2A; controller&#xFF0C;&#x672C;&#x6587;&#x4F1A;&#x5206;&#x6790;&#x6700;&#x5E38;&#x7528;&#x5230;&#x7684; deployment controller&#x3002;</p>
+<h3 id="deployment-&#x7684;&#x529F;&#x80FD;"><a name="deployment-&#x7684;&#x529F;&#x80FD;" class="anchor-navigation-ex-anchor" href="#deployment-&#x7684;&#x529F;&#x80FD;"><i class="fa fa-link" aria-hidden="true"></i></a>deployment &#x7684;&#x529F;&#x80FD;</h3>
+<p>deployment &#x662F; kubernetes &#x4E2D;&#x7528;&#x6765;&#x90E8;&#x7F72;&#x65E0;&#x72B6;&#x6001;&#x5E94;&#x7528;&#x7684;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#xFF0C;&#x4E5F;&#x662F;&#x6700;&#x5E38;&#x7528;&#x7684;&#x4E00;&#x79CD;&#x5BF9;&#x8C61;&#x3002;</p>
+<h4 id="deployment&#x3001;replicaset-&#x548C;-pod-&#x4E4B;&#x95F4;&#x7684;&#x5173;&#x7CFB;"><a name="deployment&#x3001;replicaset-&#x548C;-pod-&#x4E4B;&#x95F4;&#x7684;&#x5173;&#x7CFB;" class="anchor-navigation-ex-anchor" href="#deployment&#x3001;replicaset-&#x548C;-pod-&#x4E4B;&#x95F4;&#x7684;&#x5173;&#x7CFB;"><i class="fa fa-link" aria-hidden="true"></i></a>deployment&#x3001;replicaSet &#x548C; pod &#x4E4B;&#x95F4;&#x7684;&#x5173;&#x7CFB;</h4>
+<p>deployment &#x7684;&#x672C;&#x8D28;&#x662F;&#x63A7;&#x5236; replicaSet&#xFF0C;replicaSet &#x4F1A;&#x63A7;&#x5236; pod&#xFF0C;&#x7136;&#x540E;&#x7531; controller &#x9A71;&#x52A8;&#x5404;&#x4E2A;&#x5BF9;&#x8C61;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x72B6;&#x6001;&#x3002;</p>
+<p><img src="http://cdn.tianfeiyu.com/deployment.png" alt=""></p>
+<p>DeploymentController &#x662F; Deployment &#x8D44;&#x6E90;&#x7684;&#x63A7;&#x5236;&#x5668;&#xFF0C;&#x5176;&#x901A;&#x8FC7; DeploymentInformer&#x3001;ReplicaSetInformer&#x3001;PodInformer &#x76D1;&#x542C;&#x4E09;&#x79CD;&#x8D44;&#x6E90;&#xFF0C;&#x5F53;&#x4E09;&#x79CD;&#x8D44;&#x6E90;&#x53D8;&#x5316;&#x65F6;&#x4F1A;&#x89E6;&#x53D1; DeploymentController &#x4E2D;&#x7684; syncLoop &#x64CD;&#x4F5C;&#x3002;</p>
+<h4 id="deployment-&#x7684;&#x57FA;&#x672C;&#x529F;&#x80FD;"><a name="deployment-&#x7684;&#x57FA;&#x672C;&#x529F;&#x80FD;" class="anchor-navigation-ex-anchor" href="#deployment-&#x7684;&#x57FA;&#x672C;&#x529F;&#x80FD;"><i class="fa fa-link" aria-hidden="true"></i></a>deployment &#x7684;&#x57FA;&#x672C;&#x529F;&#x80FD;</h4>
+<p>&#x4E0B;&#x9762;&#x901A;&#x8FC7;&#x547D;&#x4EE4;&#x884C;&#x64CD;&#x4F5C;&#x5C55;&#x793A;&#x4E00;&#x4E0B; deployment &#x7684;&#x57FA;&#x672C;&#x529F;&#x80FD;&#x3002;</p>
+<p>&#x4EE5;&#x4E0B;&#x662F; deployment &#x7684;&#x4E00;&#x4E2A;&#x793A;&#x4F8B;&#x6587;&#x4EF6;&#xFF1A;</p>
+<pre class="language-"><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  progressDeadlineSeconds: 600    // &#x6267;&#x884C;&#x64CD;&#x4F5C;&#x7684;&#x8D85;&#x65F6;&#x65F6;&#x95F4;
+  replicas: 20
+  revisionHistoryLimit: 10    // &#x4FDD;&#x5B58;&#x7684;&#x5386;&#x53F2;&#x7248;&#x672C;&#x6570;&#x91CF;
+  selector:
+    matchLabels:
+      app: nginx-deployment
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%         // &#x5347;&#x7EA7;&#x8FC7;&#x7A0B;&#x4E2D;&#x6700;&#x591A;&#x53EF;&#x4EE5;&#x6BD4;&#x539F;&#x5148;&#x8BBE;&#x7F6E;&#x591A;&#x51FA;&#x7684; pod &#x6570;&#x91CF;
+      maxUnavailable: 25%   // &#x5347;&#x7EA7;&#x8FC7;&#x7A0B;&#x4E2D;&#x6700;&#x591A;&#x6709;&#x591A;&#x5C11;&#x4E2A; pod &#x5904;&#x4E8E;&#x65E0;&#x6CD5;&#x63D0;&#x4F9B;&#x670D;&#x52A1;&#x7684;&#x72B6;&#x6001;
+    type: RollingUpdate     // &#x66F4;&#x65B0;&#x7B56;&#x7565;
+  template:
+    metadata:
+      labels:
+        app: nginx-deployment
+    spec:
+      containers:
+      - name: nginx-deployment
+        image: nginx:1.9
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+</code></pre><h5 id="&#x521B;&#x5EFA;"><a name="&#x521B;&#x5EFA;" class="anchor-navigation-ex-anchor" href="#&#x521B;&#x5EFA;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x521B;&#x5EFA;</h5>
+<pre class="language-"><code>$ kubectl create -f nginx-dep.yaml --record
+
+$ kubectl get deployment
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   20/20   20           20          22h
+
+$ kubectl get rs
+NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-68b649bd8b   20        20        20      22h
+</code></pre><h5 id="&#x6EDA;&#x52A8;&#x66F4;&#x65B0;"><a name="&#x6EDA;&#x52A8;&#x66F4;&#x65B0;" class="anchor-navigation-ex-anchor" href="#&#x6EDA;&#x52A8;&#x66F4;&#x65B0;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6EDA;&#x52A8;&#x66F4;&#x65B0;</h5>
+<pre class="language-"><code>$ kubectl set image deploy/nginx-deployment nginx-deployment=nginx:1.9.3
+
+$ kubectl rollout status deployment/nginx-deployment
+</code></pre><h5 id="&#x56DE;&#x6EDA;"><a name="&#x56DE;&#x6EDA;" class="anchor-navigation-ex-anchor" href="#&#x56DE;&#x6EDA;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x56DE;&#x6EDA;</h5>
+<pre class="language-"><code>// &#x67E5;&#x770B;&#x5386;&#x53F2;&#x7248;&#x672C;
+$ kubectl rollout history deployment/nginx-deployment
+deployment.extensions/nginx-deployment
+REVISION  CHANGE-CAUSE
+4         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>none</span><span class="token punctuation">&gt;</span></span>
+5         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>none</span><span class="token punctuation">&gt;</span></span>
+
+// &#x6307;&#x5B9A;&#x7248;&#x672C;&#x56DE;&#x6EDA;
+$ kubectl rollout undo deployment/nginx-deployment --to-revision=2
+</code></pre><h5 id="&#x6269;&#x7F29;&#x5BB9;"><a name="&#x6269;&#x7F29;&#x5BB9;" class="anchor-navigation-ex-anchor" href="#&#x6269;&#x7F29;&#x5BB9;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6269;&#x7F29;&#x5BB9;</h5>
+<pre class="language-"><code>$ kubectl scale deployment nginx-deployment --replicas 10
+deployment.extensions/nginx-deployment scaled
+</code></pre><h5 id="&#x6682;&#x505C;&#x4E0E;&#x6062;&#x590D;"><a name="&#x6682;&#x505C;&#x4E0E;&#x6062;&#x590D;" class="anchor-navigation-ex-anchor" href="#&#x6682;&#x505C;&#x4E0E;&#x6062;&#x590D;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6682;&#x505C;&#x4E0E;&#x6062;&#x590D;</h5>
+<pre class="language-"><code>$ kubectl rollout pause deployment/nginx-deployment
+$ kubectl rollout resume deploy nginx-deployment
+</code></pre><h5 id="&#x5220;&#x9664;"><a name="&#x5220;&#x9664;" class="anchor-navigation-ex-anchor" href="#&#x5220;&#x9664;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x5220;&#x9664;</h5>
+<pre class="language-"><code>$ kubectl delete deployment nginx-deployment
+</code></pre><p>&#x4EE5;&#x4E0A;&#x662F; deployment &#x7684;&#x51E0;&#x4E2A;&#x5E38;&#x7528;&#x64CD;&#x4F5C;&#xFF0C;&#x4E0B;&#x9762;&#x4F1A;&#x7ED3;&#x5408;&#x6E90;&#x7801;&#x5206;&#x6790;&#x8FD9;&#x51E0;&#x4E2A;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x5982;&#x4F55;&#x5B9E;&#x73B0;&#x7684;&#x3002;</p>
+<h3 id="deployment-controller-&#x6E90;&#x7801;&#x5206;&#x6790;"><a name="deployment-controller-&#x6E90;&#x7801;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#deployment-controller-&#x6E90;&#x7801;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>deployment controller &#x6E90;&#x7801;&#x5206;&#x6790;</h3>
+<blockquote>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
+</blockquote>
+<p>&#x5728;&#x63A7;&#x5236;&#x5668;&#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;&#x6BCF;&#x6B21;&#x64CD;&#x4F5C;&#x5BF9;&#x8C61;&#x90FD;&#x4F1A;&#x89E6;&#x53D1;&#x4E00;&#x6B21;&#x4E8B;&#x4EF6;&#xFF0C;&#x7136;&#x540E; controller &#x4F1A;&#x8FDB;&#x884C;&#x4E00;&#x6B21; syncLoop &#x64CD;&#x4F5C;&#xFF0C;controller &#x662F;&#x901A;&#x8FC7; informer &#x76D1;&#x542C;&#x4E8B;&#x4EF6;&#x4EE5;&#x53CA;&#x8FDB;&#x884C; ListWatch &#x64CD;&#x4F5C;&#x7684;&#xFF0C;&#x5173;&#x4E8E; informer &#x7684;&#x57FA;&#x7840;&#x77E5;&#x8BC6;&#x53EF;&#x4EE5;&#x53C2;&#x8003;&#x4EE5;&#x524D;&#x5199;&#x7684;&#x6587;&#x7AE0;&#x3002;</p>
+<h4 id="deployment-controller-&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><a name="deployment-controller-&#x542F;&#x52A8;&#x6D41;&#x7A0B;" class="anchor-navigation-ex-anchor" href="#deployment-controller-&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><i class="fa fa-link" aria-hidden="true"></i></a>deployment controller &#x542F;&#x52A8;&#x6D41;&#x7A0B;</h4>
+<p>kube-controller-manager &#x4E2D;&#x6240;&#x6709; controller &#x7684;&#x542F;&#x52A8;&#x90FD;&#x662F;&#x5728; <code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x5B8C;&#x6210;&#x521D;&#x59CB;&#x5316;&#x5E76;&#x542F;&#x52A8;&#x7684;&#x3002;&#x5728; <code>Run</code> &#x4E2D;&#x4F1A;&#x8C03;&#x7528; run &#x51FD;&#x6570;&#xFF0C;run &#x51FD;&#x6570;&#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#x6709;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>NewControllerInitializers</code> &#x521D;&#x59CB;&#x5316;&#x6240;&#x6709; controller</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>StartControllers</code> &#x542F;&#x52A8;&#x6240;&#x6709; controller</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kube-controller-manager/app/controllermanager.go:158</code></p>
+<pre class="language-"><code>func Run(c *config.CompletedConfig, stopCh &lt;-chan struct{}) error {
+    ......
+    run := func(ctx context.Context) {
+        ......
+        // 1.&#x8C03;&#x7528; NewControllerInitializers &#x521D;&#x59CB;&#x5316;&#x6240;&#x6709; controller
+        // 2.&#x8C03;&#x7528; StartControllers &#x542F;&#x52A8;&#x6240;&#x6709; controller
+        if err := StartControllers(controllerContext, saTokenControllerInitFunc, NewControllerInitializers(controllerContext.LoopMode), unsecuredMux); err != nil {
+            klog.Fatalf(&quot;error starting controllers: %v&quot;, err)
+        }
+        ......
+        select {}
+    }
+    ......
+}
+</code></pre><p><code>NewControllerInitializers</code>  &#x4E2D;&#x5B9A;&#x4E49;&#x4E86;&#x6240;&#x6709;&#x7684; controller &#x4EE5;&#x53CA; start controller &#x5BF9;&#x5E94;&#x7684;&#x65B9;&#x6CD5;&#x3002;deployment controller &#x5BF9;&#x5E94;&#x7684;&#x542F;&#x52A8;&#x65B9;&#x6CD5;&#x662F; <code>startDeploymentController</code>&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kube-controller-manager/app/controllermanager.go:373</code></p>
+<pre class="language-"><code>func NewControllerInitializers(loopMode ControllerLoopMode) map[string]InitFunc {
+    controllers := map[string]InitFunc{}
+
+    ......
+    controllers[&quot;deployment&quot;] = startDeploymentController
+    ......
+}
+</code></pre><p>&#x5728;<code>startDeploymentController</code> &#x4E2D;&#x5BF9; deploymentController &#x8FDB;&#x884C;&#x4E86;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x5E76;&#x6267;&#x884C; <code>dc.Run()</code> &#x65B9;&#x6CD5;&#x542F;&#x52A8;&#x4E86; controller&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kube-controller-manager/app/apps.go:82</code></p>
+<pre class="language-"><code>func startDeploymentController(ctx ControllerContext) (http.Handler, bool, error) {
+    ......
+
+    // &#x521D;&#x59CB;&#x5316; controller
+    dc, err := deployment.NewDeploymentController(
+        ctx.InformerFactory.Apps().V1().Deployments(),
+        ctx.InformerFactory.Apps().V1().ReplicaSets(),
+        ctx.InformerFactory.Core().V1().Pods(),
+        ctx.ClientBuilder.ClientOrDie(&quot;deployment-controller&quot;),
+    )
+    ......
+
+    // &#x542F;&#x52A8; controller
+    go dc.Run(int(ctx.ComponentConfig.DeploymentController.ConcurrentDeploymentSyncs), ctx.Stop)
+    return nil, true, nil
+}
+</code></pre><p><code>ctx.ComponentConfig.DeploymentController.ConcurrentDeploymentSyncs</code> &#x6307;&#x5B9A;&#x4E86; deployment controller &#x4E2D;&#x5DE5;&#x4F5C;&#x7684; goroutine &#x6570;&#x91CF;&#xFF0C;&#x9ED8;&#x8BA4;&#x503C;&#x4E3A; 5&#xFF0C;&#x5373;&#x4F1A;&#x542F;&#x52A8;&#x4E94;&#x4E2A; goroutine &#x4ECE; workqueue &#x4E2D;&#x53D6;&#x51FA; object &#x5E76;&#x8FDB;&#x884C; sync &#x64CD;&#x4F5C;&#xFF0C;&#x8BE5;&#x53C2;&#x6570;&#x7684;&#x9ED8;&#x8BA4;&#x503C;&#x5B9A;&#x4E49;&#x5728; <code>k8s.io/kubernetes/pkg/controller/deployment/config/v1alpha1/defaults.go</code>  &#x4E2D;&#x3002;</p>
+<p><code>dc.Run</code> &#x65B9;&#x6CD5;&#x4F1A;&#x6267;&#x884C; ListWatch &#x64CD;&#x4F5C;&#x5E76;&#x6839;&#x636E;&#x5BF9;&#x5E94;&#x7684;&#x4E8B;&#x4EF6;&#x6267;&#x884C; syncLoop&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/deployment_controller.go:148</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) Run(workers int, stopCh &lt;-chan struct{}) {
+    ......
+
+    // 1&#x3001;&#x7B49;&#x5F85; informer cache &#x540C;&#x6B65;&#x5B8C;&#x6210;
+    if !cache.WaitForNamedCacheSync(&quot;deployment&quot;, stopCh, dc.dListerSynced, dc.rsListerSynced, dc.podListerSynced) {
+        return
+    }
+
+    // 2&#x3001;&#x542F;&#x52A8; 5 &#x4E2A; goroutine
+    for i := 0; i &lt; workers; i++ {
+        // 3&#x3001;&#x5728;&#x6BCF;&#x4E2A; goroutine &#x4E2D;&#x6BCF;&#x79D2;&#x6267;&#x884C;&#x4E00;&#x6B21; dc.worker &#x65B9;&#x6CD5;
+        go wait.Until(dc.worker, time.Second, stopCh)
+    }
+
+    &lt;-stopCh
+}
+</code></pre><p><code>dc.worker</code> &#x4F1A;&#x8C03;&#x7528; <code>syncHandler</code> &#x8FDB;&#x884C; sync &#x64CD;&#x4F5C;&#x3002;</p>
+<pre class="language-"><code>func (dc *DeploymentController) worker() {
+    for dc.processNextWorkItem() {
+    }
+}
+
+func (dc *DeploymentController) processNextWorkItem() bool {
+    key, quit := dc.queue.Get()
+    if quit {
+        return false
+    }
+    defer dc.queue.Done(key)
+
+    // &#x82E5; workQueue &#x4E2D;&#x6709;&#x4EFB;&#x52A1;&#x5219;&#x8FDB;&#x884C;&#x5904;&#x7406;
+    err := dc.syncHandler(key.(string))
+    dc.handleErr(err, key)
+
+    return true
+}
+</code></pre><p><code>syncHandler</code> &#x662F; controller &#x7684;&#x6838;&#x5FC3;&#x903B;&#x8F91;&#xFF0C;&#x4E0B;&#x9762;&#x4F1A;&#x8FDB;&#x884C;&#x8BE6;&#x7EC6;&#x8BF4;&#x660E;&#x3002;&#x81F3;&#x6B64;&#xFF0C;&#x5BF9;&#x4E8E; deployment controller &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x5B8C;&#xFF0C;&#x518D;&#x6765;&#x770B;&#x4E00;&#x4E0B; deployment controller &#x542F;&#x52A8;&#x8FC7;&#x7A0B;&#x4E2D;&#x7684;&#x6574;&#x4E2A;&#x8C03;&#x7528;&#x94FE;&#xFF0C;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>Run() --&gt; run() --&gt; NewControllerInitializers() --&gt; StartControllers() --&gt; startDeploymentController() --&gt; deployment.NewDeploymentController() --&gt; deployment.Run()
+--&gt; deployment.syncDeployment()
+</code></pre><p>deployment controller &#x5728;&#x521D;&#x59CB;&#x5316;&#x65F6;&#x6307;&#x5B9A;&#x4E86; <code>dc.syncHandler = dc.syncDeployment</code>&#xFF0C;&#x6240;&#x4EE5;&#x8BE5;&#x51FD;&#x6570;&#x540D;&#x4E3A; <code>syncDeployment</code>&#xFF0C;&#x672C;&#x6587;&#x5F00;&#x5934;&#x4ECB;&#x7ECD; deployment &#x4E2D;&#x7684;&#x57FA;&#x672C;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x5728; <code>syncDeployment</code> &#x4E2D;&#x5B8C;&#x6210;&#x7684;&#x3002;</p>
+<p> <code>syncDeployment</code> &#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>getReplicaSetsForDeployment</code> &#x83B7;&#x53D6;&#x96C6;&#x7FA4;&#x4E2D;&#x4E0E; Deployment &#x76F8;&#x5173;&#x7684; ReplicaSet&#xFF0C;&#x82E5;&#x53D1;&#x73B0;&#x5339;&#x914D;&#x4F46;&#x6CA1;&#x6709;&#x5173;&#x8054; deployment &#x7684; rs &#x5219;&#x901A;&#x8FC7;&#x8BBE;&#x7F6E; ownerReferences &#x5B57;&#x6BB5;&#x4E0E; deployment &#x5173;&#x8054;&#xFF0C;&#x5DF2;&#x5173;&#x8054;&#x4F46;&#x4E0D;&#x5339;&#x914D;&#x7684;&#x5219;&#x5220;&#x9664;&#x5BF9;&#x5E94;&#x7684; ownerReferences&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>getPodMapForDeployment</code> &#x83B7;&#x53D6;&#x5F53;&#x524D; Deployment &#x5BF9;&#x8C61;&#x5173;&#x8054;&#x7684; pod&#xFF0C;&#x5E76;&#x6839;&#x636E; rs.UID &#x5BF9;&#x4E0A;&#x8FF0; pod &#x8FDB;&#x884C;&#x5206;&#x7C7B;&#xFF1B;</li>
+<li>3&#x3001;&#x901A;&#x8FC7;&#x5224;&#x65AD; deployment &#x7684; DeletionTimestamp &#x5B57;&#x6BB5;&#x786E;&#x8BA4;&#x662F;&#x5426;&#x4E3A;&#x5220;&#x9664;&#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>4&#x3001;&#x6267;&#x884C; <code>checkPausedConditions</code>&#x68C0;&#x67E5; deployment &#x662F;&#x5426;&#x4E3A;<code>pause</code>&#x72B6;&#x6001;&#x5E76;&#x6DFB;&#x52A0;&#x5408;&#x9002;&#x7684;<code>condition</code>&#xFF1B;</li>
+<li>5&#x3001;&#x8C03;&#x7528; <code>getRollbackTo</code> &#x51FD;&#x6570;&#x68C0;&#x67E5; Deployment &#x662F;&#x5426;&#x6709;<code>Annotations&#xFF1A;&quot;deprecated.deployment.rollback.to&quot;</code>&#x5B57;&#x6BB5;&#xFF0C;&#x5982;&#x679C;&#x6709;&#xFF0C;&#x8C03;&#x7528; <code>dc.rollback</code> &#x65B9;&#x6CD5;&#x6267;&#x884C; rollback &#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>6&#x3001;&#x8C03;&#x7528; <code>dc.isScalingEvent</code> &#x65B9;&#x6CD5;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x5904;&#x4E8E; scaling &#x72B6;&#x6001;&#x4E2D;&#xFF1B;</li>
+<li>7&#x3001;&#x6700;&#x540E;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x4E3A;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#xFF0C;&#x5E76;&#x6839;&#x636E;&#x66F4;&#x65B0;&#x7B56;&#x7565; <code>Recreate</code> &#x6216; <code>RollingUpdate</code> &#x6765;&#x6267;&#x884C;&#x5BF9;&#x5E94;&#x7684;&#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/deployment_controller.go:562</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) syncDeployment(key string) error {
+    ......
+    namespace, name, err := cache.SplitMetaNamespaceKey(key)
+    if err != nil {
+        return err
+    }
+
+    // 1&#x3001;&#x4ECE; informer cache &#x4E2D;&#x83B7;&#x53D6; deployment &#x5BF9;&#x8C61;
+    deployment, err := dc.dLister.Deployments(namespace).Get(name)
+    if errors.IsNotFound(err) {
+        ......
+    }
+
+    ......
+    d := deployment.DeepCopy()
+
+    // 2&#x3001;&#x5224;&#x65AD; selecor &#x662F;&#x5426;&#x4E3A;&#x7A7A;
+    everything := metav1.LabelSelector{}
+    if reflect.DeepEqual(d.Spec.Selector, &amp;everything) {
+        ......
+        return nil
+    }
+
+
+    // 3&#x3001;&#x83B7;&#x53D6; deployment &#x5BF9;&#x5E94;&#x7684;&#x6240;&#x6709; rs&#xFF0C;&#x901A;&#x8FC7; LabelSelector &#x8FDB;&#x884C;&#x5339;&#x914D;
+    rsList, err := dc.getReplicaSetsForDeployment(d)
+    if err != nil {
+        return err
+    }
+
+    // 4&#x3001;&#x83B7;&#x53D6;&#x5F53;&#x524D; Deployment &#x5BF9;&#x8C61;&#x5173;&#x8054;&#x7684; pod&#xFF0C;&#x5E76;&#x6839;&#x636E; rs.UID &#x5BF9; pod &#x8FDB;&#x884C;&#x5206;&#x7C7B;
+    podMap, err := dc.getPodMapForDeployment(d, rsList)
+    if err != nil {
+        return err
+    }
+
+    // 5&#x3001;&#x5982;&#x679C;&#x8BE5; deployment &#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#xFF0C;&#x5219;&#x66F4;&#x65B0;&#x5176; status
+    if d.DeletionTimestamp != nil {
+        return dc.syncStatusOnly(d, rsList)
+    }
+
+    // 6&#x3001;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x5904;&#x4E8E; pause &#x72B6;&#x6001;
+    if err = dc.checkPausedConditions(d); err != nil {
+        return err
+    }
+
+    if d.Spec.Paused {
+        return dc.sync(d, rsList)
+    }
+
+    // 7&#x3001;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x4E3A;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;
+    if getRollbackTo(d) != nil {
+        return dc.rollback(d, rsList)
+    }
+
+    // 8&#x3001;&#x68C0;&#x67E5; deployment &#x662F;&#x5426;&#x5904;&#x4E8E; scale &#x72B6;&#x6001;
+    scalingEvent, err := dc.isScalingEvent(d, rsList)
+    if err != nil {
+        return err
+    }
+    if scalingEvent {
+        return dc.sync(d, rsList)
+    }
+
+    // 9&#x3001;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;
+    switch d.Spec.Strategy.Type {
+    case apps.RecreateDeploymentStrategyType:
+        return dc.rolloutRecreate(d, rsList, podMap)
+    case apps.RollingUpdateDeploymentStrategyType:
+        return dc.rolloutRolling(d, rsList)
+    }
+    return fmt.Errorf(&quot;unexpected deployment strategy type: %s&quot;, d.Spec.Strategy.Type)
+}
+</code></pre><p>&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#x5BF9;&#x4E8E; deployment &#x7684;&#x5220;&#x9664;&#x3001;&#x6682;&#x505C;&#x6062;&#x590D;&#x3001;&#x6269;&#x7F29;&#x5BB9;&#x4EE5;&#x53CA;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x5728; syncDeployment &#x65B9;&#x6CD5;&#x4E2D;&#x8FDB;&#x884C;&#x5904;&#x7406;&#x7684;&#xFF0C;&#x6700;&#x7EC8;&#x662F;&#x901A;&#x8FC7;&#x8C03;&#x7528; syncStatusOnly&#x3001;sync&#x3001;rollback&#x3001;rolloutRecreate&#x3001;rolloutRolling &#x8FD9;&#x51E0;&#x4E2A;&#x65B9;&#x6CD5;&#x6765;&#x5904;&#x7406;&#x7684;&#xFF0C;&#x5176;&#x4E2D; syncStatusOnly &#x548C; sync &#x90FD;&#x662F;&#x66F4;&#x65B0; Deployment &#x7684; Status&#xFF0C;rollback &#x662F;&#x7528;&#x6765;&#x56DE;&#x6EDA;&#x7684;&#xFF0C;rolloutRecreate &#x548C; rolloutRolling &#x662F;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x66F4;&#x65B0;&#x7B56;&#x7565;&#x6765;&#x66F4;&#x65B0; Deployment &#x7684;&#xFF0C;&#x4E0B;&#x9762;&#x5C31;&#x6765;&#x770B;&#x770B;&#x8FD9;&#x4E9B;&#x64CD;&#x4F5C;&#x7684;&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>&#x4ECE; <code>syncDeployment</code> &#x4E2D;&#x4E5F;&#x53EF;&#x77E5;&#x4EE5;&#x4E0A;&#x51E0;&#x4E2A;&#x64CD;&#x4F5C;&#x7684;&#x4F18;&#x5148;&#x7EA7;&#x4E3A;&#xFF1A;</p>
+<pre class="language-"><code>delete &gt; pause &gt; rollback &gt; scale &gt; rollout
+</code></pre><p>&#x4E3E;&#x4E2A;&#x4F8B;&#x5B50;&#xFF0C;&#x5F53;&#x5728; rollout &#x64CD;&#x4F5C;&#x65F6;&#x53EF;&#x4EE5;&#x6267;&#x884C; pause &#x64CD;&#x4F5C;&#xFF0C;&#x5728; pause &#x72B6;&#x6001;&#x65F6;&#x4E5F;&#x53EF;&#x76F4;&#x63A5;&#x6267;&#x884C;&#x5220;&#x9664;&#x64CD;&#x4F5C;&#x3002;</p>
+<h4 id="&#x5220;&#x9664;"><a name="&#x5220;&#x9664;" class="anchor-navigation-ex-anchor" href="#&#x5220;&#x9664;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x5220;&#x9664;</h4>
+<p><code>syncDeployment</code> &#x4E2D;&#x9996;&#x5148;&#x5904;&#x7406;&#x7684;&#x662F;&#x5220;&#x9664;&#x64CD;&#x4F5C;&#xFF0C;&#x5220;&#x9664;&#x64CD;&#x4F5C;&#x662F;&#x7531;&#x5BA2;&#x6237;&#x7AEF;&#x53D1;&#x8D77;&#x7684;&#xFF0C;&#x9996;&#x5148;&#x4F1A;&#x5728;&#x5BF9;&#x8C61;&#x7684; metadata &#x4E2D;&#x8BBE;&#x7F6E; DeletionTimestamp &#x5B57;&#x6BB5;&#x3002;</p>
+<pre class="language-"><code>func (dc *DeploymentController) syncDeployment(key string) error {
+    ......
+    if d.DeletionTimestamp != nil {
+        return dc.syncStatusOnly(d, rsList)
+    }
+    ......
+}
+</code></pre><p>&#x5F53; controller &#x68C0;&#x67E5;&#x5230;&#x8BE5;&#x5BF9;&#x8C61;&#x6709;&#x4E86; DeletionTimestamp &#x5B57;&#x6BB5;&#x65F6;&#x4F1A;&#x8C03;&#x7528; <code>dc.syncStatusOnly</code> &#x6267;&#x884C;&#x5BF9;&#x5E94;&#x7684;&#x5220;&#x9664;&#x903B;&#x8F91;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x9996;&#x5148;&#x83B7;&#x53D6; newRS &#x4EE5;&#x53CA;&#x6240;&#x6709;&#x7684; oldRSs&#xFF0C;&#x7136;&#x540E;&#x4F1A;&#x8C03;&#x7528; <code>syncDeploymentStatus</code> &#x65B9;&#x6CD5;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/sync.go:48</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) syncStatusOnly(d *apps.Deployment, rsList []*apps.ReplicaSet) error {
+    newRS, oldRSs, err := dc.getAllReplicaSetsAndSyncRevision(d, rsList, false)
+    if err != nil {
+        return err
+    }
+
+    allRSs := append(oldRSs, newRS)
+    return dc.syncDeploymentStatus(allRSs, newRS, d)
+}
+</code></pre><p><code>syncDeploymentStatus</code> &#x9996;&#x5148;&#x901A;&#x8FC7; newRS &#x548C; allRSs &#x8BA1;&#x7B97; deployment &#x5F53;&#x524D;&#x7684; status&#xFF0C;&#x7136;&#x540E;&#x548C; deployment &#x4E2D;&#x7684; status &#x8FDB;&#x884C;&#x6BD4;&#x8F83;&#xFF0C;&#x82E5;&#x4E8C;&#x8005;&#x6709;&#x5DEE;&#x5F02;&#x5219;&#x66F4;&#x65B0; deployment &#x4F7F;&#x7528;&#x6700;&#x65B0;&#x7684; status&#xFF0C;<code>syncDeploymentStatus</code> &#x5728;&#x540E;&#x9762;&#x7684;&#x591A;&#x79CD;&#x64CD;&#x4F5C;&#x4E2D;&#x90FD;&#x4F1A;&#x88AB;&#x7528;&#x5230;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/sync.go:469</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) syncDeploymentStatus(allRSs []*apps.ReplicaSet, newRS *apps.ReplicaSet, d *apps.Deployment) error {
+    newStatus := calculateStatus(allRSs, newRS, d)
+
+    if reflect.DeepEqual(d.Status, newStatus) {
+        return nil
+    }
+
+    newDeployment := d
+    newDeployment.Status = newStatus
+    _, err := dc.client.AppsV1().Deployments(newDeployment.Namespace).UpdateStatus(newDeployment)
+    return err
+}
+</code></pre><p><code>calculateStatus</code> &#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x901A;&#x8FC7; allRSs &#x4EE5;&#x53CA; deployment &#x7684;&#x72B6;&#x6001;&#x8BA1;&#x7B97;&#x51FA;&#x6700;&#x65B0;&#x7684; status&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/sync.go:483</code></p>
+<pre class="language-"><code>func calculateStatus(allRSs []*apps.ReplicaSet, newRS *apps.ReplicaSet, deployment *apps.Deployment) apps.DeploymentStatus {
+    availableReplicas := deploymentutil.GetAvailableReplicaCountForReplicaSets(allRSs)
+    totalReplicas := deploymentutil.GetReplicaCountForReplicaSets(allRSs)
+    unavailableReplicas := totalReplicas - availableReplicas
+
+    if unavailableReplicas &lt; 0 {
+        unavailableReplicas = 0
+    }
+
+    status := apps.DeploymentStatus{
+        ObservedGeneration:  deployment.Generation,
+        Replicas:            deploymentutil.GetActualReplicaCountForReplicaSets(allRSs),
+        UpdatedReplicas:     deploymentutil.GetActualReplicaCountForReplicaSets([]*apps.ReplicaSet{newRS}),
+        ReadyReplicas:       deploymentutil.GetReadyReplicaCountForReplicaSets(allRSs),
+        AvailableReplicas:   availableReplicas,
+        UnavailableReplicas: unavailableReplicas,
+        CollisionCount:      deployment.Status.CollisionCount,
+    }
+
+    conditions := deployment.Status.Conditions
+    for i := range conditions {
+        status.Conditions = append(status.Conditions, conditions[i])
+    }
+
+    conditions := deployment.Status.Conditions
+    for i := range conditions {
+        status.Conditions = append(status.Conditions, conditions[i])
+    }
+
+    ......
+    return status
+}
+</code></pre><p>&#x4EE5;&#x4E0A;&#x5C31;&#x662F; controller &#x4E2D;&#x5904;&#x7406;&#x5220;&#x9664;&#x903B;&#x8F91;&#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#xFF0C;&#x901A;&#x8FC7;&#x4E0A;&#x8FF0;&#x4EE3;&#x7801;&#x53EF;&#x77E5;&#xFF0C;&#x5F53;&#x5220;&#x9664; deployment &#x5BF9;&#x8C61;&#x65F6;&#xFF0C;&#x4EC5;&#x4EC5;&#x662F;&#x5224;&#x65AD;&#x8BE5;&#x5BF9;&#x8C61;&#x4E2D;&#x662F;&#x5426;&#x5B58;&#x5728; metadata.DeletionTimestamp &#x5B57;&#x6BB5;&#xFF0C;&#x7136;&#x540E;&#x8FDB;&#x884C;&#x4E00;&#x6B21;&#x72B6;&#x6001;&#x540C;&#x6B65;&#xFF0C;&#x5E76;&#x6CA1;&#x6709;&#x770B;&#x5230;&#x5220;&#x9664; deployment&#x3001;rs&#x3001;pod &#x5BF9;&#x8C61;&#x7684;&#x64CD;&#x4F5C;&#xFF0C;&#x5176;&#x5B9E;&#x5220;&#x9664;&#x5BF9;&#x8C61;&#x5E76;&#x4E0D;&#x662F;&#x5728;&#x6B64;&#x5904;&#x8FDB;&#x884C;&#x800C;&#x662F;&#x5728; kube-controller-manager &#x7684;&#x5783;&#x573E;&#x56DE;&#x6536;&#x5668;(garbagecollector controller)&#x4E2D;&#x5B8C;&#x6210;&#x7684;&#xFF0C;&#x5BF9;&#x4E8E; garbagecollector controller &#x4F1A;&#x5728;&#x540E;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x8FDB;&#x884C;&#x8BF4;&#x660E;&#xFF0C;&#x6B64;&#x5916;&#x5728;&#x5220;&#x9664;&#x5BF9;&#x8C61;&#x65F6;&#x8FD8;&#x9700;&#x8981;&#x6307;&#x5B9A;&#x4E00;&#x4E2A;&#x5220;&#x9664;&#x9009;&#x9879;(orphan&#x3001;background &#x6216;&#x8005; foreground)&#x6765;&#x8BF4;&#x660E;&#x8BE5;&#x5BF9;&#x8C61;&#x5982;&#x4F55;&#x5220;&#x9664;&#x3002;</p>
+<h4 id="&#x6682;&#x505C;&#x548C;&#x6062;&#x590D;"><a name="&#x6682;&#x505C;&#x548C;&#x6062;&#x590D;" class="anchor-navigation-ex-anchor" href="#&#x6682;&#x505C;&#x548C;&#x6062;&#x590D;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6682;&#x505C;&#x548C;&#x6062;&#x590D;</h4>
+<p>&#x6682;&#x505C;&#x4EE5;&#x53CA;&#x6062;&#x590D;&#x4E24;&#x4E2A;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x901A;&#x8FC7;&#x66F4;&#x65B0; deployment <code>spec.paused</code> &#x5B57;&#x6BB5;&#x5B9E;&#x73B0;&#x7684;&#xFF0C;&#x4E0B;&#x9762;&#x76F4;&#x63A5;&#x770B;&#x5B83;&#x7684;&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x3002;</p>
+<pre class="language-"><code>func (dc *DeploymentController) syncDeployment(key string) error {
+    ......
+    // pause &#x64CD;&#x4F5C;
+    if d.Spec.Paused {
+        return dc.sync(d, rsList)
+    }
+
+    if getRollbackTo(d) != nil {
+        return dc.rollback(d, rsList)
+    }
+
+    // scale &#x64CD;&#x4F5C;
+    scalingEvent, err := dc.isScalingEvent(d, rsList)
+    if err != nil {
+        return err
+    }
+    if scalingEvent {
+        return dc.sync(d, rsList)
+    }
+    ......
+}
+</code></pre><p>&#x5F53;&#x89E6;&#x53D1;&#x6682;&#x505C;&#x64CD;&#x4F5C;&#x65F6;&#xFF0C;&#x4F1A;&#x8C03;&#x7528; <code>sync</code> &#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#xFF0C;<code>sync</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x83B7;&#x53D6; newRS &#x548C; oldRSs&#xFF1B;</li>
+<li>2&#x3001;&#x6839;&#x636E; newRS &#x548C; oldRSs &#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981; scale &#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>3&#x3001;&#x82E5;&#x5904;&#x4E8E;&#x6682;&#x505C;&#x72B6;&#x6001;&#x4E14;&#x6CA1;&#x6709;&#x6267;&#x884C;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;&#xFF0C;&#x5219;&#x6839;&#x636E; deployment &#x7684; <code>.spec.revisionHistoryLimit</code> &#x4E2D;&#x7684;&#x503C;&#x6E05;&#x7406;&#x591A;&#x4F59;&#x7684; rs&#xFF1B;</li>
+<li>4&#x3001;&#x6700;&#x540E;&#x6267;&#x884C; <code>syncDeploymentStatus</code> &#x66F4;&#x65B0; status&#xFF1B;</li>
+</ul>
+<pre class="language-"><code>func (dc *DeploymentController) sync(d *apps.Deployment, rsList []*apps.ReplicaSet) error {
+    newRS, oldRSs, err := dc.getAllReplicaSetsAndSyncRevision(d, rsList, false)
+    if err != nil {
+        return err
+    }
+    if err := dc.scale(d, newRS, oldRSs); err != nil {
+        return err
+    }
+
+    if d.Spec.Paused &amp;&amp; getRollbackTo(d) == nil {
+        if err := dc.cleanupDeployment(oldRSs, d); err != nil {
+            return err
+        }
+    }
+
+    allRSs := append(oldRSs, newRS)
+    return dc.syncDeploymentStatus(allRSs, newRS, d)
+}
+</code></pre><p>&#x4E0A;&#x6587;&#x5DF2;&#x7ECF;&#x63D0;&#x5230;&#x8FC7; deployment controller &#x5728;&#x4E00;&#x4E2A; syncLoop &#x4E2D;&#x5404;&#x79CD;&#x64CD;&#x4F5C;&#x662F;&#x6709;&#x4F18;&#x5148;&#x7EA7;&#xFF0C;&#x800C; pause &gt; rollback &gt; scale &gt; rollout&#xFF0C;&#x901A;&#x8FC7;&#x6587;&#x7AE0;&#x5F00;&#x5934;&#x7684;&#x547D;&#x4EE4;&#x884C;&#x53C2;&#x6570;&#x4E5F;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF0C;&#x6682;&#x505C;&#x548C;&#x6062;&#x590D;&#x64CD;&#x4F5C;&#x53EA;&#x6709;&#x5728; rollout &#x65F6;&#x624D;&#x4F1A;&#x751F;&#x6548;&#xFF0C;&#x518D;&#x7ED3;&#x5408;&#x6E90;&#x7801;&#x5206;&#x6790;&#xFF0C;&#x867D;&#x7136;&#x6682;&#x505C;&#x64CD;&#x4F5C;&#x4E0B;&#x4E0D;&#x4F1A;&#x6267;&#x884C;&#x5230; scale &#x76F8;&#x5173;&#x7684;&#x64CD;&#x4F5C;&#xFF0C;&#x4F46;&#x662F; pause &#x4E0E; scale &#x90FD;&#x662F;&#x8C03;&#x7528; <code>sync</code> &#x65B9;&#x6CD5;&#x5B8C;&#x6210;&#x7684;&#xFF0C;&#x4E14;&#x5728; <code>sync</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x9996;&#x5148;&#x68C0;&#x67E5; scale &#x64CD;&#x4F5C;&#x662F;&#x5426;&#x5B8C;&#x6210;&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x5728; pause &#x64CD;&#x4F5C;&#x540E;&#x5E76;&#x4E0D;&#x662F;&#x7ACB;&#x5373;&#x6682;&#x505C;&#x6240;&#x6709;&#x64CD;&#x4F5C;&#xFF0C;&#x4F8B;&#x5982;&#xFF0C;&#x5F53;&#x6267;&#x884C;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#x540E;&#x7ACB;&#x5373;&#x6267;&#x884C;&#x6682;&#x505C;&#x64CD;&#x4F5C;&#xFF0C;&#x6B64;&#x65F6;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x7684;&#x7B2C;&#x4E00;&#x4E2A;&#x5468;&#x671F;&#x5E76;&#x4E0D;&#x4F1A;&#x7ACB;&#x523B;&#x505C;&#x6B62;&#x800C;&#x662F;&#x4F1A;&#x7B49;&#x5230;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x7684;&#x7B2C;&#x4E00;&#x4E2A;&#x5468;&#x671F;&#x5B8C;&#x6210;&#x540E;&#x624D;&#x4F1A;&#x5904;&#x4E8E;&#x6682;&#x505C;&#x72B6;&#x6001;&#xFF0C;&#x5728;&#x4E0B;&#x6587;&#x7684;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x4E00;&#x8282;&#x4F1A;&#x6709;&#x4F8B;&#x5B50;&#x8FDB;&#x884C;&#x8BE6;&#x7EC6;&#x7684;&#x5206;&#x6790;&#xFF0C;&#x81F3;&#x4E8E; scale &#x64CD;&#x4F5C;&#x5728;&#x4E0B;&#x6587;&#x4E5F;&#x4F1A;&#x8FDB;&#x884C;&#x8BE6;&#x7EC6;&#x5206;&#x6790;&#x3002;</p>
+<p><code>syncDeploymentStatus</code> &#x65B9;&#x6CD5;&#x4EE5;&#x53CA;&#x76F8;&#x5173;&#x7684;&#x4EE3;&#x7801;&#x5728;&#x4E0A;&#x6587;&#x7684;<strong>&#x5220;&#x9664;&#x64CD;&#x4F5C;</strong>&#x4E2D;&#x5DF2;&#x7ECF;&#x89E3;&#x91CA;&#x8FC7;&#x4E86;&#xFF0C;&#x6B64;&#x5904;&#x4E0D;&#x518D;&#x8FDB;&#x884C;&#x5206;&#x6790;&#x3002;</p>
+<h4 id="&#x56DE;&#x6EDA;"><a name="&#x56DE;&#x6EDA;" class="anchor-navigation-ex-anchor" href="#&#x56DE;&#x6EDA;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x56DE;&#x6EDA;</h4>
+<p>kubernetes &#x4E2D;&#x7684;&#x6BCF;&#x4E00;&#x4E2A; Deployment &#x8D44;&#x6E90;&#x90FD;&#x5305;&#x542B;&#x6709; <code>revision</code> &#x8FD9;&#x4E2A;&#x6982;&#x5FF5;&#xFF0C;&#x5E76;&#x4E14;&#x5176; <code>.spec.revisionHistoryLimit</code> &#x5B57;&#x6BB5;&#x6307;&#x5B9A;&#x4E86;&#x9700;&#x8981;&#x4FDD;&#x7559;&#x7684;&#x5386;&#x53F2;&#x7248;&#x672C;&#x6570;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A;10&#xFF0C;&#x6BCF;&#x4E2A;&#x7248;&#x672C;&#x90FD;&#x4F1A;&#x5BF9;&#x5E94;&#x4E00;&#x4E2A; rs&#xFF0C;&#x82E5;&#x53D1;&#x73B0;&#x96C6;&#x7FA4;&#x4E2D;&#x6709;&#x5927;&#x91CF; 0/0 rs &#x65F6;&#x8BF7;&#x4E0D;&#x8981;&#x5220;&#x9664;&#x5B83;&#xFF0C;&#x8FD9;&#x4E9B; rs &#x5BF9;&#x5E94;&#x7684;&#x90FD;&#x662F; deployment &#x7684;&#x5386;&#x53F2;&#x7248;&#x672C;&#xFF0C;&#x5426;&#x5219;&#x4F1A;&#x5BFC;&#x81F4;&#x65E0;&#x6CD5;&#x56DE;&#x6EDA;&#x3002;&#x5F53;&#x4E00;&#x4E2A; deployment &#x7684;&#x5386;&#x53F2; rs &#x6570;&#x8D85;&#x8FC7;&#x6307;&#x5B9A;&#x6570;&#x65F6;&#xFF0C;deployment controller &#x4F1A;&#x81EA;&#x52A8;&#x6E05;&#x7406;&#x3002;</p>
+<p>&#x5F53;&#x5728;&#x5BA2;&#x6237;&#x7AEF;&#x89E6;&#x53D1;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;&#x65F6;&#xFF0C;controller &#x4F1A;&#x8C03;&#x7528; <code>getRollbackTo</code> &#x8FDB;&#x884C;&#x5224;&#x65AD;&#x5E76;&#x8C03;&#x7528; <code>rollback</code> &#x6267;&#x884C;&#x5BF9;&#x5E94;&#x7684;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;&#x3002;</p>
+<pre class="language-"><code>func (dc *DeploymentController) syncDeployment(key string) error {
+    ......
+    if getRollbackTo(d) != nil {
+        return dc.rollback(d, rsList)
+    }
+    ......
+}
+</code></pre><p><code>getRollbackTo</code> &#x901A;&#x8FC7;&#x5224;&#x65AD; deployment &#x662F;&#x5426;&#x5B58;&#x5728; rollback &#x5BF9;&#x5E94;&#x7684;&#x6CE8;&#x89E3;&#x7136;&#x540E;&#x83B7;&#x53D6;&#x5176;&#x503C;&#x4F5C;&#x4E3A;&#x76EE;&#x6807;&#x7248;&#x672C;&#x3002;</p>
+<pre class="language-"><code class="lang-golang">func getRollbackTo(d *apps.Deployment) *extensions.RollbackConfig {
+    // annotations &#x4E3A; &quot;deprecated.deployment.rollback.to&quot;
+    revision := d.Annotations[apps.DeprecatedRollbackTo]
+    if revision == &quot;&quot; {
+        return nil
+    }
+    revision64, err := strconv.ParseInt(revision, 10, 64)
+    if err != nil {
+        return nil
+    }
+    return &amp;extensions.RollbackConfig{
+        Revision: revision64,
+    }
+}
+</code></pre>
+<p><code>rollback</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x83B7;&#x53D6; newRS &#x548C; oldRSs&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>getRollbackTo</code> &#x83B7;&#x53D6; rollback &#x7684; revision&#xFF1B;</li>
+<li>3&#x3001;&#x5224;&#x65AD; revision &#x4EE5;&#x53CA;&#x5BF9;&#x5E94;&#x7684; rs &#x662F;&#x5426;&#x5B58;&#x5728;&#xFF0C;&#x82E5; revision &#x4E3A; 0&#xFF0C;&#x5219;&#x8868;&#x793A;&#x56DE;&#x6EDA;&#x5230;&#x4E0A;&#x4E00;&#x4E2A;&#x7248;&#x672C;&#xFF1B;</li>
+<li>4&#x3001;&#x82E5;&#x5B58;&#x5728;&#x5BF9;&#x5E94;&#x7684; rs&#xFF0C;&#x5219;&#x8C03;&#x7528; <code>rollbackToTemplate</code> &#x65B9;&#x6CD5;&#x5C06; <code>rs.Spec.Template</code> &#x8D4B;&#x503C;&#x7ED9; <code>d.Spec.Template</code>&#xFF0C;&#x5426;&#x5219;&#x653E;&#x5F03;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/rollback.go:32</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) rollback(d *apps.Deployment, rsList []*apps.ReplicaSet) error {
+    // 1&#x3001;&#x83B7;&#x53D6; newRS &#x548C; oldRSs
+    newRS, allOldRSs, err := dc.getAllReplicaSetsAndSyncRevision(d, rsList, true)
+    if err != nil {
+        return err
+    }
+
+    allRSs := append(allOldRSs, newRS)
+    // 2&#x3001;&#x8C03;&#x7528; getRollbackTo &#x83B7;&#x53D6; rollback &#x7684; revision
+    rollbackTo := getRollbackTo(d)
+
+    // 3&#x3001;&#x5224;&#x65AD; revision &#x4EE5;&#x53CA;&#x5BF9;&#x5E94;&#x7684; rs &#x662F;&#x5426;&#x5B58;&#x5728;&#xFF0C;&#x82E5; revision &#x4E3A; 0&#xFF0C;&#x5219;&#x8868;&#x793A;&#x56DE;&#x6EDA;&#x5230;&#x6700;&#x65B0;&#x7684;&#x7248;&#x672C;
+    if rollbackTo.Revision == 0 {
+        if rollbackTo.Revision = deploymentutil.LastRevision(allRSs); rollbackTo.Revision == 0 {
+            // 4&#x3001;&#x6E05;&#x9664;&#x56DE;&#x6EDA;&#x6807;&#x5FD7;&#x653E;&#x5F03;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;
+            return dc.updateDeploymentAndClearRollbackTo(d)
+        }
+    }
+    for _, rs := range allRSs {
+        v, err := deploymentutil.Revision(rs)
+        if err != nil {
+            ......
+        }
+
+        if v == rollbackTo.Revision {
+            // 5&#x3001;&#x8C03;&#x7528; rollbackToTemplate &#x8FDB;&#x884C;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;
+            performedRollback, err := dc.rollbackToTemplate(d, rs)
+            if performedRollback &amp;&amp; err == nil {
+                ......
+            }
+            return err
+        }
+    }
+
+    return dc.updateDeploymentAndClearRollbackTo(d)
+}
+</code></pre><p><code>rollbackToTemplate</code> &#x4F1A;&#x5224;&#x65AD; <code>deployment.Spec.Template</code> &#x548C; <code>rs.Spec.Template</code> &#x662F;&#x5426;&#x76F8;&#x7B49;&#xFF0C;&#x82E5;&#x76F8;&#x7B49;&#x5219;&#x65E0;&#x9700;&#x56DE;&#x6EDA;&#xFF0C;&#x5426;&#x5219;&#x4F7F;&#x7528; <code>rs.Spec.Template</code> &#x66FF;&#x6362; <code>deployment.Spec.Template</code>&#xFF0C;&#x7136;&#x540E;&#x66F4;&#x65B0; deployment &#x7684; spec &#x5E76;&#x6E05;&#x9664;&#x56DE;&#x6EDA;&#x6807;&#x5FD7;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/rollback.go:75</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) rollbackToTemplate(d *apps.Deployment, rs *apps.ReplicaSet) (bool, error) {
+    performedRollback := false
+    // 1&#x3001;&#x6BD4;&#x8F83; d.Spec.Template &#x548C; rs.Spec.Template &#x662F;&#x5426;&#x76F8;&#x7B49;
+    if !deploymentutil.EqualIgnoreHash(&amp;d.Spec.Template, &amp;rs.Spec.Template) {
+        // 2&#x3001;&#x66FF;&#x6362; d.Spec.Template
+        deploymentutil.SetFromReplicaSetTemplate(d, rs.Spec.Template)
+
+        // 3&#x3001;&#x8BBE;&#x7F6E; annotation
+        deploymentutil.SetDeploymentAnnotationsTo(d, rs)
+        performedRollback = true
+    } else {
+        dc.emitRollbackWarningEvent(d, deploymentutil.RollbackTemplateUnchanged, eventMsg)
+    }
+
+    // 4&#x3001;&#x66F4;&#x65B0; deployment &#x5E76;&#x6E05;&#x9664;&#x56DE;&#x6EDA;&#x6807;&#x5FD7;
+    return performedRollback, dc.updateDeploymentAndClearRollbackTo(d)
+}
+</code></pre><p>&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;&#x5176;&#x5B9E;&#x5C31;&#x662F;&#x901A;&#x8FC7; revision &#x627E;&#x5230;&#x5BF9;&#x5E94;&#x7684; rs&#xFF0C;&#x7136;&#x540E;&#x4F7F;&#x7528; rs.Spec.Template &#x66FF;&#x6362; deployment.Spec.Template &#x6700;&#x540E;&#x9A71;&#x52A8; replicaSet &#x548C; pod &#x8FBE;&#x5230;&#x671F;&#x671B;&#x72B6;&#x6001;&#x5373;&#x5B8C;&#x6210;&#x4E86;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;&#xFF0C;&#x5728;&#x6700;&#x65B0;&#x7248;&#x4E2D;&#xFF0C;&#x8FD9;&#x79CD;&#x4F7F;&#x7528;&#x6CE8;&#x89E3;&#x65B9;&#x5F0F;&#x6307;&#x5B9A;&#x56DE;&#x6EDA;&#x7248;&#x672C;&#x7684;&#x65B9;&#x6CD5;&#x5373;&#x5C06;&#x88AB;&#x5E9F;&#x5F03;&#x3002;</p>
+<h4 id="&#x6269;&#x7F29;&#x5BB9;"><a name="&#x6269;&#x7F29;&#x5BB9;" class="anchor-navigation-ex-anchor" href="#&#x6269;&#x7F29;&#x5BB9;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6269;&#x7F29;&#x5BB9;</h4>
+<p>&#x5F53;&#x6267;&#x884C; scale &#x64CD;&#x4F5C;&#x65F6;&#xFF0C;&#x9996;&#x5148;&#x4F1A;&#x901A;&#x8FC7; <code>isScalingEvent</code> &#x65B9;&#x6CD5;&#x5224;&#x65AD;&#x662F;&#x5426;&#x4E3A;&#x6269;&#x7F29;&#x5BB9;&#x64CD;&#x4F5C;&#xFF0C;&#x7136;&#x540E;&#x901A;&#x8FC7; <code>dc.sync</code> &#x65B9;&#x6CD5;&#x6765;&#x6267;&#x884C;&#x5B9E;&#x9645;&#x7684;&#x6269;&#x7F29;&#x5BB9;&#x52A8;&#x4F5C;&#x3002;</p>
+<pre class="language-"><code>func (dc *DeploymentController) syncDeployment(key string) error {
+    ......
+    // scale &#x64CD;&#x4F5C;
+    scalingEvent, err := dc.isScalingEvent(d, rsList)
+    if err != nil {
+        return err
+    }
+    if scalingEvent {
+        return dc.sync(d, rsList)
+    }
+    ......
+}
+</code></pre><p><code>isScalingEvent</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x83B7;&#x53D6;&#x6240;&#x6709;&#x7684; rs&#xFF1B;</li>
+<li>2&#x3001;&#x8FC7;&#x6EE4;&#x51FA; activeRS&#xFF0C;rs.Spec.Replicas &gt; 0 &#x7684;&#x4E3A; activeRS&#xFF1B;</li>
+<li>3&#x3001;&#x5224;&#x65AD; rs &#x7684; desired &#x503C;&#x662F;&#x5426;&#x7B49;&#x4E8E; deployment.Spec.Replicas&#xFF0C;&#x82E5;&#x4E0D;&#x7B49;&#x4E8E;&#x5219;&#x9700;&#x8981;&#x4E3A; rs &#x8FDB;&#x884C; scale &#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/sync.go:526</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) isScalingEvent(......) (bool, error) {
+    // 1&#x3001;&#x83B7;&#x53D6;&#x6240;&#x6709; rs
+    newRS, oldRSs, err := dc.getAllReplicaSetsAndSyncRevision(d, rsList, false)
+    if err != nil {
+        return false, err
+    }
+    allRSs := append(oldRSs, newRS)
+
+    // 2&#x3001;&#x8FC7;&#x6EE4;&#x51FA; activeRS &#x5E76;&#x8FDB;&#x884C;&#x6BD4;&#x8F83;
+    for _, rs := range controller.FilterActiveReplicaSets(allRSs) {
+        // 3&#x3001;&#x83B7;&#x53D6; rs annotation &#x4E2D; deployment.kubernetes.io/desired-replicas &#x7684;&#x503C;
+        desired, ok := deploymentutil.GetDesiredReplicasAnnotation(rs)
+        if !ok {
+            continue
+        }
+        // 4&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981; scale &#x64CD;&#x4F5C;
+        if desired != *(d.Spec.Replicas) {
+            return true, nil
+        }
+    }
+    return false, nil
+}
+</code></pre><p>&#x5728;&#x901A;&#x8FC7; <code>isScalingEvent</code> &#x5224;&#x65AD;&#x4E3A; scale &#x64CD;&#x4F5C;&#x65F6;&#x4F1A;&#x8C03;&#x7528; <code>sync</code>  &#x65B9;&#x6CD5;&#x6267;&#x884C;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x83B7;&#x53D6; newRS &#x548C; oldRSs&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>scale</code>  &#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x6269;&#x7F29;&#x5BB9;&#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>3&#x3001;&#x540C;&#x6B65; deployment &#x7684;&#x72B6;&#x6001;&#xFF1B;</li>
+</ul>
+<pre class="language-"><code>func (dc *DeploymentController) sync(d *apps.Deployment, rsList []*apps.ReplicaSet) error {
+    newRS, oldRSs, err := dc.getAllReplicaSetsAndSyncRevision(d, rsList, false)
+    if err != nil {
+        return err
+    }
+    if err := dc.scale(d, newRS, oldRSs); err != nil {
+        return err
+    }
+
+    ......
+    allRSs := append(oldRSs, newRS)
+    return dc.syncDeploymentStatus(allRSs, newRS, d)
+}
+</code></pre><p><code>sync</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x8C03;&#x7528; <code>scale</code> &#x65B9;&#x6CD5;&#x6267;&#x884C;&#x6269;&#x5BB9;&#x64CD;&#x4F5C;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x901A;&#x8FC7; <code>FindActiveOrLatest</code> &#x83B7;&#x53D6; activeRS &#x6216;&#x8005;&#x6700;&#x65B0;&#x7684;  rs&#xFF0C;&#x6B64;&#x65F6;&#x82E5;&#x53EA;&#x6709;&#x4E00;&#x4E2A; rs &#x8BF4;&#x660E;&#x672C;&#x6B21;&#x64CD;&#x4F5C;&#x4EC5;&#x4E3A; scale &#x64CD;&#x4F5C;&#xFF0C;&#x5219;&#x8C03;&#x7528; <code>scaleReplicaSetAndRecordEvent</code> &#x5BF9; rs &#x8FDB;&#x884C; scale &#x64CD;&#x4F5C;&#xFF0C;&#x5426;&#x5219;&#x6B64;&#x65F6;&#x5B58;&#x5728;&#x591A;&#x4E2A; activeRS&#xFF1B;</li>
+<li>2&#x3001;&#x5224;&#x65AD; newRS &#x662F;&#x5426;&#x5DF2;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x526F;&#x672C;&#x6570;&#xFF0C;&#x82E5;&#x8FBE;&#x5230;&#x5219;&#x5C06;&#x6240;&#x6709;&#x7684; oldRS &#x7F29;&#x5BB9;&#x5230; 0&#xFF1B;</li>
+<li>3&#x3001;&#x82E5; newRS &#x8FD8;&#x672A;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x526F;&#x672C;&#x6570;&#xFF0C;&#x4E14;&#x5B58;&#x5728;&#x591A;&#x4E2A; activeRS&#xFF0C;&#x8BF4;&#x660E;&#x6B64;&#x65F6;&#x7684;&#x64CD;&#x4F5C;&#x6709;&#x53EF;&#x80FD;&#x662F;&#x5347;&#x7EA7;&#x4E0E;&#x6269;&#x7F29;&#x5BB9;&#x64CD;&#x4F5C;&#x540C;&#x65F6;&#x8FDB;&#x884C;&#xFF0C;&#x82E5; deployment &#x7684;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#x4E3A; RollingUpdate &#x90A3;&#x4E48; scale &#x64CD;&#x4F5C;&#x4E5F;&#x9700;&#x8981;&#x6309;&#x6BD4;&#x4F8B;&#x8FDB;&#x884C;&#xFF1A;<ul>
+<li>&#x901A;&#x8FC7; <code>FilterActiveReplicaSets</code> &#x83B7;&#x53D6;&#x6240;&#x6709;&#x6D3B;&#x8DC3;&#x7684; ReplicaSet &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>&#x8C03;&#x7528; <code>GetReplicaCountForReplicaSets</code> &#x8BA1;&#x7B97;&#x5F53;&#x524D; Deployment &#x5BF9;&#x5E94; ReplicaSet &#x6301;&#x6709;&#x7684;&#x5168;&#x90E8; Pod &#x526F;&#x672C;&#x4E2A;&#x6570;&#xFF1B;</li>
+<li>&#x8BA1;&#x7B97; Deployment &#x5141;&#x8BB8;&#x521B;&#x5EFA;&#x7684;&#x6700;&#x5927; Pod &#x6570;&#x91CF;&#xFF1B;</li>
+<li>&#x5224;&#x65AD;&#x662F;&#x6269;&#x5BB9;&#x8FD8;&#x662F;&#x7F29;&#x5BB9;&#x5E76;&#x5BF9; allRSs &#x6309;&#x65F6;&#x95F4;&#x6233;&#x8FDB;&#x884C;&#x6B63;&#x5411;&#x6216;&#x8005;&#x53CD;&#x5411;&#x6392;&#x5E8F;&#xFF1B;</li>
+<li>&#x8BA1;&#x7B97;&#x6BCF;&#x4E2A; rs &#x9700;&#x8981;&#x589E;&#x52A0;&#x6216;&#x8005;&#x5220;&#x9664;&#x7684;&#x526F;&#x672C;&#x6570;&#xFF1B;</li>
+<li>&#x66F4;&#x65B0; rs &#x5BF9;&#x8C61;&#xFF1B;</li>
+</ul>
+</li>
+<li>4&#x3001;&#x82E5;&#x4E3A; recreat &#x5219;&#x9700;&#x8981;&#x7B49;&#x5F85;&#x66F4;&#x65B0;&#x5B8C;&#x6210;&#x540E;&#x518D;&#x8FDB;&#x884C; scale &#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/sync.go:294</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) scale(......) error {
+    // 1&#x3001;&#x5728;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x8FC7;&#x7A0B;&#x4E2D; &#x7B2C;&#x4E00;&#x4E2A; rs &#x7684; replicas &#x6570;&#x91CF;= maxSuger + dep.spec.Replicas &#xFF0C;
+    // &#x66F4;&#x65B0;&#x5B8C;&#x6210;&#x540E; pod &#x6570;&#x91CF;&#x4F1A;&#x591A;&#x51FA; maxSurge &#x4E2A;&#xFF0C;&#x6B64;&#x5904;&#x82E5;&#x68C0;&#x6D4B;&#x5230;&#x5219;&#x5E94;&#x7F29;&#x51CF;&#x56DE;&#x53BB;
+    if activeOrLatest := deploymentutil.FindActiveOrLatest(newRS, oldRSs); activeOrLatest != nil {
+        if *(activeOrLatest.Spec.Replicas) == *(deployment.Spec.Replicas) {
+            return nil
+        }
+        // 2&#x3001;&#x53EA;&#x66F4;&#x65B0; rs annotation &#x4EE5;&#x53CA;&#x4E3A; deployment &#x8BBE;&#x7F6E; events
+        _, _, err := dc.scaleReplicaSetAndRecordEvent(activeOrLatest, *(deployment.Spec.Replicas), deployment)
+        return err
+    }
+
+    // 3&#x3001;&#x5F53;&#x8C03;&#x7528; IsSaturated &#x65B9;&#x6CD5;&#x53D1;&#x73B0;&#x5F53;&#x524D;&#x7684; Deployment &#x5BF9;&#x5E94;&#x7684;&#x526F;&#x672C;&#x6570;&#x91CF;&#x5DF2;&#x7ECF;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x72B6;&#x6001;&#x65F6;&#x5C31;
+    // &#x5C06;&#x6240;&#x6709;&#x5386;&#x53F2;&#x7248;&#x672C; rs &#x6301;&#x6709;&#x7684;&#x526F;&#x672C;&#x7F29;&#x5BB9;&#x4E3A; 0
+    if deploymentutil.IsSaturated(deployment, newRS) {
+        for _, old := range controller.FilterActiveReplicaSets(oldRSs) {
+            if _, _, err := dc.scaleReplicaSetAndRecordEvent(old, 0, deployment); err != nil {
+                return err
+            }
+        }
+        return nil
+    }
+
+    // 4&#x3001;&#x6B64;&#x65F6;&#x8BF4;&#x660E; &#x5F53;&#x524D;&#x7684; rs &#x526F;&#x672C;&#x5E76;&#x6CA1;&#x6709;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x72B6;&#x6001;&#x5E76;&#x4E14;&#x5B58;&#x5728;&#x591A;&#x4E2A;&#x6D3B;&#x8DC3;&#x7684; rs &#x5BF9;&#x8C61;&#xFF0C;
+    // &#x82E5; deployment &#x7684;&#x66F4;&#x65B0;&#x7B56;&#x7565;&#x4E3A;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#xFF0C;&#x9700;&#x8981;&#x6309;&#x7167;&#x6BD4;&#x4F8B;&#x5206;&#x522B;&#x5BF9;&#x5404;&#x4E2A;&#x6D3B;&#x8DC3;&#x7684; rs &#x8FDB;&#x884C;&#x6269;&#x5BB9;&#x6216;&#x8005;&#x7F29;&#x5BB9;
+    if deploymentutil.IsRollingUpdate(deployment) {
+        allRSs := controller.FilterActiveReplicaSets(append(oldRSs, newRS))
+        allRSsReplicas := deploymentutil.GetReplicaCountForReplicaSets(allRSs)
+
+        allowedSize := int32(0)
+
+        // 5&#x3001;&#x8BA1;&#x7B97;&#x6700;&#x5927;&#x53EF;&#x4EE5;&#x521B;&#x5EFA;&#x51FA;&#x7684; pod &#x6570;
+        if *(deployment.Spec.Replicas) &gt; 0 {
+            allowedSize = *(deployment.Spec.Replicas) + deploymentutil.MaxSurge(*deployment)
+        }
+
+        // 6&#x3001;&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x6269;&#x5BB9;&#x7684; pod &#x6570;
+        deploymentReplicasToAdd := allowedSize - allRSsReplicas
+
+        // 7&#x3001;&#x5982;&#x679C; deploymentReplicasToAdd &gt; 0&#xFF0C;ReplicaSet &#x5C06;&#x6309;&#x7167;&#x4ECE;&#x65B0;&#x5230;&#x65E7;&#x7684;&#x987A;&#x5E8F;&#x4F9D;&#x6B21;&#x8FDB;&#x884C;&#x6269;&#x5BB9;&#xFF1B;
+        // &#x5982;&#x679C; deploymentReplicasToAdd &lt; 0&#xFF0C;ReplicaSet &#x5C06;&#x6309;&#x7167;&#x4ECE;&#x65E7;&#x5230;&#x65B0;&#x7684;&#x987A;&#x5E8F;&#x4F9D;&#x6B21;&#x8FDB;&#x884C;&#x7F29;&#x5BB9;&#xFF1B;
+        // &#x82E5; &gt; 0&#xFF0C;&#x5219;&#x9700;&#x8981;&#x5148;&#x6269;&#x5BB9; newRS&#xFF0C;&#x4F46;&#x5F53;&#x5728;&#x5148;&#x6269;&#x5BB9;&#x7136;&#x540E;&#x7ACB;&#x523B;&#x7F29;&#x5BB9;&#x65F6;&#xFF0C;&#x82E5; &lt;0,&#x5219;&#x9700;&#x8981;&#x5148;&#x5220;&#x9664; oldRS &#x7684; pod
+        var scalingOperation string
+        switch {
+        case deploymentReplicasToAdd &gt; 0:
+            sort.Sort(controller.ReplicaSetsBySizeNewer(allRSs))
+            scalingOperation = &quot;up&quot;
+
+        case deploymentReplicasToAdd &lt; 0:
+            sort.Sort(controller.ReplicaSetsBySizeOlder(allRSs))
+            scalingOperation = &quot;down&quot;
+        }
+        deploymentReplicasAdded := int32(0)
+        nameToSize := make(map[string]int32)
+
+        // 8&#x3001;&#x904D;&#x5386;&#x6240;&#x6709;&#x7684; rs&#xFF0C;&#x8BA1;&#x7B97;&#x6BCF;&#x4E2A; rs &#x9700;&#x8981;&#x6269;&#x5BB9;&#x6216;&#x8005;&#x7F29;&#x5BB9;&#x5230;&#x7684;&#x671F;&#x671B;&#x526F;&#x672C;&#x6570;
+        for i := range allRSs {
+            rs := allRSs[i]
+
+            if deploymentReplicasToAdd != 0 {
+                // 9&#x3001;&#x8C03;&#x7528; GetProportion &#x4F30;&#x7B97;&#x51FA; rs &#x9700;&#x8981;&#x6269;&#x5BB9;&#x6216;&#x8005;&#x7F29;&#x5BB9;&#x7684;&#x526F;&#x672C;&#x6570;
+                proportion := deploymentutil.GetProportion(rs, *deployment, deploymentReplicasToAdd, deploymentReplicasAdded)
+
+                nameToSize[rs.Name] = *(rs.Spec.Replicas) + proportion
+                deploymentReplicasAdded += proportion
+            } else {
+                nameToSize[rs.Name] = *(rs.Spec.Replicas)
+            }
+        }
+
+        // 10&#x3001;&#x904D;&#x5386;&#x6240;&#x6709;&#x7684; rs&#xFF0C;&#x7B2C;&#x4E00;&#x4E2A;&#x6700;&#x6D3B;&#x8DC3;&#x7684; rs.Spec.Replicas &#x52A0;&#x4E0A;&#x4E0A;&#x9762;&#x5FAA;&#x73AF;&#x4E2D;&#x8BA1;&#x7B97;&#x51FA;
+        // &#x5176;&#x4ED6; rs &#x8981;&#x52A0;&#x6216;&#x8005;&#x51CF;&#x7684;&#x526F;&#x672C;&#x6570;&#xFF0C;&#x7136;&#x540E;&#x66F4;&#x65B0;&#x6240;&#x6709; rs &#x7684; rs.Spec.Replicas
+        for i := range allRSs {
+            rs := allRSs[i]
+
+            // 11&#x3001;&#x8981;&#x6269;&#x5BB9;&#x6216;&#x8005;&#x8981;&#x5220;&#x9664;&#x7684; rs &#x5DF2;&#x7ECF;&#x8FBE;&#x5230;&#x4E86;&#x671F;&#x671B;&#x72B6;&#x6001;
+            if i == 0 &amp;&amp; deploymentReplicasToAdd != 0 {
+                leftover := deploymentReplicasToAdd - deploymentReplicasAdded
+                nameToSize[rs.Name] = nameToSize[rs.Name] + leftover
+                if nameToSize[rs.Name] &lt; 0 {
+                    nameToSize[rs.Name] = 0
+                }
+            }
+
+            // 12&#x3001;&#x5BF9; rs &#x8FDB;&#x884C; scale &#x64CD;&#x4F5C;
+            if _, _, err := dc.scaleReplicaSet(rs, nameToSize[rs.Name], deployment, scalingOperation); err != nil {
+                return err
+            }
+        }
+    }
+    return nil
+}
+</code></pre><p>&#x4E0A;&#x8FF0;&#x65B9;&#x6CD5;&#x4E2D;&#x6709;&#x4E00;&#x4E2A;&#x91CD;&#x8981;&#x7684;&#x64CD;&#x4F5C;&#x5C31;&#x662F;&#x5728;&#x7B2C; 9 &#x6B65;&#x8C03;&#x7528; <code>GetProportion</code> &#x65B9;&#x6CD5;&#x4F30;&#x7B97;&#x51FA; rs &#x9700;&#x8981;&#x6269;&#x5BB9;&#x6216;&#x8005;&#x7F29;&#x5BB9;&#x7684;&#x526F;&#x672C;&#x6570;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x4E2D;&#x8BA1;&#x7B97;&#x526F;&#x672C;&#x6570;&#x7684;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/util/deployment_util.go:466</code></p>
+<pre class="language-"><code>func GetProportion(rs *apps.ReplicaSet, d apps.Deployment, deploymentReplicasToAdd, deploymentReplicasAdded int32) int32 {
+    if rs == nil || *(rs.Spec.Replicas) == 0 || deploymentReplicasToAdd == 0 || deploymentReplicasToAdd == deploymentReplicasAdded {
+        return int32(0)
+    }
+
+    // &#x8C03;&#x7528; getReplicaSetFraction &#x65B9;&#x6CD5;
+    rsFraction := getReplicaSetFraction(*rs, d)
+    allowed := deploymentReplicasToAdd - deploymentReplicasAdded
+
+    if deploymentReplicasToAdd &gt; 0 {
+        return integer.Int32Min(rsFraction, allowed)
+    }
+    return integer.Int32Max(rsFraction, allowed)
+}
+
+func getReplicaSetFraction(rs apps.ReplicaSet, d apps.Deployment) int32 {
+    if *(d.Spec.Replicas) == int32(0) {
+        return -*(rs.Spec.Replicas)
+    }
+
+    deploymentReplicas := *(d.Spec.Replicas) + MaxSurge(d)
+    annotatedReplicas, ok := getMaxReplicasAnnotation(&amp;rs)
+    if !ok {
+        annotatedReplicas = d.Status.Replicas
+    }
+
+    // &#x8BA1;&#x7B97; newRSSize &#x7684;&#x516C;&#x5F0F;
+    newRSsize := (float64(*(rs.Spec.Replicas) * deploymentReplicas)) / float64(annotatedReplicas)
+
+    // &#x8FD4;&#x56DE;&#x6700;&#x7EC8;&#x8BA1;&#x7B97;&#x51FA;&#x7684;&#x7ED3;&#x679C;
+    return integer.RoundToInt32(newRSsize) - *(rs.Spec.Replicas)
+}
+</code></pre><h4 id="&#x6EDA;&#x52A8;&#x66F4;&#x65B0;"><a name="&#x6EDA;&#x52A8;&#x66F4;&#x65B0;" class="anchor-navigation-ex-anchor" href="#&#x6EDA;&#x52A8;&#x66F4;&#x65B0;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6EDA;&#x52A8;&#x66F4;&#x65B0;</h4>
+<p>deployment &#x7684;&#x66F4;&#x65B0;&#x65B9;&#x5F0F;&#x6709;&#x4E24;&#x79CD;&#xFF0C;&#x5176;&#x4E2D;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x662F;&#x6700;&#x5E38;&#x7528;&#x7684;&#xFF0C;&#x4E0B;&#x9762;&#x5C31;&#x770B;&#x770B;&#x5176;&#x5177;&#x4F53;&#x7684;&#x5B9E;&#x73B0;&#x3002;</p>
+<pre class="language-"><code>func (dc *DeploymentController) syncDeployment(key string) error {
+    ......
+    switch d.Spec.Strategy.Type {
+    case apps.RecreateDeploymentStrategyType:
+        return dc.rolloutRecreate(d, rsList, podMap)
+    case apps.RollingUpdateDeploymentStrategyType:
+        // &#x8C03;&#x7528; rolloutRolling &#x6267;&#x884C;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;
+        return dc.rolloutRolling(d, rsList)
+    }
+    ......
+}
+</code></pre><p>&#x901A;&#x8FC7;&#x5224;&#x65AD; <code>d.Spec.Strategy.Type</code> &#xFF0C;&#x5F53;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#x4E3A; <code>rolloutRolling</code> &#x65F6;&#xFF0C;&#x4F1A;&#x8C03;&#x7528; <code>rolloutRolling</code> &#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#xFF0C;&#x5177;&#x4F53;&#x7684;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>getAllReplicaSetsAndSyncRevision</code> &#x83B7;&#x53D6;&#x6240;&#x6709;&#x7684; rs&#xFF0C;&#x82E5;&#x6CA1;&#x6709; newRS &#x5219;&#x521B;&#x5EFA;&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>reconcileNewReplicaSet</code> &#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981;&#x5BF9; newRS &#x8FDB;&#x884C; scaleUp &#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>3&#x3001;&#x5982;&#x679C;&#x9700;&#x8981; scaleUp&#xFF0C;&#x66F4;&#x65B0; Deployment &#x7684; status&#xFF0C;&#x6DFB;&#x52A0;&#x76F8;&#x5173;&#x7684; condition&#xFF0C;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#xFF1B;</li>
+<li>4&#x3001;&#x8C03;&#x7528; <code>reconcileOldReplicaSets</code> &#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981;&#x4E3A; oldRS &#x8FDB;&#x884C; scaleDown &#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>5&#x3001;&#x5982;&#x679C;&#x4E24;&#x8005;&#x90FD;&#x4E0D;&#x662F;&#x5219;&#x6EDA;&#x52A8;&#x5347;&#x7EA7;&#x5F88;&#x53EF;&#x80FD;&#x5DF2;&#x7ECF;&#x5B8C;&#x6210;&#xFF0C;&#x6B64;&#x65F6;&#x9700;&#x8981;&#x68C0;&#x67E5; deployment status &#x662F;&#x5426;&#x5DF2;&#x7ECF;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x72B6;&#x6001;&#xFF0C;&#x5E76;&#x4E14;&#x6839;&#x636E; <code>deployment.Spec.RevisionHistoryLimit</code> &#x7684;&#x503C;&#x6E05;&#x7406; oldRSs&#xFF1B;</li>
+</ul>
+<pre class="language-"><code>func (dc *DeploymentController) rolloutRolling(......) error {
+    // 1&#x3001;&#x83B7;&#x53D6;&#x6240;&#x6709;&#x7684; rs&#xFF0C;&#x82E5;&#x6CA1;&#x6709; newRS &#x5219;&#x521B;&#x5EFA;
+    newRS, oldRSs, err := dc.getAllReplicaSetsAndSyncRevision(d, rsList, true)
+    if err != nil {
+        return err
+    }
+    allRSs := append(oldRSs, newRS)
+
+    // 2&#x3001;&#x6267;&#x884C; scale up &#x64CD;&#x4F5C;
+    scaledUp, err := dc.reconcileNewReplicaSet(allRSs, newRS, d)
+    if err != nil {
+        return err
+    }
+    if scaledUp {
+        return dc.syncRolloutStatus(allRSs, newRS, d)
+    }
+
+    // 3&#x3001;&#x6267;&#x884C; scale down &#x64CD;&#x4F5C;
+    scaledDown, err := dc.reconcileOldReplicaSets(allRSs, controller.FilterActiveReplicaSets(oldRSs), newRS, d)
+    if err != nil {
+        return err
+    }
+    if scaledDown {
+        return dc.syncRolloutStatus(allRSs, newRS, d)
+    }
+
+    // 4&#x3001;&#x6E05;&#x7406;&#x8FC7;&#x671F;&#x7684; rs
+    if deploymentutil.DeploymentComplete(d, &amp;d.Status) {
+        if err := dc.cleanupDeployment(oldRSs, d); err != nil {
+            return err
+        }
+    }
+
+    // 5&#x3001;&#x540C;&#x6B65; deployment status
+    return dc.syncRolloutStatus(allRSs, newRS, d)
+}
+</code></pre><p><code>reconcileNewReplicaSet</code> &#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x5224;&#x65AD; <code>newRS.Spec.Replicas</code> &#x548C; <code>deployment.Spec.Replicas</code> &#x662F;&#x5426;&#x76F8;&#x7B49;&#xFF0C;&#x5982;&#x679C;&#x76F8;&#x7B49;&#x5219;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#xFF0C;&#x8BF4;&#x660E;&#x5DF2;&#x7ECF;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x72B6;&#x6001;&#xFF1B;</li>
+<li>2&#x3001;&#x82E5; <code>newRS.Spec.Replicas</code> &gt;  <code>deployment.Spec.Replicas</code> &#xFF0C;&#x5219;&#x8BF4;&#x660E; newRS &#x526F;&#x672C;&#x6570;&#x5DF2;&#x7ECF;&#x8D85;&#x8FC7;&#x671F;&#x671B;&#x503C;&#xFF0C;&#x8C03;&#x7528; <code>dc.scaleReplicaSetAndRecordEvent</code> &#x8FDB;&#x884C; scale down&#xFF1B;</li>
+<li>3&#x3001;&#x6B64;&#x65F6; <code>newRS.Spec.Replicas</code> &lt;  <code>deployment.Spec.Replicas</code> &#xFF0C;&#x8C03;&#x7528; <code>NewRSNewReplicas</code> &#x4E3A; newRS &#x8BA1;&#x7B97;&#x6240;&#x9700;&#x8981;&#x7684;&#x526F;&#x672C;&#x6570;&#xFF0C;&#x8BA1;&#x7B97;&#x539F;&#x5219;&#x9075;&#x5B88; <code>maxSurge</code> &#x548C; <code>maxUnavailable</code> &#x7684;&#x7EA6;&#x675F;&#xFF1B;</li>
+<li>4&#x3001;&#x8C03;&#x7528; <code>scaleReplicaSetAndRecordEvent</code> &#x66F4;&#x65B0; newRS &#x5BF9;&#x8C61;&#xFF0C;&#x8BBE;&#x7F6E; 
+  rs.Spec.Replicas&#x3001;rs.Annotations[DesiredReplicasAnnotation] &#x4EE5;&#x53CA; rs.Annotations[MaxReplicasAnnotation] &#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/rolling.go:69</code></p>
+<pre class="language-"><code>func (dc *DeploymentController) reconcileNewReplicaSet(......) (bool, error) {
+    // 1&#x3001;&#x5224;&#x65AD;&#x526F;&#x672C;&#x6570;&#x662F;&#x5426;&#x5DF2;&#x8FBE;&#x5230;&#x4E86;&#x671F;&#x671B;&#x503C;
+    if *(newRS.Spec.Replicas) == *(deployment.Spec.Replicas) {
+        return false, nil
+    }
+
+    // 2&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981; scale down &#x64CD;&#x4F5C;
+    if *(newRS.Spec.Replicas) &gt; *(deployment.Spec.Replicas) {
+        scaled, _, err := dc.scaleReplicaSetAndRecordEvent(newRS, *(deployment.Spec.Replicas), deployment)
+        return scaled, err
+    }
+
+    // 3&#x3001;&#x8BA1;&#x7B97; newRS &#x6240;&#x9700;&#x8981;&#x7684;&#x526F;&#x672C;&#x6570;
+    newReplicasCount, err := deploymentutil.NewRSNewReplicas(deployment, allRSs, newRS)
+    if err != nil {
+        return false, err
+    }
+
+    // 4&#x3001;&#x5982;&#x679C;&#x9700;&#x8981; scale &#xFF0C;&#x5219;&#x66F4;&#x65B0; rs &#x7684; annotation &#x4EE5;&#x53CA; rs.Spec.Replicas
+    scaled, _, err := dc.scaleReplicaSetAndRecordEvent(newRS, newReplicasCount, deployment)
+    return scaled, err
+}
+</code></pre><p><code>NewRSNewReplicas</code> &#x662F;&#x4E3A; newRS &#x8BA1;&#x7B97;&#x6240;&#x9700;&#x8981;&#x7684;&#x526F;&#x672C;&#x6570;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x5224;&#x65AD;&#x66F4;&#x65B0;&#x7B56;&#x7565;&#xFF1B;</li>
+<li>2&#x3001;&#x8BA1;&#x7B97; maxSurge &#x503C;&#xFF1B;</li>
+<li>3&#x3001;&#x901A;&#x8FC7; allRSs &#x8BA1;&#x7B97; currentPodCount &#x7684;&#x503C;&#xFF1B;</li>
+<li>4&#x3001;&#x6700;&#x540E;&#x8BA1;&#x7B97; scaleUpCount &#x503C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/util/deployment_util.go:814</code></p>
+<pre class="language-"><code>func NewRSNewReplicas(......) (int32, error) {
+    switch deployment.Spec.Strategy.Type {
+    case apps.RollingUpdateDeploymentStrategyType:
+        // 1&#x3001;&#x8BA1;&#x7B97; maxSurge &#x503C;
+        maxSurge, err := intstrutil.GetValueFromIntOrPercent(deployment.Spec.Strategy.RollingUpdate.MaxSurge, int(*(deployment.Spec.Replicas)), true)
+        if err != nil {
+            return 0, err
+        }
+
+        // 2&#x3001;&#x7D2F;&#x52A0; rs.Spec.Replicas &#x83B7;&#x53D6; currentPodCount
+        currentPodCount := GetReplicaCountForReplicaSets(allRSs)
+        maxTotalPods := *(deployment.Spec.Replicas) + int32(maxSurge)
+        if currentPodCount &gt;= maxTotalPods {
+            return *(newRS.Spec.Replicas), nil
+        }
+
+        // 3&#x3001;&#x8BA1;&#x7B97; scaleUpCount
+        scaleUpCount := maxTotalPods - currentPodCount
+        scaleUpCount = int32(integer.IntMin(int(scaleUpCount), int(*(deployment.Spec.Replicas)-*(newRS.Spec.Replicas))))
+
+        return *(newRS.Spec.Replicas) + scaleUpCount, nil
+    case apps.RecreateDeploymentStrategyType:
+        return *(deployment.Spec.Replicas), nil
+    default:
+        return 0, fmt.Errorf(&quot;deployment type %v isn&apos;t supported&quot;, deployment.Spec.Strategy.Type)
+    }
+}
+</code></pre><p><code>reconcileOldReplicaSets</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x901A;&#x8FC7; oldRSs &#x548C; allRSs &#x83B7;&#x53D6; oldPodsCount &#x548C; allPodsCount&#xFF1B;</li>
+<li>2&#x3001;&#x8BA1;&#x7B97; deployment &#x7684; maxUnavailable&#x3001;minAvailable&#x3001;newRSUnavailablePodCount&#x3001;maxScaledDown &#x503C;&#xFF0C;&#x5F53; deployment &#x7684; maxSurge &#x548C; maxUnavailable &#x503C;&#x4E3A;&#x767E;&#x5206;&#x6570;&#x65F6;&#xFF0C;&#x8BA1;&#x7B97;  maxSurge &#x5411;&#x4E0A;&#x53D6;&#x6574;&#x800C; maxUnavailable &#x5219;&#x5411;&#x4E0B;&#x53D6;&#x6574;&#xFF1B;</li>
+<li>3&#x3001;&#x6E05;&#x7406;&#x5F02;&#x5E38;&#x7684; rs&#xFF1B;</li>
+<li>4&#x3001;&#x8BA1;&#x7B97; oldRS &#x7684; scaleDownCount&#xFF1B;</li>
+</ul>
+<pre class="language-"><code>func (dc *DeploymentController) reconcileOldReplicaSets(......)   (bool, error) {
+    // 1&#x3001;&#x8BA1;&#x7B97; oldPodsCount
+    oldPodsCount := deploymentutil.GetReplicaCountForReplicaSets(oldRSs)
+    if oldPodsCount == 0 {
+        return false, nil
+    }
+
+    // 2&#x3001;&#x8BA1;&#x7B97; allPodsCount
+    allPodsCount := deploymentutil.GetReplicaCountForReplicaSets(allRSs)
+
+    // 3&#x3001;&#x8BA1;&#x7B97; maxScaledDown
+    maxUnavailable := deploymentutil.MaxUnavailable(*deployment)
+    minAvailable := *(deployment.Spec.Replicas) - maxUnavailable
+    newRSUnavailablePodCount := *(newRS.Spec.Replicas) - newRS.Status.AvailableReplicas
+    maxScaledDown := allPodsCount - minAvailable - newRSUnavailablePodCount
+    if maxScaledDown &lt;= 0 {
+        return false, nil
+    }
+
+    // 4&#x3001;&#x6E05;&#x7406;&#x5F02;&#x5E38;&#x7684; rs
+    oldRSs, cleanupCount, err := dc.cleanupUnhealthyReplicas(oldRSs, deployment, maxScaledDown)
+    if err != nil {
+        return false, nil
+    }
+
+    allRSs = append(oldRSs, newRS)
+
+    // 5&#x3001;&#x7F29;&#x5BB9; old rs
+    scaledDownCount, err := dc.scaleDownOldReplicaSetsForRollingUpdate(allRSs, oldRSs, deployment)
+    if err != nil {
+        return false, nil
+    }
+
+    totalScaledDown := cleanupCount + scaledDownCount
+    return totalScaledDown &gt; 0, nil
+}
+</code></pre><p>&#x901A;&#x8FC7;&#x4E0A;&#x9762;&#x7684;&#x4EE3;&#x7801;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF0C;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x8FC7;&#x7A0B;&#x4E2D;&#x4E3B;&#x8981;&#x662F;&#x901A;&#x8FC7;&#x8C03;&#x7528;<code>reconcileNewReplicaSet</code>&#x5BF9; newRS &#x4E0D;&#x65AD;&#x6269;&#x5BB9;&#xFF0C;&#x8C03;&#x7528; <code>reconcileOldReplicaSets</code> &#x5BF9; oldRS &#x4E0D;&#x65AD;&#x7F29;&#x5BB9;&#xFF0C;&#x6700;&#x7EC8;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x72B6;&#x6001;&#xFF0C;&#x5E76;&#x4E14;&#x5728;&#x6574;&#x4E2A;&#x5347;&#x7EA7;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x90FD;&#x4E25;&#x683C;&#x9075;&#x5B88; <code>maxSurge</code> &#x548C; <code>maxUnavailable</code> &#x7684;&#x7EA6;&#x675F;&#x3002;</p>
+<p>&#x4E0D;&#x8BBA;&#x662F;&#x5728; scale up &#x6216;&#x8005; scale down &#x4E2D;&#x90FD;&#x662F;&#x8C03;&#x7528; <code>scaleReplicaSetAndRecordEvent</code> &#x6267;&#x884C;&#xFF0C;&#x800C; <code>scaleReplicaSetAndRecordEvent</code> &#x53C8;&#x4F1A;&#x8C03;&#x7528; <code>scaleReplicaSet</code> &#x6765;&#x6267;&#x884C;&#xFF0C;&#x4E24;&#x4E2A;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x66F4;&#x65B0; rs &#x7684; annotations &#x4EE5;&#x53CA; rs.Spec.Replicas&#x3002;</p>
+<pre class="language-"><code>scale down
+
+    or          --&gt; dc.scaleReplicaSetAndRecordEvent() --&gt; dc.scaleReplicaSet()
+
+scale up
+</code></pre><h5 id="&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x793A;&#x4F8B;"><a name="&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x793A;&#x4F8B;" class="anchor-navigation-ex-anchor" href="#&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x793A;&#x4F8B;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x793A;&#x4F8B;</h5>
+<p>&#x4E0A;&#x9762;&#x7684;&#x4EE3;&#x7801;&#x770B;&#x8D77;&#x6765;&#x975E;&#x5E38;&#x7684;&#x67AF;&#x71E5;&#xFF0C;&#x53EA;&#x770B;&#x6E90;&#x7801;&#x5176;&#x5B9E;&#x5E76;&#x4E0D;&#x80FD;&#x5B8C;&#x5168;&#x7406;&#x89E3;&#x6574;&#x4E2A;&#x6EDA;&#x52A8;&#x5347;&#x7EA7;&#x7684;&#x6D41;&#x7A0B;&#xFF0C;&#x6B64;&#x5904;&#x4E3E;&#x4E2A;&#x4F8B;&#x5B50;&#x8BF4;&#x660E;&#x4E00;&#x4E0B;&#xFF1A;</p>
+<p>&#x521B;&#x5EFA;&#x4E00;&#x4E2A; nginx-deployment &#x6709;10 &#x4E2A;&#x526F;&#x672C;&#xFF0C;&#x7B49; 10 &#x4E2A; pod &#x90FD;&#x542F;&#x52A8;&#x5B8C;&#x6210;&#x540E;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>$ kubectl create -f nginx-dep.yaml
+
+$ kubectl get rs
+NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-68b649bd8b   10        10        10      72m
+</code></pre><p> &#x7136;&#x540E;&#x66F4;&#x65B0; nginx-deployment  &#x7684;&#x955C;&#x50CF;&#xFF0C;&#x9ED8;&#x8BA4;&#x4F7F;&#x7528;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x7684;&#x65B9;&#x5F0F;&#xFF1A;</p>
+<pre class="language-"><code>$ kubectl set image deploy/nginx-deployment nginx-deployment=nginx:1.9.3
+</code></pre><p>&#x6B64;&#x65F6;&#x901A;&#x8FC7;&#x6E90;&#x7801;&#x53EF;&#x77E5;&#x4F1A;&#x8BA1;&#x7B97;&#x8BE5;  deployment &#x7684; maxSurge&#x3001;maxUnavailable &#x548C; maxAvailable &#x7684;&#x503C;&#xFF0C;&#x5206;&#x522B;&#x4E3A; 3&#x3001;2 &#x548C; 13&#xFF0C;&#x8BA1;&#x7B97;&#x65B9;&#x6CD5;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>// &#x5411;&#x4E0A;&#x53D6;&#x6574;&#x4E3A; 3
+maxSurge = replicas * deployment.spec.strategy.rollingUpdate.maxSurge(25%)= 2.5
+
+// &#x5411;&#x4E0B;&#x53D6;&#x6574;&#x4E3A; 2
+maxUnavailable = replicas * deployment.spec.strategy.rollingUpdate.maxUnavailable(25%)= 2.5
+
+maxAvailable = replicas(10) + MaxSurge&#xFF08;3&#xFF09; = 13
+</code></pre><p>&#x5982;&#x4E0A;&#x9762;&#x4EE3;&#x7801;&#x6240;&#x8BF4;&#xFF0C;&#x66F4;&#x65B0;&#x65F6;&#x9996;&#x5148;&#x521B;&#x5EFA; newRS&#xFF0C;&#x7136;&#x540E;&#x4E3A;&#x5176;&#x8BBE;&#x5B9A; replicas&#xFF0C;&#x8BA1;&#x7B97; newRS replicas &#x503C;&#x7684;&#x65B9;&#x6CD5;&#x5728;<code>NewRSNewReplicas</code> &#x4E2D;&#xFF0C;&#x6B64;&#x65F6;&#x8BA1;&#x7B97;&#x51FA; replicas &#x7ED3;&#x679C;&#x4E3A; 3&#xFF0C;&#x7136;&#x540E;&#x66F4;&#x65B0; deployment &#x7684; annotation&#xFF0C;&#x521B;&#x5EFA; events&#xFF0C;&#x672C;&#x6B21; syncLoop &#x5B8C;&#x6210;&#x3002;&#x7B49;&#x5230;&#x4E0B;&#x4E00;&#x4E2A; syncLoop &#x65F6;&#xFF0C;&#x6240;&#x6709; rs &#x7684; replicas &#x5DF2;&#x7ECF;&#x8FBE;&#x5230;&#x6700;&#x5927;&#x503C; 10 + 3 = 13&#xFF0C;&#x6B64;&#x65F6;&#x9700;&#x8981; scale down oldRSs &#x4E86;&#xFF0C;scale down &#x7684;&#x6570;&#x91CF;&#x662F;&#x901A;&#x8FC7;&#x4EE5;&#x4E0B;&#x516C;&#x5F0F;&#x5F97;&#x5230;&#x7684;&#xFF1A;</p>
+<pre class="language-"><code>// 13 = 10 + 3
+allPodsCount := deploymentutil.GetReplicaCountForReplicaSets(allRSs)
+
+// 8 = 10 - 2
+minAvailable := *(deployment.Spec.Replicas) - maxUnavailable
+
+// ???
+newRSUnavailablePodCount := *(newRS.Spec.Replicas) - newRS.Status.AvailableReplicas
+
+// 13 - 8 - ???
+maxScaledDown := allPodsCount - minAvailable - newRSUnavailablePodCount
+</code></pre><p>allPodsCount &#x662F; allRSs &#x7684; replicas &#x4E4B;&#x548C;&#x6B64;&#x65F6;&#x4E3A; 13&#xFF0C;minAvailable &#x4E3A; 8 &#xFF0C;newRSUnavailablePodCount &#x6B64;&#x65F6;&#x4E0D;&#x786E;&#x5B9A;&#xFF0C;&#x4F46;&#x662F;&#x503C;&#x5728; [0,3] &#x4E2D;&#xFF0C;&#x6B64;&#x65F6;&#x5047;&#x8BBE; newRS &#x7684;&#x4E09;&#x4E2A; pod &#x8FD8;&#x5904;&#x4E8E; containerCreating &#x72B6;&#x6001;&#xFF0C;&#x5219;newRSUnavailablePodCount &#x4E3A; 3&#xFF0C;&#x6839;&#x636E;&#x4EE5;&#x4E0A;&#x516C;&#x5F0F;&#x8BA1;&#x7B97;&#x6240;&#x77E5; maxScaledDown &#x4E3A; 2&#xFF0C;&#x5219; oldRS &#x9700;&#x8981; scale down 2 &#x4E2A; pod&#xFF0C;&#x5176; replicas &#x9700;&#x8981;&#x6539;&#x4E3A; 8&#xFF0C;&#x6B64;&#x65F6;&#x8BE5; syncLoop &#x5B8C;&#x6210;&#x3002;&#x4E0B;&#x4E00;&#x4E2A; syncLoop &#x65F6;&#x5728; scaleUp &#x5904;&#x8BA1;&#x7B97;&#x5F97;&#x77E5; scaleUpCount = maxTotalPods - currentPodCount&#xFF0C;13-3-8=2&#xFF0C; &#x6B64;&#x65F6; newRS &#x9700;&#x8981;&#x66F4;&#x65B0; replicase &#x589E;&#x52A0; 2&#x3002;&#x4EE5;&#x6B64;&#x8F6E;&#x8BE2;&#x76F4;&#x5230; newRS replicas &#x6269;&#x5BB9;&#x5230; 10&#xFF0C;oldRSs replicas &#x7F29;&#x5BB9;&#x81F3; 0&#x3002;</p>
+<p>&#x5BF9;&#x4E8E;&#x4E0A;&#x9762;&#x7684;&#x793A;&#x4F8B;&#xFF0C;&#x53EF;&#x4EE5;&#x4F7F;&#x7528; <code>kubectl get rs -w</code> &#x8FDB;&#x884C;&#x89C2;&#x5BDF;&#xFF0C;&#x4EE5;&#x4E0B;&#x4E3A;&#x8F93;&#x51FA;&#xFF1A;</p>
+<pre class="language-"><code>$ kubectl get  rs -w
+NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-68b649bd8b   10        0         0       0s
+nginx-deployment-68b649bd8b   10        10        0       0s
+nginx-deployment-68b649bd8b   10        10        10      13s
+
+nginx-deployment-689bff574f   3         0         0       0s
+
+nginx-deployment-68b649bd8b   8         10        10      14s
+
+nginx-deployment-689bff574f   3         0         0       0s
+nginx-deployment-689bff574f   3         3         3       1s
+
+nginx-deployment-689bff574f   5         3         0       0s
+
+nginx-deployment-68b649bd8b   8         8         8       14s
+
+nginx-deployment-689bff574f   5         3         0       0s
+nginx-deployment-689bff574f   5         5         0       0s
+
+nginx-deployment-689bff574f   5         5         5       6s
+......
+</code></pre><h4 id="&#x91CD;&#x65B0;&#x521B;&#x5EFA;"><a name="&#x91CD;&#x65B0;&#x521B;&#x5EFA;" class="anchor-navigation-ex-anchor" href="#&#x91CD;&#x65B0;&#x521B;&#x5EFA;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x91CD;&#x65B0;&#x521B;&#x5EFA;</h4>
+<p>deployment &#x7684;&#x53E6;&#x4E00;&#x79CD;&#x66F4;&#x65B0;&#x7B56;&#x7565;<code>recreate</code> &#x5C31;&#x6BD4;&#x8F83;&#x7B80;&#x5355;&#x7C97;&#x66B4;&#x4E86;&#xFF0C;&#x5F53;&#x66F4;&#x65B0;&#x7B56;&#x7565;&#x4E3A; <code>Recreate</code> &#x65F6;&#xFF0C;deployment &#x5148;&#x5C06;&#x6240;&#x6709;&#x65E7;&#x7684; rs &#x7F29;&#x5BB9;&#x5230; 0&#xFF0C;&#x5E76;&#x7B49;&#x5F85;&#x6240;&#x6709; pod &#x90FD;&#x5220;&#x9664;&#x540E;&#xFF0C;&#x518D;&#x521B;&#x5EFA;&#x65B0;&#x7684; rs&#x3002;</p>
+<pre class="language-"><code>func (dc *DeploymentController) syncDeployment(key string) error {
+    ......
+    switch d.Spec.Strategy.Type {
+    case apps.RecreateDeploymentStrategyType:
+        return dc.rolloutRecreate(d, rsList, podMap)
+    case apps.RollingUpdateDeploymentStrategyType:
+        return dc.rolloutRolling(d, rsList)
+    }
+    ......
+}
+</code></pre><p><code>rolloutRecreate</code> &#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x83B7;&#x53D6; newRS &#x548C; oldRSs&#xFF1B;</li>
+<li>2&#x3001;&#x7F29;&#x5BB9; oldRS replicas &#x81F3; 0&#xFF1B;</li>
+<li>3&#x3001;&#x521B;&#x5EFA; newRS&#xFF1B;</li>
+<li>4&#x3001;&#x6269;&#x5BB9; newRS&#xFF1B;</li>
+<li>5&#x3001;&#x540C;&#x6B65; deployment &#x72B6;&#x6001;&#xFF1B;</li>
+</ul>
+<pre class="language-"><code>func (dc *DeploymentController) rolloutRecreate(......) error {
+    // 1&#x3001;&#x83B7;&#x53D6;&#x6240;&#x6709; rs
+    newRS, oldRSs, err := dc.getAllReplicaSetsAndSyncRevision(d, rsList, false)
+    if err != nil {
+        return err
+    }
+    allRSs := append(oldRSs, newRS)
+    activeOldRSs := controller.FilterActiveReplicaSets(oldRSs)
+
+    // 2&#x3001;&#x7F29;&#x5BB9; oldRS
+    scaledDown, err := dc.scaleDownOldReplicaSetsForRecreate(activeOldRSs, d)
+    if err != nil {
+        return err
+    }
+    if scaledDown {
+        return dc.syncRolloutStatus(allRSs, newRS, d)
+    }
+
+    if oldPodsRunning(newRS, oldRSs, podMap) {
+        return dc.syncRolloutStatus(allRSs, newRS, d)
+    }
+
+    // 3&#x3001;&#x521B;&#x5EFA; newRS
+    if newRS == nil {
+        newRS, oldRSs, err = dc.getAllReplicaSetsAndSyncRevision(d, rsList, true)
+        if err != nil {
+            return err
+        }
+        allRSs = append(oldRSs, newRS)
+    }
+    // 4&#x3001;&#x6269;&#x5BB9; newRS
+    if _, err := dc.scaleUpNewReplicaSetForRecreate(newRS, d); err != nil {
+        return err
+    }
+
+    // 5&#x3001;&#x6E05;&#x7406;&#x8FC7;&#x671F;&#x7684; RS
+    if util.DeploymentComplete(d, &amp;d.Status) {
+        if err := dc.cleanupDeployment(oldRSs, d); err != nil {
+            return err
+        }
+    }
+
+    // 6&#x3001;&#x540C;&#x6B65; deployment &#x72B6;&#x6001;
+    return dc.syncRolloutStatus(allRSs, newRS, d)
+}
+</code></pre><p>&#x5224;&#x65AD; deployment &#x662F;&#x5426;&#x5B58;&#x5728; newRS &#x662F;&#x5728; <code>deploymentutil.FindNewReplicaSet</code> &#x65B9;&#x6CD5;&#x4E2D;&#x8FDB;&#x884C;&#x5224;&#x65AD;&#x7684;&#xFF0C;&#x5BF9;&#x6BD4; <code>rs.Spec.Template</code> &#x548C; <code>deployment.Spec.Template</code> &#x4E2D;&#x5B57;&#x6BB5;&#x7684; hash &#x503C;&#x662F;&#x5426;&#x76F8;&#x7B49;&#x4EE5;&#x6B64;&#x8FDB;&#x884C;&#x786E;&#x5B9A;&#xFF0C;&#x5728;&#x4E0A;&#x9762;&#x7684;&#x51E0;&#x4E2A;&#x64CD;&#x4F5C;&#x4E2D;&#x4E5F;&#x591A;&#x6B21;&#x7528;&#x5230;&#x4E86;&#x8BE5;&#x65B9;&#x6CD5;&#xFF0C;&#x6B64;&#x5904;&#x8BF4;&#x660E;&#x4E00;&#x4E0B;&#x3002;</p>
+<pre class="language-"><code>dc.getAllReplicaSetsAndSyncRevision() --&gt; dc.getNewReplicaSet() --&gt; deploymentutil.FindNewReplicaSet() --&gt; EqualIgnoreHash()
+</code></pre><p><code>EqualIgnoreHash</code> &#x65B9;&#x6CD5;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/deployment/util/deployment_util.go:633</code></p>
+<pre class="language-"><code>func EqualIgnoreHash(template1, template2 *v1.PodTemplateSpec) bool {
+    t1Copy := template1.DeepCopy()
+    t2Copy := template2.DeepCopy()
+    // Remove hash labels from template.Labels before comparing
+    delete(t1Copy.Labels, apps.DefaultDeploymentUniqueLabelKey)
+    delete(t2Copy.Labels, apps.DefaultDeploymentUniqueLabelKey)
+    return apiequality.Semantic.DeepEqual(t1Copy, t2Copy)
+}
+</code></pre><p>&#x4EE5;&#x4E0A;&#x5C31;&#x662F;&#x5BF9; deployment recreate &#x66F4;&#x65B0;&#x7B56;&#x7565;&#x6E90;&#x7801;&#x7684;&#x5206;&#x6790;&#xFF0C;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;&#x8BE5;&#x7B56;&#x7565;&#x4F1A;&#x5BFC;&#x81F4;&#x670D;&#x52A1;&#x4E00;&#x6BB5;&#x65F6;&#x95F4;&#x4E0D;&#x53EF;&#x7528;&#xFF0C;&#x5F53; oldRS &#x7F29;&#x5BB9;&#x4E3A; 0&#xFF0C;newRS &#x624D;&#x5F00;&#x59CB;&#x521B;&#x5EFA;&#xFF0C;&#x6B64;&#x65F6;&#x65E0;&#x53EF;&#x7528;&#x7684; pod&#xFF0C;&#x6240;&#x4EE5;&#x5728;&#x751F;&#x4EA7;&#x73AF;&#x5883;&#x4E2D;&#x8BF7;&#x614E;&#x7528;&#x8BE5;&#x66F4;&#x65B0;&#x7B56;&#x7565;&#x3002;</p>
+<h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x4ECB;&#x7ECD;&#x4E86; deployment &#x7684;&#x57FA;&#x672C;&#x529F;&#x80FD;&#x4EE5;&#x53CA;&#x4ECE;&#x6E90;&#x7801;&#x89D2;&#x5EA6;&#x5206;&#x6790;&#x5176;&#x5B9E;&#x73B0;&#xFF0C;deployment &#x4E3B;&#x8981;&#x6709;&#x66F4;&#x65B0;&#x3001;&#x56DE;&#x6EDA;&#x3001;&#x6269;&#x7F29;&#x5BB9;&#x3001;&#x6682;&#x505C;&#x4E0E;&#x6062;&#x590D;&#x51E0;&#x4E2A;&#x4E3B;&#x8981;&#x7684;&#x529F;&#x80FD;&#x3002;&#x4ECE;&#x6E90;&#x7801;&#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x5230; deployment &#x5728;&#x5347;&#x7EA7;&#x8FC7;&#x7A0B;&#x4E2D;&#x4E00;&#x76F4;&#x4F1A;&#x4FEE;&#x6539; rs &#x7684; replicas &#x4EE5;&#x53CA; annotation &#x6700;&#x7EC8;&#x8FBE;&#x5230;&#x6700;&#x7EC8;&#x671F;&#x671B;&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x4F46;&#x662F;&#x6574;&#x4E2A;&#x8FC7;&#x7A0B;&#x4E2D;&#x5E76;&#x6CA1;&#x6709;&#x4F53;&#x73B0;&#x51FA; pod &#x7684;&#x521B;&#x5EFA;&#x4E0E;&#x5220;&#x9664;&#xFF0C;&#x4ECE;&#x5F00;&#x5934;&#x4E09;&#x8005;&#x7684;&#x5173;&#x7CFB;&#x56FE;&#x4E2D;&#x53EF;&#x77E5;&#x662F; rs &#x63A7;&#x5236; pod &#x7684;&#x53D8;&#x5316;&#xFF0C;&#x5728;&#x4E0B;&#x7BC7;&#x6587;&#x7AE0;&#x4E2D;&#x4F1A;&#x7EE7;&#x7EED;&#x4ECB;&#x7ECD; rs &#x662F;&#x5982;&#x4F55;&#x63A7;&#x5236; pod &#x7684;&#x53D8;&#x5316;&#x3002;</p>
+<p>&#x53C2;&#x8003;&#xFF1A;
+<a href="https://my.oschina.net/u/3797264/blog/2966086" target="_blank">https://my.oschina.net/u/3797264/blog/2966086</a>
+<a href="https://draveness.me/kubernetes-deployment" target="_blank">https://draveness.me/kubernetes-deployment</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2019-12-02 17:46:31
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: kubernetes">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="kube_scheduler_process.html" class="navigation navigation-next " aria-label="Next page: kube-scheduler 源码分析">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"deployment controller 源码分析","date":"2019-11-28T14:30:30.000Z","tags":["kube-controller-manager","deployment controller"],"type":"deployment controller","level":"1.2.1","depth":2,"next":{"title":"kube-scheduler 源码分析","level":"1.2.2","depth":2,"path":"kubernetes/kube_scheduler_process.md","ref":"kubernetes/kube_scheduler_process.md","articles":[]},"previous":{"title":"kubernetes","level":"1.2","depth":1,"path":"kubernetes/README.md","ref":"kubernetes/README.md","articles":[{"title":"deployment controller 源码分析","level":"1.2.1","depth":2,"path":"kubernetes/deployment_controller.md","ref":"kubernetes/deployment_controller.md","articles":[]},{"title":"kube-scheduler 源码分析","level":"1.2.2","depth":2,"path":"kubernetes/kube_scheduler_process.md","ref":"kubernetes/kube_scheduler_process.md","articles":[]},{"title":"kube-scheduler predicates 与 priorities 调度算法源码分析","level":"1.2.3","depth":2,"path":"kubernetes/kube_scheduler_algorithm.md","ref":"kubernetes/kube_scheduler_algorithm.md","articles":[]},{"title":"kube-scheduler 优先级与抢占机制源码分析","level":"1.2.4","depth":2,"path":"kubernetes/kube_scheduler_preempt.md","ref":"kubernetes/kube_scheduler_preempt.md","articles":[]},{"title":"kubernetes service 原理解析","level":"1.2.5","depth":2,"path":"kubernetes/k8s_service_theory.md","ref":"kubernetes/k8s_service_theory.md","articles":[]},{"title":"kubelet 架构浅析","level":"1.2.6","depth":2,"path":"kubernetes/kubelet-modules.md","ref":"kubernetes/kubelet-modules.md","articles":[]},{"title":"kubelet 启动流程分析","level":"1.2.7","depth":2,"path":"kubernetes/kubelet_init.md","ref":"kubernetes/kubelet_init.md","articles":[]},{"title":"kubelet 创建 pod 的流程","level":"1.2.8","depth":2,"path":"kubernetes/kubelet_create_pod.md","ref":"kubernetes/kubelet_create_pod.md","articles":[]},{"title":"kube-proxy 源码分析","level":"1.2.9","depth":2,"path":"kubernetes/kube_proxy_process.md","ref":"kubernetes/kube_proxy_process.md","articles":[]},{"title":"kube-proxy iptables 模式源码分析","level":"1.2.10","depth":2,"path":"kubernetes/kube_proxy_iptables.md","ref":"kubernetes/kube_proxy_iptables.md","articles":[]},{"title":"kube-proxy ipvs 模式源码分析","level":"1.2.11","depth":2,"path":"kubernetes/kube_proxy_ipvs.md","ref":"kubernetes/kube_proxy_ipvs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/deployment_controller.md","mtime":"2019-12-02T09:46:31.073Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-12-02T12:10:28.265Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+
