@@ -1,0 +1,2 @@
+--ignore-file=match:/^yarn\.lock$/
+--ignore-dir=dist

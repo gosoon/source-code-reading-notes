@@ -1,0 +1,1087 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>kubelet 启动流程分析 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="kubelet_create_pod.html" />
+    
+    
+    <link rel="prev" href="kubelet-modules.html" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.7" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >kubelet 启动流程分析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <p>&#x4E0A;&#x7BC7;&#x6587;&#x7AE0;&#xFF08;<a href="https://blog.tianfeiyu.com/2018/12/16/kubelet-modules/" target="_blank">kubelet &#x67B6;&#x6784;&#x6D45;&#x6790;</a> &#xFF09;&#x5DF2;&#x7ECF;&#x4ECB;&#x7ECD;&#x8FC7; kubelet &#x5728;&#x6574;&#x4E2A;&#x96C6;&#x7FA4;&#x67B6;&#x6784;&#x4E2D;&#x7684;&#x529F;&#x80FD;&#x4EE5;&#x53CA;&#x81EA;&#x8EAB;&#x5404;&#x6A21;&#x5757;&#x7684;&#x7528;&#x9014;&#xFF0C;&#x672C;&#x7BC7;&#x6587;&#x7AE0;&#x4E3B;&#x8981;&#x4ECB;&#x7ECD; kubelet &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x3002;</p>
+<blockquote>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A; v1.12 </p>
+</blockquote>
+<h2 id="kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><a name="kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;" class="anchor-navigation-ex-anchor" href="#kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><i class="fa fa-link" aria-hidden="true"></i></a>kubelet &#x542F;&#x52A8;&#x6D41;&#x7A0B;</h2>
+<p>kubelet &#x4EE3;&#x7801;&#x7ED3;&#x6784;:</p>
+<pre class="language-"><code>&#x279C;  kubernetes git:(release-1.12) &#x2717; tree cmd/kubelet
+cmd/kubelet
+&#x251C;&#x2500;&#x2500; BUILD
+&#x251C;&#x2500;&#x2500; OWNERS
+&#x251C;&#x2500;&#x2500; app
+&#x2502;   &#x251C;&#x2500;&#x2500; BUILD
+&#x2502;   &#x251C;&#x2500;&#x2500; OWNERS
+&#x2502;   &#x251C;&#x2500;&#x2500; auth.go
+&#x2502;   &#x251C;&#x2500;&#x2500; init_others.go
+&#x2502;   &#x251C;&#x2500;&#x2500; init_windows.go
+&#x2502;   &#x251C;&#x2500;&#x2500; options
+&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; BUILD
+&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; container_runtime.go
+&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; globalflags.go
+&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; globalflags_linux.go
+&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; globalflags_other.go
+&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; options.go
+&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; options_test.go
+&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; osflags_others.go
+&#x2502;   &#x2502;   &#x2514;&#x2500;&#x2500; osflags_windows.go
+&#x2502;   &#x251C;&#x2500;&#x2500; plugins.go
+&#x2502;   &#x251C;&#x2500;&#x2500; server.go
+&#x2502;   &#x251C;&#x2500;&#x2500; server_linux.go
+&#x2502;   &#x251C;&#x2500;&#x2500; server_test.go
+&#x2502;   &#x2514;&#x2500;&#x2500; server_unsupported.go
+&#x2514;&#x2500;&#x2500; kubelet.go
+
+2 directories, 22 files
+</code></pre><p><img src="http://cdn.tianfeiyu.com/kubelet-3.png" alt="kubelet &#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x65F6;&#x5E8F;&#x56FE;"></p>
+<h4 id="1&#x3001;kubelet-&#x5165;&#x53E3;&#x51FD;&#x6570;-main&#xFF08;cmdkubeletkubeletgo&#xFF09;"><a name="1&#x3001;kubelet-&#x5165;&#x53E3;&#x51FD;&#x6570;-main&#xFF08;cmdkubeletkubeletgo&#xFF09;" class="anchor-navigation-ex-anchor" href="#1&#x3001;kubelet-&#x5165;&#x53E3;&#x51FD;&#x6570;-main&#xFF08;cmdkubeletkubeletgo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>1&#x3001;kubelet &#x5165;&#x53E3;&#x51FD;&#x6570; main&#xFF08;cmd/kubelet/kubelet.go&#xFF09;</h4>
+<pre class="language-"><code>func main() {
+    rand.Seed(time.Now().UTC().UnixNano())
+
+    command := app.NewKubeletCommand(server.SetupSignalHandler())
+    logs.InitLogs()
+    defer logs.FlushLogs()
+
+    if err := command.Execute(); err != nil {
+        fmt.Fprintf(os.Stderr, &quot;%v\n&quot;, err)
+        os.Exit(1)
+    }
+}
+</code></pre><h4 id="2&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x914D;&#x7F6E;&#xFF08;cmdkubeletappservergo&#xFF09;"><a name="2&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x914D;&#x7F6E;&#xFF08;cmdkubeletappservergo&#xFF09;" class="anchor-navigation-ex-anchor" href="#2&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x914D;&#x7F6E;&#xFF08;cmdkubeletappservergo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>2&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x914D;&#x7F6E;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</h4>
+<p>NewKubeletCommand() &#x51FD;&#x6570;&#x4E3B;&#x8981;&#x8D1F;&#x8D23;&#x83B7;&#x53D6;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x4E2D;&#x7684;&#x53C2;&#x6570;&#xFF0C;&#x6821;&#x9A8C;&#x53C2;&#x6570;&#x4EE5;&#x53CA;&#x4E3A;&#x53C2;&#x6570;&#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;&#x3002;  </p>
+<pre class="language-"><code>// NewKubeletCommand creates a *cobra.Command object with default parameters
+func NewKubeletCommand(stopCh &lt;-chan struct{}) *cobra.Command {
+    cleanFlagSet := pflag.NewFlagSet(componentKubelet, pflag.ContinueOnError)
+    cleanFlagSet.SetNormalizeFunc(flag.WordSepNormalizeFunc)
+    // Kubelet&#x914D;&#x7F6E;&#x5206;&#x4E24;&#x90E8;&#x5206;:
+    // KubeletFlag: &#x6307;&#x90A3;&#x4E9B;&#x4E0D;&#x5141;&#x8BB8;&#x5728; kubelet &#x8FD0;&#x884C;&#x65F6;&#x8FDB;&#x884C;&#x4FEE;&#x6539;&#x7684;&#x914D;&#x7F6E;&#x96C6;&#xFF0C;&#x6216;&#x8005;&#x4E0D;&#x80FD;&#x5728;&#x96C6;&#x7FA4;&#x4E2D;&#x5404;&#x4E2A; Nodes &#x4E4B;&#x95F4;&#x5171;&#x4EAB;&#x7684;&#x914D;&#x7F6E;&#x96C6;&#x3002;
+    // KubeletConfiguration: &#x6307;&#x53EF;&#x4EE5;&#x5728;&#x96C6;&#x7FA4;&#x4E2D;&#x5404;&#x4E2A;Nodes&#x4E4B;&#x95F4;&#x5171;&#x4EAB;&#x7684;&#x914D;&#x7F6E;&#x96C6;&#xFF0C;&#x53EF;&#x4EE5;&#x8FDB;&#x884C;&#x52A8;&#x6001;&#x914D;&#x7F6E;&#x3002;
+    kubeletFlags := options.NewKubeletFlags()
+    kubeletConfig, err := options.NewKubeletConfiguration()
+    ...
+    cmd := &amp;cobra.Command{
+        ...
+        Run: func(cmd *cobra.Command, args []string) {
+            // &#x8BFB;&#x53D6; kubelet &#x914D;&#x7F6E;&#x6587;&#x4EF6;
+            if configFile := kubeletFlags.KubeletConfigFile; len(configFile) &gt; 0 {
+                kubeletConfig, err = loadConfigFile(configFile)
+                if err != nil {
+                    glog.Fatal(err)
+                }
+                ...
+            }
+            // &#x6821;&#x9A8C; kubelet &#x53C2;&#x6570;
+            if err := kubeletconfigvalidation.ValidateKubeletConfiguration(kubeletConfig); err != nil {
+                glog.Fatal(err)
+            }
+            ...
+            // &#x6B64;&#x5904;&#x521D;&#x59CB;&#x5316;&#x4E86; kubeletDeps
+            kubeletDeps, err := UnsecuredDependencies(kubeletServer)
+            if err != nil {
+                glog.Fatal(err)
+            }
+            ...
+            // &#x542F;&#x52A8;&#x7A0B;&#x5E8F;
+            if err := Run(kubeletServer, kubeletDeps, stopCh); err != nil {
+                glog.Fatal(err)
+            }
+        },
+    }
+    ...
+    return cmd
+}
+</code></pre><p>kubeletDeps &#x5305;&#x542B; kubelet &#x8FD0;&#x884C;&#x6240;&#x5FC5;&#x987B;&#x7684;&#x914D;&#x7F6E;&#xFF0C;&#x662F;&#x4E3A;&#x4E86;&#x5B9E;&#x73B0; dependency injection&#xFF0C;&#x5176;&#x76EE;&#x7684;&#x662F;&#x4E3A;&#x4E86;&#x628A; kubelet &#x4F9D;&#x8D56;&#x7684;&#x7EC4;&#x4EF6;&#x5BF9;&#x8C61;&#x4F5C;&#x4E3A;&#x53C2;&#x6570;&#x4F20;&#x8FDB;&#x6765;&#xFF0C;&#x8FD9;&#x6837;&#x53EF;&#x4EE5;&#x63A7;&#x5236; kubelet &#x7684;&#x884C;&#x4E3A;&#x3002;&#x4E3B;&#x8981;&#x5305;&#x62EC;&#x76D1;&#x63A7;&#x529F;&#x80FD;&#xFF08;cadvisor&#xFF09;&#xFF0C;cgroup &#x7BA1;&#x7406;&#x529F;&#x80FD;&#xFF08;containerManager&#xFF09;&#x7B49;&#x3002;</p>
+<p>NewKubeletCommand() &#x4F1A;&#x8C03;&#x7528; Run() &#x51FD;&#x6570;&#xFF0C;Run() &#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528; run() &#x51FD;&#x6570;&#x8FDB;&#x884C;&#x4E00;&#x4E9B;&#x51C6;&#x5907;&#x4E8B;&#x9879;&#x3002;</p>
+<h4 id="3&#x3001;&#x521B;&#x5EFA;&#x548C;-apiserver-&#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmdkubeletappservergo&#xFF09;"><a name="3&#x3001;&#x521B;&#x5EFA;&#x548C;-apiserver-&#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmdkubeletappservergo&#xFF09;" class="anchor-navigation-ex-anchor" href="#3&#x3001;&#x521B;&#x5EFA;&#x548C;-apiserver-&#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmdkubeletappservergo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>3&#x3001;&#x521B;&#x5EFA;&#x548C; apiserver &#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</h4>
+<p>run() &#x51FD;&#x6570;&#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x521B;&#x5EFA; kubeClient&#xFF0C;evnetClient &#x7528;&#x6765;&#x548C; apiserver &#x901A;&#x4FE1;&#x3002;&#x521B;&#x5EFA; heartbeatClient &#x5411; apiserver &#x4E0A;&#x62A5;&#x5FC3;&#x8DF3;&#x72B6;&#x6001;&#x3002;</li>
+<li>2&#x3001;&#x4E3A; kubeDeps &#x8BBE;&#x5B9A;&#x4E00;&#x4E9B;&#x9ED8;&#x8BA4;&#x503C;&#x3002;</li>
+<li>3&#x3001;&#x542F;&#x52A8;&#x76D1;&#x542C; Healthz &#x7AEF;&#x53E3;&#x7684; http server&#xFF0C;&#x9ED8;&#x8BA4;&#x7AEF;&#x53E3;&#x662F; 10248&#x3002;</li>
+</ul>
+<pre class="language-"><code>func run(s *options.KubeletServer, kubeDeps *kubelet.Dependencies, stopCh &lt;-chan struct{}) (err error) {
+    ...
+    // &#x5224;&#x65AD; kubelet &#x7684;&#x542F;&#x52A8;&#x6A21;&#x5F0F;
+    if standaloneMode {
+    ...
+    } else if kubeDeps.KubeClient == nil || kubeDeps.EventClient == nil || kubeDeps.HeartbeatClient == nil || kubeDeps.DynamicKubeClient == nil {
+        ...
+        // &#x521B;&#x5EFA;&#x5BF9;&#x8C61; kubeClient
+        kubeClient, err = clientset.NewForConfig(clientConfig)
+
+        ...
+        // &#x521B;&#x5EFA;&#x5BF9;&#x8C61; evnetClient
+        eventClient, err = v1core.NewForConfig(&amp;eventClientConfig)
+        ...
+        // heartbeatClient &#x4E0A;&#x62A5;&#x72B6;&#x6001;
+        heartbeatClient, err = clientset.NewForConfig(&amp;heartbeatClientConfig)
+        ...
+    }
+
+    // &#x4E3A; kubeDeps &#x8BBE;&#x5B9A;&#x4E00;&#x4E9B;&#x9ED8;&#x8BA4;&#x503C;
+    if kubeDeps.Auth == nil {
+            auth, err := BuildAuth(nodeName, kubeDeps.KubeClient, s.KubeletConfiguration)
+            if err != nil {
+                return err
+            }
+            kubeDeps.Auth = auth
+        }
+
+        if kubeDeps.CAdvisorInterface == nil {
+            imageFsInfoProvider := cadvisor.NewImageFsInfoProvider(s.ContainerRuntime, s.RemoteRuntimeEndpoint)
+            kubeDeps.CAdvisorInterface, err = cadvisor.New(imageFsInfoProvider, s.RootDirectory, cadvisor.UsingLegacyCadvisorStats(s.ContainerRuntime, s.RemoteRuntimeEndpoint))
+            if err != nil {
+                return err
+            }
+        }
+    }
+
+    // 
+    if err := RunKubelet(s, kubeDeps, s.RunOnce); err != nil {
+            return err
+    }
+    ...
+    // &#x542F;&#x52A8;&#x76D1;&#x542C; Healthz &#x7AEF;&#x53E3;&#x7684; http server  
+    if s.HealthzPort &gt; 0 {
+        healthz.DefaultHealthz()
+        go wait.Until(func() {
+            err := http.ListenAndServe(net.JoinHostPort(s.HealthzBindAddress, strconv.Itoa(int(s.HealthzPort))), nil)
+            if err != nil {
+                glog.Errorf(&quot;Starting health server failed: %v&quot;, err)
+            }
+        }, 5*time.Second, wait.NeverStop)
+    }
+    ...
+}
+</code></pre><p>kubelet &#x5BF9; pod &#x8D44;&#x6E90;&#x7684;&#x83B7;&#x53D6;&#x65B9;&#x5F0F;&#x6709;&#x4E09;&#x79CD;&#xFF1A;&#x7B2C;&#x4E00;&#x79CD;&#x662F;&#x901A;&#x8FC7;&#x6587;&#x4EF6;&#x83B7;&#x5F97;&#xFF0C;&#x6587;&#x4EF6;&#x4E00;&#x822C;&#x653E;&#x5728; /etc/kubernetes/manifests &#x76EE;&#x5F55;&#x4E0B;&#x9762;&#xFF1B;&#x7B2C;&#x4E8C;&#x79CD;&#x4E5F;&#x662F;&#x901A;&#x8FC7;&#x6587;&#x4EF6;&#x8FC7;&#x5F97;&#xFF0C;&#x53EA;&#x4E0D;&#x8FC7;&#x6587;&#x4EF6;&#x662F;&#x901A;&#x8FC7; URL &#x83B7;&#x53D6;&#x7684;&#xFF1B;&#x7B2C;&#x4E09;&#x79CD;&#x662F;&#x901A;&#x8FC7; watch kube-apiserver &#x83B7;&#x53D6;&#x3002;&#x5176;&#x4E2D;&#x524D;&#x4E24;&#x79CD;&#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;&#x6211;&#x4EEC;&#x79F0; kubelet &#x8FD0;&#x884C;&#x5728; standalone &#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;&#x8FD0;&#x884C;&#x5728; standalone &#x6A21;&#x5F0F;&#x4E0B;&#x7684; kubelet &#x4E00;&#x822C;&#x7528;&#x4E8E;&#x8C03;&#x8BD5;&#x67D0;&#x4E9B;&#x529F;&#x80FD;&#x3002;</p>
+<p>run() &#x4E2D;&#x8C03;&#x7528; RunKubelet() &#x51FD;&#x6570;&#x8FDB;&#x884C;&#x540E;&#x7EED;&#x64CD;&#x4F5C;&#x3002;</p>
+<h4 id="4&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmdkubeletappservergo&#xFF09;"><a name="4&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmdkubeletappservergo&#xFF09;" class="anchor-navigation-ex-anchor" href="#4&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmdkubeletappservergo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>4&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</h4>
+<p>RunKubelet()  &#x4E3B;&#x8981;&#x529F;&#x80FD;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x7EC4;&#x4EF6;&#x4E2D;&#x7684;&#x5404;&#x4E2A;&#x6A21;&#x5757;&#xFF0C;&#x521B;&#x5EFA;&#x51FA; kubelet &#x5BF9;&#x8C61;&#x3002;</li>
+<li>2&#x3001;&#x542F;&#x52A8;&#x5783;&#x573E;&#x56DE;&#x6536;&#x670D;&#x52A1;&#x3002;</li>
+</ul>
+<pre class="language-"><code>func RunKubelet(kubeServer *options.KubeletServer, kubeDeps *kubelet.Dependencies, runOnce bool) error {
+    ...
+
+     // &#x521D;&#x59CB;&#x5316; kubelet &#x5185;&#x90E8;&#x6A21;&#x5757;
+    k, err := CreateAndInitKubelet(&amp;kubeServer.KubeletConfiguration,
+        kubeDeps,
+        &amp;kubeServer.ContainerRuntimeOptions,
+        kubeServer.ContainerRuntime,
+        kubeServer.RuntimeCgroups,
+        kubeServer.HostnameOverride,
+        kubeServer.NodeIP,
+        kubeServer.ProviderID,
+        kubeServer.CloudProvider,
+        kubeServer.CertDirectory,
+        kubeServer.RootDirectory,
+        kubeServer.RegisterNode,
+        kubeServer.RegisterWithTaints,
+        kubeServer.AllowedUnsafeSysctls,
+        kubeServer.RemoteRuntimeEndpoint,
+        kubeServer.RemoteImageEndpoint,
+        kubeServer.ExperimentalMounterPath,
+        kubeServer.ExperimentalKernelMemcgNotification,
+        kubeServer.ExperimentalCheckNodeCapabilitiesBeforeMount,
+        kubeServer.ExperimentalNodeAllocatableIgnoreEvictionThreshold,
+        kubeServer.MinimumGCAge,
+        kubeServer.MaxPerPodContainerCount,
+        kubeServer.MaxContainerCount,
+        kubeServer.MasterServiceNamespace,
+        kubeServer.RegisterSchedulable,
+        kubeServer.NonMasqueradeCIDR,
+        kubeServer.KeepTerminatedPodVolumes,
+        kubeServer.NodeLabels,
+        kubeServer.SeccompProfileRoot,
+        kubeServer.BootstrapCheckpointPath,
+        kubeServer.NodeStatusMaxImages)
+    if err != nil {
+        return fmt.Errorf(&quot;failed to create kubelet: %v&quot;, err)
+    }
+
+    ...
+    if runOnce {
+        if _, err := k.RunOnce(podCfg.Updates()); err != nil {
+            return fmt.Errorf(&quot;runonce failed: %v&quot;, err)
+        }
+        glog.Infof(&quot;Started kubelet as runonce&quot;)
+    } else {
+        // 
+        startKubelet(k, podCfg, &amp;kubeServer.KubeletConfiguration, kubeDeps, kubeServer.EnableServer)
+        glog.Infof(&quot;Started kubelet&quot;)
+    }
+
+}
+</code></pre><pre class="language-"><code>func CreateAndInitKubelet(...){
+    // NewMainKubelet &#x5B9E;&#x4F8B;&#x5316;&#x4E00;&#x4E2A; kubelet &#x5BF9;&#x8C61;&#xFF0C;&#x5E76;&#x5BF9; kubelet &#x5185;&#x90E8;&#x5404;&#x4E2A;&#x6A21;&#x5757;&#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;
+    k, err = kubelet.NewMainKubelet(kubeCfg,
+        kubeDeps,
+        crOptions,
+        containerRuntime,
+        runtimeCgroups,
+        hostnameOverride,
+        nodeIP,
+        providerID,
+        cloudProvider,
+        certDirectory,
+        rootDirectory,
+        registerNode,
+        registerWithTaints,
+        allowedUnsafeSysctls,
+        remoteRuntimeEndpoint,
+        remoteImageEndpoint,
+        experimentalMounterPath,
+        experimentalKernelMemcgNotification,
+        experimentalCheckNodeCapabilitiesBeforeMount,
+        experimentalNodeAllocatableIgnoreEvictionThreshold,
+        minimumGCAge,
+        maxPerPodContainerCount,
+        maxContainerCount,
+        masterServiceNamespace,
+        registerSchedulable,
+        nonMasqueradeCIDR,
+        keepTerminatedPodVolumes,
+        nodeLabels,
+        seccompProfileRoot,
+        bootstrapCheckpointPath,
+        nodeStatusMaxImages)
+    if err != nil {
+        return nil, err
+    }
+
+    // &#x901A;&#x77E5; apiserver kubelet &#x542F;&#x52A8;&#x4E86;
+    k.BirthCry()
+    // &#x542F;&#x52A8;&#x5783;&#x573E;&#x56DE;&#x6536;&#x670D;&#x52A1;
+    k.StartGarbageCollection()
+
+    return k, nil
+
+}
+</code></pre><pre class="language-"><code>func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,...){
+    ...
+    if kubeDeps.PodConfig == nil {
+        var err error
+        // &#x521D;&#x59CB;&#x5316; makePodSourceConfig&#xFF0C;&#x76D1;&#x542C; pod &#x5143;&#x6570;&#x636E;&#x7684;&#x6765;&#x6E90;(FILE, URL, api-server)&#xFF0C;&#x5C06;&#x4E0D;&#x540C; source &#x7684; pod configuration &#x5408;&#x5E76;&#x5230;&#x4E00;&#x4E2A;&#x7ED3;&#x6784;&#x4E2D;
+        kubeDeps.PodConfig, err = makePodSourceConfig(kubeCfg, kubeDeps, nodeName, bootstrapCheckpointPath)
+        if err != nil {
+            return nil, err
+        }
+    }
+
+    // kubelet &#x670D;&#x52A1;&#x7AEF;&#x53E3;&#xFF0C;&#x9ED8;&#x8BA4; 10250
+    daemonEndpoints := &amp;v1.NodeDaemonEndpoints{
+        KubeletEndpoint: v1.DaemonEndpoint{Port: kubeCfg.Port},
+    }
+
+    // &#x4F7F;&#x7528; reflector &#x628A; ListWatch &#x5F97;&#x5230;&#x7684;&#x670D;&#x52A1;&#x4FE1;&#x606F;&#x5B9E;&#x65F6;&#x540C;&#x6B65;&#x5230; serviceStore &#x5BF9;&#x8C61;&#x4E2D;
+    serviceIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+    if kubeDeps.KubeClient != nil {
+        serviceLW := cache.NewListWatchFromClient(kubeDeps.KubeClient.CoreV1().RESTClient(), &quot;services&quot;, metav1.NamespaceAll, fields.Everything())
+        r := cache.NewReflector(serviceLW, &amp;v1.Service{}, serviceIndexer, 0)
+        go r.Run(wait.NeverStop)
+    }
+    serviceLister := corelisters.NewServiceLister(serviceIndexer)
+
+    // &#x4F7F;&#x7528; reflector &#x628A; ListWatch &#x5F97;&#x5230;&#x7684;&#x8282;&#x70B9;&#x4FE1;&#x606F;&#x5B9E;&#x65F6;&#x540C;&#x6B65;&#x5230;  nodeStore &#x5BF9;&#x8C61;&#x4E2D;
+    nodeIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+    if kubeDeps.KubeClient != nil {
+        fieldSelector := fields.Set{api.ObjectNameField: string(nodeName)}.AsSelector()
+        nodeLW := cache.NewListWatchFromClient(kubeDeps.KubeClient.CoreV1().RESTClient(), &quot;nodes&quot;, metav1.NamespaceAll, fieldSelector)
+        r := cache.NewReflector(nodeLW, &amp;v1.Node{}, nodeIndexer, 0)
+        go r.Run(wait.NeverStop)
+    }
+    nodeInfo := &amp;predicates.CachedNodeInfo{NodeLister: corelisters.NewNodeLister(nodeIndexer)}
+
+    ...
+    // node &#x8D44;&#x6E90;&#x4E0D;&#x8DB3;&#x65F6;&#x7684;&#x9A71;&#x9010;&#x7B56;&#x7565;&#x7684;&#x8BBE;&#x5B9A;
+    thresholds, err := eviction.ParseThresholdConfig(enforceNodeAllocatable, kubeCfg.EvictionHard, kubeCfg.EvictionSoft, kubeCfg.EvictionSoftGracePeriod, kubeCfg.EvictionMinimumReclaim)
+    if err != nil {
+        return nil, err
+    }
+    evictionConfig := eviction.Config{
+        PressureTransitionPeriod: kubeCfg.EvictionPressureTransitionPeriod.Duration,
+        MaxPodGracePeriodSeconds: int64(kubeCfg.EvictionMaxPodGracePeriod),
+        Thresholds:               thresholds,
+        KernelMemcgNotification:  experimentalKernelMemcgNotification,
+        PodCgroupRoot:            kubeDeps.ContainerManager.GetPodCgroupRoot(),
+    }
+    ...
+    // &#x5BB9;&#x5668;&#x5F15;&#x7528;&#x7684;&#x7BA1;&#x7406;
+    containerRefManager := kubecontainer.NewRefManager()
+    // oom &#x76D1;&#x63A7;
+    oomWatcher := NewOOMWatcher(kubeDeps.CAdvisorInterface, kubeDeps.Recorder)
+
+    // &#x6839;&#x636E;&#x914D;&#x7F6E;&#x4FE1;&#x606F;&#x548C;&#x5404;&#x79CD;&#x5BF9;&#x8C61;&#x521B;&#x5EFA; Kubelet &#x5B9E;&#x4F8B;
+    klet := &amp;Kubelet{
+        hostname:                       hostname,
+        hostnameOverridden:             len(hostnameOverride) &gt; 0,
+        nodeName:                       nodeName,
+        ...
+    }
+
+    // &#x4ECE; cAdvisor &#x83B7;&#x53D6;&#x5F53;&#x524D;&#x673A;&#x5668;&#x7684;&#x4FE1;&#x606F;
+    machineInfo, err := klet.cadvisor.MachineInfo()
+
+    // &#x5BF9; pod &#x7684;&#x7BA1;&#x7406;&#xFF08;&#x5982;: &#x589E;&#x5220;&#x6539;&#x7B49;&#xFF09;
+    klet.podManager = kubepod.NewBasicPodManager(kubepod.NewBasicMirrorClient(klet.kubeClient), secretManager, configMapManager, checkpointManager)
+
+    // &#x5BB9;&#x5668;&#x8FD0;&#x884C;&#x65F6;&#x7BA1;&#x7406;
+    runtime, err := kuberuntime.NewKubeGenericRuntimeManager(...)
+
+    // pleg
+    klet.pleg = pleg.NewGenericPLEG(klet.containerRuntime, plegChannelCapacity, plegRelistPeriod, klet.podCache, clock.RealClock{})
+
+    // &#x521B;&#x5EFA; containerGC &#x5BF9;&#x8C61;&#xFF0C;&#x8FDB;&#x884C;&#x5468;&#x671F;&#x6027;&#x7684;&#x5BB9;&#x5668;&#x6E05;&#x7406;&#x5DE5;&#x4F5C;
+    containerGC, err := kubecontainer.NewContainerGC(klet.containerRuntime, containerGCPolicy, klet.sourcesReady)
+
+    // &#x521B;&#x5EFA; imageManager &#x7BA1;&#x7406;&#x955C;&#x50CF;
+    imageManager, err := images.NewImageGCManager(klet.containerRuntime, klet.StatsProvider, kubeDeps.Recorder, nodeRef, imageGCPolicy, crOptions.PodSandboxImage)
+
+    // statusManager &#x5B9E;&#x65F6;&#x68C0;&#x6D4B;&#x8282;&#x70B9;&#x4E0A; pod &#x7684;&#x72B6;&#x6001;&#xFF0C;&#x5E76;&#x66F4;&#x65B0;&#x5230; apiserver &#x5BF9;&#x5E94;&#x7684; pod
+    klet.statusManager = status.NewManager(klet.kubeClient, klet.podManager, klet)
+
+    // &#x63A2;&#x9488;&#x7BA1;&#x7406;
+    klet.probeManager = prober.NewManager(...)
+
+    // token &#x7BA1;&#x7406;
+    tokenManager := token.NewManager(kubeDeps.KubeClient)
+
+    // &#x78C1;&#x76D8;&#x7BA1;&#x7406;
+    klet.volumeManager = volumemanager.NewVolumeManager()
+
+    // &#x5C06; syncPod() &#x6CE8;&#x5165;&#x5230; podWorkers &#x4E2D;
+    klet.podWorkers = newPodWorkers(klet.syncPod, kubeDeps.Recorder, klet.workQueue, klet.resyncInterval, backOffPeriod, klet.podCache)
+
+    // &#x5BB9;&#x5668;&#x9A71;&#x9010;&#x7B56;&#x7565;&#x7BA1;&#x7406;
+    evictionManager, evictionAdmitHandler := eviction.NewManager(klet.resourceAnalyzer, evictionConfig, killPodNow(klet.podWorkers, kubeDeps.Recorder), klet.imageManager, klet.containerGC, kubeDeps.Recorder, nodeRef, klet.clock)
+    ...
+}
+</code></pre><p>RunKubelet &#x6700;&#x540E;&#x4F1A;&#x8C03;&#x7528; startKubelet() &#x8FDB;&#x884C;&#x540E;&#x7EED;&#x7684;&#x64CD;&#x4F5C;&#x3002;</p>
+<h4 id="5&#x3001;&#x542F;&#x52A8;-kubelet-&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmdkubeletappservergo&#xFF09;"><a name="5&#x3001;&#x542F;&#x52A8;-kubelet-&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmdkubeletappservergo&#xFF09;" class="anchor-navigation-ex-anchor" href="#5&#x3001;&#x542F;&#x52A8;-kubelet-&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmdkubeletappservergo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>5&#x3001;&#x542F;&#x52A8; kubelet &#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</h4>
+<p>startKubelet()  &#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x4EE5; goroutine &#x65B9;&#x5F0F;&#x542F;&#x52A8; kubelet &#x4E2D;&#x7684;&#x5404;&#x4E2A;&#x6A21;&#x5757;&#x3002;</li>
+<li>2&#x3001;&#x542F;&#x52A8; kubelet http server&#x3002;</li>
+</ul>
+<pre class="language-"><code>func startKubelet(k kubelet.Bootstrap, podCfg *config.PodConfig, kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *kubelet.Dependencies, enableServer bool) {
+    go wait.Until(func() {
+        // &#x4EE5; goroutine &#x65B9;&#x5F0F;&#x542F;&#x52A8; kubelet &#x4E2D;&#x7684;&#x5404;&#x4E2A;&#x6A21;&#x5757;
+        k.Run(podCfg.Updates())
+    }, 0, wait.NeverStop)
+
+    // &#x542F;&#x52A8; kubelet http server    
+    if enableServer {
+        go k.ListenAndServe(net.ParseIP(kubeCfg.Address), uint(kubeCfg.Port), kubeDeps.TLSOptions, kubeDeps.Auth, kubeCfg.EnableDebuggingHandlers, kubeCfg.EnableContentionProfiling)
+
+    }
+    if kubeCfg.ReadOnlyPort &gt; 0 {
+        go k.ListenAndServeReadOnly(net.ParseIP(kubeCfg.Address), uint(kubeCfg.ReadOnlyPort))
+    }
+}
+</code></pre><pre class="language-"><code>// Run starts the kubelet reacting to config updates
+func (kl *Kubelet) Run(updates &lt;-chan kubetypes.PodUpdate) {
+    if kl.logServer == nil {
+        kl.logServer = http.StripPrefix(&quot;/logs/&quot;, http.FileServer(http.Dir(&quot;/var/log/&quot;)))
+    }
+    if kl.kubeClient == nil {
+        glog.Warning(&quot;No api server defined - no node status update will be sent.&quot;)
+    }
+
+    // Start the cloud provider sync manager
+    if kl.cloudResourceSyncManager != nil {
+        go kl.cloudResourceSyncManager.Run(wait.NeverStop)
+    }
+
+    if err := kl.initializeModules(); err != nil {
+        kl.recorder.Eventf(kl.nodeRef, v1.EventTypeWarning, events.KubeletSetupFailed, err.Error())
+        glog.Fatal(err)
+    }
+
+    // Start volume manager
+    go kl.volumeManager.Run(kl.sourcesReady, wait.NeverStop)
+
+    if kl.kubeClient != nil {
+        // Start syncing node status immediately, this may set up things the runtime needs to run.
+        go wait.Until(kl.syncNodeStatus, kl.nodeStatusUpdateFrequency, wait.NeverStop)
+        go kl.fastStatusUpdateOnce()
+
+        // start syncing lease
+        if utilfeature.DefaultFeatureGate.Enabled(features.NodeLease) {
+            go kl.nodeLeaseController.Run(wait.NeverStop)
+        }
+    }
+    go wait.Until(kl.updateRuntimeUp, 5*time.Second, wait.NeverStop)
+
+    // Start loop to sync iptables util rules
+    if kl.makeIPTablesUtilChains {
+        go wait.Until(kl.syncNetworkUtil, 1*time.Minute, wait.NeverStop)
+    }
+
+    // Start a goroutine responsible for killing pods (that are not properly
+    // handled by pod workers).
+    go wait.Until(kl.podKiller, 1*time.Second, wait.NeverStop)
+
+    // Start component sync loops.
+    kl.statusManager.Start()
+    kl.probeManager.Start()
+
+    // Start syncing RuntimeClasses if enabled.
+    if kl.runtimeClassManager != nil {
+        go kl.runtimeClassManager.Run(wait.NeverStop)
+    }
+
+    // Start the pod lifecycle event generator.
+    kl.pleg.Start()
+
+    kl.syncLoop(updates, kl)
+}
+</code></pre><p>syncLoop &#x662F; kubelet &#x7684;&#x4E3B;&#x5FAA;&#x73AF;&#x65B9;&#x6CD5;&#xFF0C;&#x5B83;&#x4ECE;&#x4E0D;&#x540C;&#x7684;&#x7BA1;&#x9053;(FILE,URL, API-SERVER)&#x76D1;&#x542C; pod &#x7684;&#x53D8;&#x5316;&#xFF0C;&#x5E76;&#x628A;&#x5B83;&#x4EEC;&#x6C47;&#x805A;&#x8D77;&#x6765;&#x3002;&#x5F53;&#x6709;&#x65B0;&#x7684;&#x53D8;&#x5316;&#x53D1;&#x751F;&#x65F6;&#xFF0C;&#x5B83;&#x4F1A;&#x8C03;&#x7528;&#x5BF9;&#x5E94;&#x7684;&#x51FD;&#x6570;&#xFF0C;&#x4FDD;&#x8BC1; Pod &#x5904;&#x4E8E;&#x671F;&#x671B;&#x7684;&#x72B6;&#x6001;&#x3002;</p>
+<pre class="language-"><code>func (kl *Kubelet) syncLoop(updates &lt;-chan kubetypes.PodUpdate, handler SyncHandler) {
+    glog.Info(&quot;Starting kubelet main sync loop.&quot;)
+
+    // syncTicker &#x6BCF;&#x79D2;&#x68C0;&#x6D4B;&#x4E00;&#x6B21;&#x662F;&#x5426;&#x6709;&#x9700;&#x8981;&#x540C;&#x6B65;&#x7684; pod workers
+    syncTicker := time.NewTicker(time.Second)
+    defer syncTicker.Stop()
+    housekeepingTicker := time.NewTicker(housekeepingPeriod)
+    defer housekeepingTicker.Stop()
+    plegCh := kl.pleg.Watch()
+    const (
+        base   = 100 * time.Millisecond
+        max    = 5 * time.Second
+        factor = 2
+    )
+    duration := base
+    for {
+        if rs := kl.runtimeState.runtimeErrors(); len(rs) != 0 {
+            glog.Infof(&quot;skipping pod synchronization - %v&quot;, rs)
+            // exponential backoff
+            time.Sleep(duration)
+            duration = time.Duration(math.Min(float64(max), factor*float64(duration)))
+            continue
+        }
+        // reset backoff if we have a success
+        duration = base
+
+        kl.syncLoopMonitor.Store(kl.clock.Now())
+        // 
+        if !kl.syncLoopIteration(updates, handler, syncTicker.C, housekeepingTicker.C, plegCh) {
+            break
+        }
+        kl.syncLoopMonitor.Store(kl.clock.Now())
+    }
+}
+</code></pre><p>syncLoopIteration()  &#x65B9;&#x6CD5;&#x5BF9;&#x591A;&#x4E2A;&#x7BA1;&#x9053;&#x8FDB;&#x884C;&#x904D;&#x5386;&#xFF0C;&#x5982;&#x679C; pod &#x53D1;&#x751F;&#x53D8;&#x5316;&#xFF0C;&#x5219;&#x4F1A;&#x8C03;&#x7528;&#x76F8;&#x5E94;&#x7684; Handler&#xFF0C;&#x5728; Handler &#x4E2D;&#x901A;&#x8FC7;&#x8C03;&#x7528; dispatchWork &#x5206;&#x53D1;&#x4EFB;&#x52A1;&#x3002;</p>
+<h2 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h2>
+<p>&#x672C;&#x7BC7;&#x6587;&#x7AE0;&#x4E3B;&#x8981;&#x8BB2;&#x8FF0;&#x4E86; kubelet &#x7EC4;&#x4EF6;&#x4ECE;&#x52A0;&#x8F7D;&#x914D;&#x7F6E;&#x5230;&#x521D;&#x59CB;&#x5316;&#x5185;&#x90E8;&#x7684;&#x5404;&#x4E2A;&#x6A21;&#x5757;&#x518D;&#x5230;&#x542F;&#x52A8; kubelet &#x670D;&#x52A1;&#x7684;&#x6574;&#x4E2A;&#x6D41;&#x7A0B;&#xFF0C;&#x4E0A;&#x9762;&#x7684;&#x65F6;&#x5E8F;&#x56FE;&#x80FD;&#x6E05;&#x695A;&#x7684;&#x770B;&#x5230;&#x51FD;&#x6570;&#x4E4B;&#x95F4;&#x7684;&#x8C03;&#x7528;&#x5173;&#x7CFB;&#xFF0C;&#x4F46;&#x662F;&#x5176;&#x4E2D;&#x6BCF;&#x4E2A;&#x7EC4;&#x4EF6;&#x5177;&#x4F53;&#x7684;&#x5DE5;&#x4F5C;&#x65B9;&#x5F0F;&#x4EE5;&#x53CA;&#x7EC4;&#x4EF6;&#x4E4B;&#x95F4;&#x7684;&#x4EA4;&#x4E92;&#x65B9;&#x5F0F;&#x8FD8;&#x4E0D;&#x5F97;&#x800C;&#x77E5;&#xFF0C;&#x540E;&#x9762;&#x4F1A;&#x4E00;&#x63A2;&#x7A76;&#x7ADF;&#x3002;</p>
+<p>&#x53C2;&#x8003;&#xFF1A;
+<a href="http://www.sel.zju.edu.cn/?p=595" target="_blank">kubernetes node components &#x2013; kubelet</a>
+<a href="https://segmentfault.com/a/1190000008267351" target="_blank">Kubelet &#x6E90;&#x7801;&#x5206;&#x6790;(&#x4E00;):&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5206;&#x6790;</a>
+<a href="https://cizixs.com/2017/06/06/kubelet-source-code-analysis-part-1/" target="_blank">kubelet &#x6E90;&#x7801;&#x5206;&#x6790;&#xFF1A;&#x542F;&#x52A8;&#x6D41;&#x7A0B;</a>
+<a href="https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2017/05/02/Kubernetes-kubelet.html" target="_blank">kubernetes &#x7684; kubelet &#x7684;&#x5DE5;&#x4F5C;&#x8FC7;&#x7A0B;</a>
+<a href="https://fatsheep9146.github.io/2018/07/08/kubelet%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0%E8%A7%A3%E6%9E%90/" target="_blank">kubelet &#x5185;&#x90E8;&#x5B9E;&#x73B0;&#x89E3;&#x6790;</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2019-12-02 17:47:24
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="kubelet-modules.html" class="navigation navigation-prev " aria-label="Previous page: kubelet 架构浅析">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="kubelet_create_pod.html" class="navigation navigation-next " aria-label="Next page: kubelet 创建 pod 的流程">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"kubelet 启动流程分析","date":"2018-12-23T21:22:30.000Z","tags":"kubelet","type":"kubelet","level":"1.2.7","depth":2,"next":{"title":"kubelet 创建 pod 的流程","level":"1.2.8","depth":2,"path":"kubernetes/kubelet_create_pod.md","ref":"kubernetes/kubelet_create_pod.md","articles":[]},"previous":{"title":"kubelet 架构浅析","level":"1.2.6","depth":2,"path":"kubernetes/kubelet-modules.md","ref":"kubernetes/kubelet-modules.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0","livereload"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/kubelet_init.md","mtime":"2019-12-02T09:47:24.608Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-12-02T11:31:57.771Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

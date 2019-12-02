@@ -1,0 +1,7 @@
+{
+  "self": {
+    "demo": {
+      "source": "## Welcome to CommonMark\n\nYou can play with CommonMark by editing the text on\nthe left and seeing how it renders on the right.\n\n> Here's a *block quote with a **list***:\n>\n> 1. foo\n> 2. bar\n\nSome inline code: `x >>= y`.\n\nFenced code:\n\n``` haskell\nfibs = 0 : 1 : next fibs\n  where\n      next (a : t@(b:_)) = (a+b) : next t\n```\n"
+    }
+  }
+}

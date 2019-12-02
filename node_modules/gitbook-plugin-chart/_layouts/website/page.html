@@ -1,0 +1,12 @@
+{% extends template.self %}
+
+{% block head %}
+    {{ super() }}
+    {% if config.pluginsConfig.chart.type == 'highcharts' %}
+    <script src="{{ 'gitbook-plugin-chart/highcharts/highcharts.js'|resolveAsset }}"></script>
+    {% else %}
+    <link rel="stylesheet" href="{{ 'gitbook-plugin-chart/c3/c3.min.css'|resolveAsset }}">
+    <script src="{{ 'gitbook-plugin-chart/c3/d3.min.js'|resolveAsset }}"></script>
+    <script src="{{ 'gitbook-plugin-chart/c3/c3.min.js'|resolveAsset }}"></script>
+    {% endif %}
+{% endblock %}

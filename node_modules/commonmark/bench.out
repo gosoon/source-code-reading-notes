@@ -1,0 +1,130 @@
+bench/samples/block-bq-flat.md
+commonmark.js x 18,481 ops/sec ±2.30% (101 runs sampled)
+showdown.js x 4,384 ops/sec ±1.05% (98 runs sampled)
+marked.js x 21,660 ops/sec ±1.13% (99 runs sampled)
+markdown-it x 21,458 ops/sec ±0.30% (95 runs sampled)
+bench/samples/block-bq-nested.md
+commonmark.js x 10,597 ops/sec ±0.44% (98 runs sampled)
+showdown.js x 1,063 ops/sec ±1.08% (98 runs sampled)
+marked.js x 8,103 ops/sec ±0.99% (98 runs sampled)
+markdown-it x 11,818 ops/sec ±0.34% (97 runs sampled)
+bench/samples/block-code.md
+commonmark.js x 40,883 ops/sec ±1.21% (100 runs sampled)
+showdown.js x 10,821 ops/sec ±0.31% (101 runs sampled)
+marked.js x 108,069 ops/sec ±1.60% (93 runs sampled)
+markdown-it x 157,197 ops/sec ±0.12% (97 runs sampled)
+bench/samples/block-fences.md
+commonmark.js x 40,196 ops/sec ±1.00% (100 runs sampled)
+showdown.js x 6,695 ops/sec ±0.96% (96 runs sampled)
+marked.js x 110,328 ops/sec ±1.11% (96 runs sampled)
+markdown-it x 95,911 ops/sec ±0.11% (101 runs sampled)
+bench/samples/block-heading.md
+commonmark.js x 15,348 ops/sec ±2.12% (100 runs sampled)
+showdown.js x 3,940 ops/sec ±0.34% (99 runs sampled)
+marked.js x 18,175 ops/sec ±0.63% (97 runs sampled)
+markdown-it x 21,825 ops/sec ±1.01% (88 runs sampled)
+bench/samples/block-hr.md
+commonmark.js x 25,928 ops/sec ±0.20% (102 runs sampled)
+showdown.js x 9,954 ops/sec ±0.34% (97 runs sampled)
+marked.js x 29,459 ops/sec ±1.26% (94 runs sampled)
+markdown-it x 37,377 ops/sec ±0.40% (98 runs sampled)
+bench/samples/block-html.md
+commonmark.js x 9,285 ops/sec ±0.63% (102 runs sampled)
+showdown.js x 5,486 ops/sec ±0.80% (96 runs sampled)
+marked.js x 4,277 ops/sec ±1.00% (99 runs sampled)
+markdown-it x 21,214 ops/sec ±0.60% (94 runs sampled)
+bench/samples/block-lheading.md
+commonmark.js x 24,918 ops/sec ±8.45% (99 runs sampled)
+showdown.js x 6,916 ops/sec ±0.32% (97 runs sampled)
+marked.js x 31,619 ops/sec ±1.03% (99 runs sampled)
+markdown-it x 21,196 ops/sec ±0.78% (92 runs sampled)
+bench/samples/block-list-flat.md
+commonmark.js x 2,597 ops/sec ±1.63% (100 runs sampled)
+showdown.js x 608 ops/sec ±1.01% (95 runs sampled)
+marked.js x 2,771 ops/sec ±0.83% (100 runs sampled)
+markdown-it x 3,949 ops/sec ±1.16% (99 runs sampled)
+bench/samples/block-list-nested.md
+commonmark.js x 2,468 ops/sec ±0.51% (99 runs sampled)
+showdown.js x 347 ops/sec ±0.68% (96 runs sampled)
+marked.js x 2,116 ops/sec ±1.17% (97 runs sampled)
+markdown-it x 4,573 ops/sec ±0.33% (98 runs sampled)
+bench/samples/block-ref-flat.md
+commonmark.js x 2,701 ops/sec ±1.38% (97 runs sampled)
+showdown.js x 4,180 ops/sec ±0.85% (97 runs sampled)
+marked.js x 1,588 ops/sec ±1.47% (99 runs sampled)
+markdown-it x 2,131 ops/sec ±1.06% (95 runs sampled)
+bench/samples/block-ref-nested.md
+commonmark.js x 2,742 ops/sec ±3.29% (99 runs sampled)
+showdown.js x 5,309 ops/sec ±0.19% (99 runs sampled)
+marked.js x 2,498 ops/sec ±1.10% (100 runs sampled)
+markdown-it x 3,665 ops/sec ±1.69% (98 runs sampled)
+bench/samples/inline-autolink.md
+commonmark.js x 5,682 ops/sec ±5.25% (99 runs sampled)
+showdown.js x 2,823 ops/sec ±0.33% (99 runs sampled)
+marked.js x 9,592 ops/sec ±0.86% (100 runs sampled)
+markdown-it x 7,008 ops/sec ±1.12% (96 runs sampled)
+bench/samples/inline-backticks.md
+commonmark.js x 26,463 ops/sec ±2.24% (100 runs sampled)
+showdown.js x 4,696 ops/sec ±0.31% (100 runs sampled)
+marked.js x 21,781 ops/sec ±1.02% (99 runs sampled)
+markdown-it x 37,330 ops/sec ±0.57% (95 runs sampled)
+bench/samples/inline-em-flat.md
+commonmark.js x 7,337 ops/sec ±3.04% (95 runs sampled)
+showdown.js x 7,270 ops/sec ±0.25% (97 runs sampled)
+marked.js x 7,022 ops/sec ±1.02% (96 runs sampled)
+markdown-it x 11,094 ops/sec ±0.38% (95 runs sampled)
+bench/samples/inline-em-nested.md
+commonmark.js x 8,988 ops/sec ±3.05% (95 runs sampled)
+showdown.js x 7,222 ops/sec ±0.27% (98 runs sampled)
+marked.js x 8,627 ops/sec ±1.22% (96 runs sampled)
+markdown-it x 10,372 ops/sec ±0.31% (99 runs sampled)
+bench/samples/inline-em-worst.md
+commonmark.js x 10,274 ops/sec ±0.59% (97 runs sampled)
+showdown.js x 6,750 ops/sec ±0.25% (100 runs sampled)
+marked.js x 8,676 ops/sec ±0.97% (98 runs sampled)
+markdown-it x 5,894 ops/sec ±0.57% (98 runs sampled)
+bench/samples/inline-entity.md
+commonmark.js x 5,044 ops/sec ±1.60% (100 runs sampled)
+showdown.js x 4,855 ops/sec ±0.62% (97 runs sampled)
+marked.js x 17,754 ops/sec ±1.00% (95 runs sampled)
+markdown-it x 11,962 ops/sec ±1.41% (89 runs sampled)
+bench/samples/inline-escape.md
+commonmark.js x 7,101 ops/sec ±0.92% (100 runs sampled)
+showdown.js x 3,467 ops/sec ±0.36% (99 runs sampled)
+marked.js x 4,577 ops/sec ±0.86% (100 runs sampled)
+markdown-it x 14,873 ops/sec ±0.41% (93 runs sampled)
+bench/samples/inline-html.md
+commonmark.js x 2,840 ops/sec ±0.71% (99 runs sampled)
+showdown.js x 1,417 ops/sec ±0.34% (99 runs sampled)
+marked.js x 5,312 ops/sec ±0.99% (99 runs sampled)
+markdown-it x 4,226 ops/sec ±0.96% (96 runs sampled)
+bench/samples/inline-links-flat.md
+commonmark.js x 3,984 ops/sec ±1.99% (101 runs sampled)
+showdown.js x 1,666 ops/sec ±0.47% (99 runs sampled)
+marked.js x 4,137 ops/sec ±1.21% (96 runs sampled)
+markdown-it x 4,049 ops/sec ±4.36% (95 runs sampled)
+bench/samples/inline-links-nested.md
+commonmark.js x 5,450 ops/sec ±1.79% (100 runs sampled)
+showdown.js x 3,094 ops/sec ±0.60% (98 runs sampled)
+marked.js x 1,401 ops/sec ±0.94% (98 runs sampled)
+markdown-it x 1,047 ops/sec ±1.42% (97 runs sampled)
+bench/samples/inline-newlines.md
+commonmark.js x 13,224 ops/sec ±0.34% (98 runs sampled)
+showdown.js x 7,358 ops/sec ±0.24% (98 runs sampled)
+marked.js x 13,017 ops/sec ±1.22% (96 runs sampled)
+markdown-it x 17,487 ops/sec ±0.38% (96 runs sampled)
+bench/samples/lorem1.md
+commonmark.js x 8,150 ops/sec ±5.75% (100 runs sampled)
+showdown.js x 1,284 ops/sec ±0.44% (100 runs sampled)
+marked.js x 4,354 ops/sec ±0.84% (100 runs sampled)
+markdown-it x 4,568 ops/sec ±0.88% (98 runs sampled)
+bench/samples/rawtabs.md
+commonmark.js x 15,179 ops/sec ±1.18% (100 runs sampled)
+showdown.js x 3,498 ops/sec ±0.77% (102 runs sampled)
+marked.js x 14,625 ops/sec ±0.96% (98 runs sampled)
+markdown-it x 17,195 ops/sec ±0.42% (94 runs sampled)
+bench/samples/README.md
+commonmark.js x 620 ops/sec ±0.63% (97 runs sampled)
+showdown.js x 171 ops/sec ±1.11% (89 runs sampled)
+marked.js x 566 ops/sec ±1.15% (97 runs sampled)
+markdown-it x 708 ops/sec ±1.15% (97 runs sampled)

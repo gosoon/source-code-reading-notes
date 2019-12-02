@@ -1,0 +1,1070 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>kube-proxy ipvs 模式源码分析 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="kube_proxy_iptables.html" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.11" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >kube-proxy ipvs 模式源码分析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <p>&#x524D;&#x51E0;&#x7BC7;&#x6587;&#x7AE0;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x4E86; service &#x7684;&#x539F;&#x7406;&#x4EE5;&#x53CA; kube-proxy  iptables &#x6A21;&#x5F0F;&#x7684;&#x539F;&#x7406;&#x4E0E;&#x5B9E;&#x73B0;&#xFF0C;&#x672C;&#x7BC7;&#x6587;&#x7AE0;&#x4F1A;&#x7EE7;&#x7EED;&#x5206;&#x6790; kube-proxy ipvs &#x6A21;&#x5F0F;&#x7684;&#x539F;&#x7406;&#x4E0E;&#x5B9E;&#x73B0;&#x3002;</p>
+<h3 id="ipvs"><a name="ipvs" class="anchor-navigation-ex-anchor" href="#ipvs"><i class="fa fa-link" aria-hidden="true"></i></a>ipvs</h3>
+<p>ipvs (IP Virtual Server) &#x662F;&#x57FA;&#x4E8E; Netfilter &#x7684;&#xFF0C;&#x4F5C;&#x4E3A; linux &#x5185;&#x6838;&#x7684;&#x4E00;&#x90E8;&#x5206;&#x5B9E;&#x73B0;&#x4E86;&#x4F20;&#x8F93;&#x5C42;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#xFF0C;ipvs &#x96C6;&#x6210;&#x5728;LVS(Linux Virtual Server)&#x4E2D;&#xFF0C;&#x5B83;&#x5728;&#x4E3B;&#x673A;&#x4E2D;&#x8FD0;&#x884C;&#xFF0C;&#x5E76;&#x5728;&#x771F;&#x5B9E;&#x670D;&#x52A1;&#x5668;&#x96C6;&#x7FA4;&#x524D;&#x5145;&#x5F53;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x5668;&#x3002;ipvs &#x53EF;&#x4EE5;&#x5C06;&#x5BF9; TCP/UDP &#x670D;&#x52A1;&#x7684;&#x8BF7;&#x6C42;&#x8F6C;&#x53D1;&#x7ED9;&#x540E;&#x7AEF;&#x7684;&#x771F;&#x5B9E;&#x670D;&#x52A1;&#x5668;&#xFF0C;&#x56E0;&#x6B64; ipvs &#x5929;&#x7136;&#x652F;&#x6301; Kubernetes Service&#x3002;ipvs &#x4E5F;&#x5305;&#x542B;&#x4E86;&#x591A;&#x79CD;&#x4E0D;&#x540C;&#x7684;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x7B97;&#x6CD5;&#xFF0C;&#x4F8B;&#x5982;&#x8F6E;&#x8BE2;&#x3001;&#x6700;&#x77ED;&#x671F;&#x671B;&#x5EF6;&#x8FDF;&#x3001;&#x6700;&#x5C11;&#x8FDE;&#x63A5;&#x4EE5;&#x53CA;&#x5404;&#x79CD;&#x54C8;&#x5E0C;&#x65B9;&#x6CD5;&#x7B49;&#xFF0C;ipvs &#x7684;&#x8BBE;&#x8BA1;&#x5C31;&#x662F;&#x7528;&#x6765;&#x4E3A;&#x5927;&#x89C4;&#x6A21;&#x670D;&#x52A1;&#x8FDB;&#x884C;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x7684;&#x3002;</p>
+<h4 id="ipvs-&#x7684;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x65B9;&#x5F0F;"><a name="ipvs-&#x7684;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x65B9;&#x5F0F;" class="anchor-navigation-ex-anchor" href="#ipvs-&#x7684;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x65B9;&#x5F0F;"><i class="fa fa-link" aria-hidden="true"></i></a>ipvs &#x7684;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x65B9;&#x5F0F;</h4>
+<p>ipvs &#x6709;&#x4E09;&#x79CD;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x65B9;&#x5F0F;&#xFF0C;&#x5206;&#x522B;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li><a href="http://www.linuxvirtualserver.org/VS-NAT.html" target="_blank">NAT</a></li>
+<li><a href="http://www.linuxvirtualserver.org/VS-IPTunneling.html" target="_blank">TUN</a></li>
+<li><a href="http://www.linuxvirtualserver.org/VS-DRouting.html" target="_blank">DR</a></li>
+</ul>
+<p>&#x5173;&#x4E8E;&#x4E09;&#x79CD;&#x6A21;&#x5F0F;&#x7684;&#x539F;&#x7406;&#x53EF;&#x4EE5;&#x53C2;&#x8003;&#xFF1A;<a href="http://www.tianfeiyu.com/?p=2010" target="_blank">LVS &#x914D;&#x7F6E;&#x5C0F;&#x7ED3;</a>&#x3002;</p>
+<p>&#x4E0A;&#x9762;&#x7684;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x65B9;&#x5F0F;&#x4E2D;&#x53EA;&#x6709; NAT &#x6A21;&#x5F0F;&#x53EF;&#x4EE5;&#x8FDB;&#x884C;&#x7AEF;&#x53E3;&#x6620;&#x5C04;&#xFF0C;&#x56E0;&#x6B64; kubernetes &#x4E2D; ipvs &#x7684;&#x5B9E;&#x73B0;&#x4F7F;&#x7528;&#x4E86; NAT &#x6A21;&#x5F0F;&#xFF0C;&#x7528;&#x6765;&#x5C06; service IP &#x548C; service port &#x6620;&#x5C04;&#x5230;&#x540E;&#x7AEF;&#x7684; container ip &#x548C;container port&#x3002;</p>
+<p>NAT &#x6A21;&#x5F0F;&#x4E0B;&#x7684;&#x5DE5;&#x4F5C;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>   +--------+
+   | Client |
+   +--------+
+     (CIP)       &lt;-- Client&apos;s IP address
+       |
+       |
+  { internet }
+       |
+       |
+     (VIP)       &lt;-- Virtual IP address
+  +----------+
+  | Director |
+  +----------+
+     (PIP)       &lt;-- (Director&apos;s Private IP address)
+       |
+       |
+     (RIP)       &lt;-- Real (server&apos;s) IP address
+ +-------------+
+ | Real server |
+ +-------------+
+</code></pre><p>&#x5176;&#x5177;&#x4F53;&#x6D41;&#x7A0B;&#x4E3A;&#xFF1A;&#x5F53;&#x7528;&#x6237;&#x53D1;&#x8D77;&#x4E00;&#x4E2A;&#x8BF7;&#x6C42;&#x65F6;&#xFF0C;&#x8BF7;&#x6C42;&#x4ECE; VIP &#x63A5;&#x53E3;&#x6D41;&#x5165;&#xFF0C;&#x6B64;&#x65F6;&#x6570;&#x636E;&#x6E90;&#x5730;&#x5740;&#x662F; CIP&#xFF0C;&#x76EE;&#x6807;&#x5730;&#x5740;&#x662F; VIP&#xFF0C;&#x5F53;&#x63A5;&#x6536;&#x5230;&#x8BF7;&#x6C42;&#x540E;&#x62C6;&#x6389; mac &#x5730;&#x5740;&#x5C01;&#x88C5;&#x540E;&#x770B;&#x5230;&#x76EE;&#x6807; IP &#x5730;&#x5740;&#x5C31;&#x662F;&#x81EA;&#x5DF1;&#xFF0C;&#x6309;&#x7167;&#x6B63;&#x5E38;&#x6D41;&#x7A0B;&#x4F1A;&#x901A;&#x8FC7; INPUT &#x8F6C;&#x5165;&#x7528;&#x6237;&#x7A7A;&#x95F4;&#xFF0C;&#x4F46;&#x6B64;&#x65F6;&#x5DE5;&#x4F5C;&#x5728; INPUT &#x94FE;&#x4E0A;&#x7684; ipvs &#x4F1A;&#x5F3A;&#x884C;&#x5C06;&#x6570;&#x636E;&#x8F6C;&#x5230; POSTROUTING &#x94FE;&#x4E0A;&#xFF0C;&#x5E76;&#x6839;&#x636E;&#x76F8;&#x5E94;&#x7684;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x7B97;&#x6CD5;&#x9009;&#x62E9;&#x540E;&#x7AEF;&#x5177;&#x4F53;&#x7684;&#x670D;&#x52A1;&#x5668;&#xFF0C;&#x518D;&#x901A;&#x8FC7; DNAT &#x8F6C;&#x53D1;&#x7ED9; Real server&#xFF0C;&#x6B64;&#x65F6;&#x6E90;&#x5730;&#x5740; CIP&#xFF0C;&#x76EE;&#x6807;&#x5730;&#x5740;&#x53D8;&#x6210;&#x4E86; RIP&#x3002;</p>
+<h4 id="ipvs-&#x4E0E;-iptables-&#x7684;&#x533A;&#x522B;&#x4E0E;&#x8054;&#x7CFB;"><a name="ipvs-&#x4E0E;-iptables-&#x7684;&#x533A;&#x522B;&#x4E0E;&#x8054;&#x7CFB;" class="anchor-navigation-ex-anchor" href="#ipvs-&#x4E0E;-iptables-&#x7684;&#x533A;&#x522B;&#x4E0E;&#x8054;&#x7CFB;"><i class="fa fa-link" aria-hidden="true"></i></a>ipvs &#x4E0E; iptables &#x7684;&#x533A;&#x522B;&#x4E0E;&#x8054;&#x7CFB;</h4>
+<p><strong>&#x533A;&#x522B;</strong>&#xFF1A;</p>
+<ul>
+<li>&#x5E95;&#x5C42;&#x6570;&#x636E;&#x7ED3;&#x6784;&#xFF1A;iptables &#x4F7F;&#x7528;&#x94FE;&#x8868;&#xFF0C;ipvs &#x4F7F;&#x7528;&#x54C8;&#x5E0C;&#x8868;</li>
+<li>&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x7B97;&#x6CD5;&#xFF1A;iptables &#x53EA;&#x652F;&#x6301;&#x968F;&#x673A;&#x3001;&#x8F6E;&#x8BE2;&#x4E24;&#x79CD;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x7B97;&#x6CD5;&#x800C; ipvs &#x652F;&#x6301;&#x7684;&#x591A;&#x8FBE; 8 &#x79CD;&#xFF1B;</li>
+<li>&#x64CD;&#x4F5C;&#x5DE5;&#x5177;&#xFF1A;iptables &#x9700;&#x8981;&#x4F7F;&#x7528; iptables &#x547D;&#x4EE4;&#x884C;&#x5DE5;&#x4F5C;&#x6765;&#x5B9A;&#x4E49;&#x89C4;&#x5219;&#xFF0C;ipvs &#x9700;&#x8981;&#x4F7F;&#x7528; ipvsadm &#x6765;&#x5B9A;&#x4E49;&#x89C4;&#x5219;&#x3002;</li>
+</ul>
+<p>&#x6B64;&#x5916; ipvs &#x8FD8;&#x652F;&#x6301; realserver &#x8FD0;&#x884C;&#x72B6;&#x51B5;&#x68C0;&#x67E5;&#x3001;&#x8FDE;&#x63A5;&#x91CD;&#x8BD5;&#x3001;&#x7AEF;&#x53E3;&#x6620;&#x5C04;&#x3001;&#x4F1A;&#x8BDD;&#x4FDD;&#x6301;&#x7B49;&#x529F;&#x80FD;&#x3002;</p>
+<p><strong>&#x8054;&#x7CFB;</strong>&#xFF1A;</p>
+<p>ipvs &#x548C; iptables &#x90FD;&#x662F;&#x57FA;&#x4E8E; <a href="https://www.netfilter.org/" target="_blank">netfilter&#x5185;&#x6838;&#x6A21;&#x5757;</a>&#xFF0C;&#x4E24;&#x8005;&#x90FD;&#x662F;&#x5728;&#x5185;&#x6838;&#x4E2D;&#x7684;&#x4E94;&#x4E2A;&#x94A9;&#x5B50;&#x51FD;&#x6570;&#x5904;&#x5DE5;&#x4F5C;&#xFF0C;&#x4E0B;&#x56FE;&#x662F; ipvs &#x6240;&#x5DE5;&#x4F5C;&#x7684;&#x51E0;&#x4E2A;&#x94A9;&#x5B50;&#x51FD;&#x6570;&#xFF1A;</p>
+<p><img src="http://cdn.tianfeiyu.com/ipvs-1.png" alt="interactions between netfilter and LVS"></p>
+<blockquote>
+<p> &#x5173;&#x4E8E; kube-proxy iptables &#x4E0E; ipvs &#x6A21;&#x5F0F;&#x7684;&#x533A;&#x522B;&#xFF0C;&#x66F4;&#x591A;&#x8BE6;&#x7EC6;&#x4FE1;&#x606F;&#x53EF;&#x4EE5;&#x67E5;&#x770B;&#x5B98;&#x65B9;&#x6587;&#x6863;&#xFF1A;<a href="https://github.com/kubernetes/kubernetes/blob/master/pkg/proxy/ipvs/README.md&#x3002;" target="_blank">https://github.com/kubernetes/kubernetes/blob/master/pkg/proxy/ipvs/README.md&#x3002;</a></p>
+</blockquote>
+<h4 id="ipset"><a name="ipset" class="anchor-navigation-ex-anchor" href="#ipset"><i class="fa fa-link" aria-hidden="true"></i></a>ipset</h4>
+<p>IP sets &#x662F; Linux &#x5185;&#x6838;&#x4E2D;&#x7684;&#x4E00;&#x4E2A;&#x6846;&#x67B6;&#xFF0C;&#x53EF;&#x4EE5;&#x7531; ipset &#x547D;&#x4EE4;&#x8FDB;&#x884C;&#x7BA1;&#x7406;&#x3002;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x7C7B;&#x578B;&#xFF0C;IP set &#x53EF;&#x4EE5;&#x4EE5;&#x67D0;&#x79CD;&#x65B9;&#x5F0F;&#x4FDD;&#x5B58; IP&#x5730;&#x5740;&#x3001;&#x7F51;&#x7EDC;&#x3001;(TCP/UDP)&#x7AEF;&#x53E3;&#x53F7;&#x3001;MAC&#x5730;&#x5740;&#x3001;&#x63A5;&#x53E3;&#x540D;&#x6216;&#x5B83;&#x4EEC;&#x7684;&#x7EC4;&#x5408;&#xFF0C;&#x5E76;&#x4E14;&#x80FD;&#x591F;&#x5FEB;&#x901F;&#x5339;&#x914D;&#x3002;</p>
+<p>&#x6839;&#x636E;&#x5B98;&#x7F51;&#x7684;&#x4ECB;&#x7ECD;&#xFF0C;&#x82E5;&#x6709;&#x4EE5;&#x4E0B;&#x4F7F;&#x7528;&#x573A;&#x666F;&#xFF1A;</p>
+<ul>
+<li>&#x5728;&#x4FDD;&#x5B58;&#x4E86;&#x591A;&#x4E2A; IP &#x5730;&#x5740;&#x6216;&#x7AEF;&#x53E3;&#x53F7;&#x7684; iptables &#x89C4;&#x5219;&#x96C6;&#x5408;&#x4E2D;&#x60F3;&#x4F7F;&#x7528;&#x54C8;&#x5E0C;&#x67E5;&#x627E;;</li>
+<li>&#x6839;&#x636E; IP &#x5730;&#x5740;&#x6216;&#x7AEF;&#x53E3;&#x52A8;&#x6001;&#x66F4;&#x65B0; iptables &#x89C4;&#x5219;&#x65F6;&#x5E0C;&#x671B;&#x5728;&#x6027;&#x80FD;&#x4E0A;&#x65E0;&#x635F;&#xFF1B;</li>
+<li>&#x5728;&#x4F7F;&#x7528; iptables &#x5DE5;&#x5177;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x57FA;&#x4E8E; IP &#x5730;&#x5740;&#x548C;&#x7AEF;&#x53E3;&#x7684;&#x590D;&#x6742;&#x89C4;&#x5219;&#x65F6;&#x89C9;&#x5F97;&#x975E;&#x5E38;&#x7E41;&#x7410;&#xFF1B;</li>
+</ul>
+<p>&#x6B64;&#x65F6;&#xFF0C;&#x4F7F;&#x7528; ipset &#x5DE5;&#x5177;&#x53EF;&#x80FD;&#x662F;&#x4F60;&#x6700;&#x597D;&#x7684;&#x9009;&#x62E9;&#x3002;</p>
+<p>ipset &#x662F; iptables &#x7684;&#x4E00;&#x79CD;&#x6269;&#x5C55;&#xFF0C;&#x5728; iptables &#x4E2D;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;<code>-m set</code>&#x542F;&#x7528; ipset &#x6A21;&#x5757;&#xFF0C;&#x5177;&#x4F53;&#x6765;&#x8BF4;&#xFF0C;ipvs &#x4F7F;&#x7528; ipset &#x6765;&#x5B58;&#x50A8;&#x9700;&#x8981; NAT &#x6216; masquared &#x65F6;&#x7684; ip &#x548C;&#x7AEF;&#x53E3;&#x5217;&#x8868;&#x3002;&#x5728;&#x6570;&#x636E;&#x5305;&#x8FC7;&#x6EE4;&#x8FC7;&#x7A0B;&#x4E2D;&#xFF0C;&#x9996;&#x5148;&#x904D;&#x5386; iptables &#x89C4;&#x5219;&#xFF0C;&#x5728;&#x5B9A;&#x4E49;&#x4E86;&#x4F7F;&#x7528; ipset &#x7684;&#x6761;&#x4EF6;&#x4E0B;&#x4F1A;&#x8DF3;&#x8F6C;&#x5230; ipset &#x5217;&#x8868;&#x4E2D;&#x8FDB;&#x884C;&#x5339;&#x914D;&#x3002;</p>
+<h3 id="kube-proxy-ipvs-&#x6A21;&#x5F0F;"><a name="kube-proxy-ipvs-&#x6A21;&#x5F0F;" class="anchor-navigation-ex-anchor" href="#kube-proxy-ipvs-&#x6A21;&#x5F0F;"><i class="fa fa-link" aria-hidden="true"></i></a>kube-proxy ipvs &#x6A21;&#x5F0F;</h3>
+<p>kube-proxy &#x7684; ipvs &#x6A21;&#x5F0F;&#x662F;&#x5728; 2015 &#x5E74;&#x7531; k8s &#x793E;&#x533A;&#x7684;&#x5927;&#x4F6C; <strong><a href="https://github.com/thockin" target="_blank">thockin</a></strong> &#x63D0;&#x51FA;&#x7684;(<a href="https://github.com/kubernetes/kubernetes/issues/17470" target="_blank">Try kube-proxy via ipvs instead of iptables or userspace</a>)&#xFF0C;&#x5728; 2017 &#x5E74;&#x7531;&#x534E;&#x4E3A;&#x4E91;&#x56E2;&#x961F;&#x5B9E;&#x73B0;&#x7684;(<a href="https://github.com/kubernetes/kubernetes/issues/44063" target="_blank">Implement IPVS-based in-cluster service load balancing</a>)&#x3002;&#x524D;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x5DF2;&#x7ECF;&#x63D0;&#x5230;&#x4E86;&#xFF0C;&#x5728;<code>kubernetes</code> v1.8 &#x4E2D;&#x5DF2;&#x7ECF;&#x5F15;&#x5165;&#x4E86; ipvs &#x6A21;&#x5F0F;&#x3002;</p>
+<p>kube-proxy &#x5728; ipvs &#x6A21;&#x5F0F;&#x4E0B;&#x81EA;&#x5B9A;&#x4E49;&#x4E86;&#x516B;&#x6761;&#x94FE;&#xFF0C;&#x5206;&#x522B;&#x4E3A; KUBE-SERVICES&#x3001;KUBE-FIREWALL&#x3001;KUBE-POSTROUTING&#x3001;KUBE-MARK-MASQ&#x3001;KUBE-NODE-PORT&#x3001;KUBE-MARK-DROP&#x3001;KUBE-FORWARD&#x3001;KUBE-LOAD-BALANCER &#xFF0C;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p>NAT &#x8868;&#xFF1A;</p>
+<p><img src="http://cdn.tianfeiyu.com/ipvs-2.png" alt=""></p>
+<p>Filter &#x8868;&#xFF1A;</p>
+<p><img src="http://cdn.tianfeiyu.com/ipvs-3.png" alt=""></p>
+<p>&#x6B64;&#x5916;&#xFF0C;&#x7531;&#x4E8E; linux &#x5185;&#x6838;&#x539F;&#x751F;&#x7684; ipvs &#x6A21;&#x5F0F;&#x53EA;&#x652F;&#x6301; DNAT&#xFF0C;&#x4E0D;&#x652F;&#x6301; SNAT&#xFF0C;&#x6240;&#x4EE5;&#xFF0C;&#x5728;&#x4EE5;&#x4E0B;&#x51E0;&#x79CD;&#x573A;&#x666F;&#x4E2D; ipvs &#x4ECD;&#x9700;&#x8981;&#x4F9D;&#x8D56; iptables &#x89C4;&#x5219;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;kube-proxy &#x542F;&#x52A8;&#x65F6;&#x6307;&#x5B9A; <code>&#x2013;-masquerade-all=true</code> &#x53C2;&#x6570;&#xFF0C;&#x5373;&#x96C6;&#x7FA4;&#x4E2D;&#x6240;&#x6709;&#x7ECF;&#x8FC7; kube-proxy &#x7684;&#x5305;&#x90FD;&#x505A;&#x4E00;&#x6B21; SNAT&#xFF1B;</li>
+<li>2&#x3001;kube-proxy &#x542F;&#x52A8;&#x65F6;&#x6307;&#x5B9A; <code>--cluster-cidr=</code> &#x53C2;&#x6570;&#xFF1B;</li>
+<li>3&#x3001;&#x5BF9;&#x4E8E; Load Balancer &#x7C7B;&#x578B;&#x7684; service&#xFF0C;&#x7528;&#x4E8E;&#x914D;&#x7F6E;&#x767D;&#x540D;&#x5355;&#xFF1B;</li>
+<li>4&#x3001;&#x5BF9;&#x4E8E; NodePort &#x7C7B;&#x578B;&#x7684; service&#xFF0C;&#x7528;&#x4E8E;&#x914D;&#x7F6E; MASQUERADE&#xFF1B;</li>
+<li>5&#x3001;&#x5BF9;&#x4E8E; externalIPs &#x7C7B;&#x578B;&#x7684; service&#xFF1B;</li>
+</ul>
+<p>&#x4F46;&#x5BF9;&#x4E8E; ipvs &#x6A21;&#x5F0F;&#x7684; kube-proxy&#xFF0C;&#x65E0;&#x8BBA;&#x6709;&#x591A;&#x5C11; pod/service&#xFF0C;iptables &#x7684;&#x89C4;&#x5219;&#x6570;&#x90FD;&#x662F;&#x56FA;&#x5B9A;&#x7684;&#x3002;</p>
+<h4 id="ipvs-&#x6A21;&#x5F0F;&#x7684;&#x542F;&#x7528;"><a name="ipvs-&#x6A21;&#x5F0F;&#x7684;&#x542F;&#x7528;" class="anchor-navigation-ex-anchor" href="#ipvs-&#x6A21;&#x5F0F;&#x7684;&#x542F;&#x7528;"><i class="fa fa-link" aria-hidden="true"></i></a>ipvs &#x6A21;&#x5F0F;&#x7684;&#x542F;&#x7528;</h4>
+<p>1&#x3001;&#x9996;&#x5148;&#x8981;&#x52A0;&#x8F7D; IPVS &#x6240;&#x9700;&#x8981;&#x7684; kernel module</p>
+<pre class="language-"><code>$ modprobe -- ip_vs
+$ modprobe -- ip_vs_rr
+$ modprobe -- ip_vs_wrr
+$ modprobe -- ip_vs_sh
+$ modprobe -- nf_conntrack_ipv4
+$ cut -f1 -d &quot; &quot;  /proc/modules | grep -e ip_vs -e nf_conntrack_ipv4
+</code></pre><p>2&#x3001;&#x5728;&#x542F;&#x52A8; kube-proxy &#x65F6;&#xFF0C;&#x6307;&#x5B9A; proxy-mode &#x53C2;&#x6570;</p>
+<pre class="language-"><code>--proxy-mode=ipvs
+</code></pre><p>(&#x5982;&#x679C;&#x8981;&#x4F7F;&#x7528;&#x5176;&#x4ED6;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x7B97;&#x6CD5;&#xFF0C;&#x53EF;&#x4EE5;&#x6307;&#x5B9A; <code>--ipvs-scheduler=</code> &#x53C2;&#x6570;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; rr)</p>
+<p>&#x5F53;&#x521B;&#x5EFA; ClusterIP type &#x7684; service &#x65F6;&#xFF0C;IPVS proxier &#x4F1A;&#x6267;&#x884C;&#x4EE5;&#x4E0B;&#x4E09;&#x4E2A;&#x64CD;&#x4F5C;&#xFF1A;</p>
+<ul>
+<li>&#x786E;&#x4FDD;&#x672C;&#x673A;&#x5DF2;&#x521B;&#x5EFA; dummy &#x7F51;&#x5361;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; kube-ipvs0&#x3002;&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x521B;&#x5EFA; dummy &#x7F51;&#x5361;&#xFF1F;&#x56E0;&#x4E3A; ipvs netfilter &#x7684; DNAT &#x94A9;&#x5B50;&#x6302;&#x8F7D;&#x5728; INPUT &#x94FE;&#x4E0A;&#xFF0C;&#x5F53;&#x8BBF;&#x95EE; ClusterIP &#x65F6;&#xFF0C;&#x5C06; ClusterIP &#x7ED1;&#x5B9A;&#x5728; dummy &#x7F51;&#x5361;&#x4E0A;&#x4E3A;&#x4E86;&#x8BA9;&#x5185;&#x6838;&#x8BC6;&#x522B;&#x8BE5; IP &#x5C31;&#x662F;&#x672C;&#x673A; IP&#xFF0C;&#x8FDB;&#x800C;&#x8FDB;&#x5165; INPUT &#x94FE;&#xFF0C;&#x7136;&#x540E;&#x901A;&#x8FC7;&#x94A9;&#x5B50;&#x51FD;&#x6570; ip_vs_in &#x8F6C;&#x53D1;&#x5230; POSTROUTING &#x94FE;&#xFF1B;</li>
+<li>&#x5C06; ClusterIP &#x7ED1;&#x5B9A;&#x5230; dummy &#x7F51;&#x5361;&#xFF1B;</li>
+<li>&#x4E3A;&#x6BCF;&#x4E2A; ClusterIP &#x521B;&#x5EFA; IPVS virtual servers &#x548C; real server&#xFF0C;&#x5206;&#x522B;&#x5BF9;&#x5E94; service &#x548C; endpoints&#xFF1B;</li>
+</ul>
+<p>&#x4F8B;&#x5982;&#x4E0B;&#x9762;&#x7684;&#x793A;&#x4F8B;&#xFF1A;</p>
+<pre class="language-"><code>// kube-ipvs0 dummy &#x7F51;&#x5361;
+$ ip addr
+......
+4: kube-ipvs0: <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>BROADCAST,NOARP</span><span class="token punctuation">&gt;</span></span> mtu 1500 qdisc noop state DOWN group default
+    link/ether de:be:c0:73:bc:c7 brd ff:ff:ff:ff:ff:ff
+    inet 10.96.0.1/32 brd 10.96.0.1 scope global kube-ipvs0
+       valid_lft forever preferred_lft forever
+    inet 10.96.0.10/32 brd 10.96.0.10 scope global kube-ipvs0
+       valid_lft forever preferred_lft forever
+    inet 10.97.4.140/32 brd 10.97.4.140 scope global kube-ipvs0
+       valid_lft forever preferred_lft forever
+    ......
+
+
+// 10.97.4.140 &#x4E3A; CLUSTER-IP &#x6302;&#x8F7D;&#x5728; kube-ipvs0 &#x4E0A;
+$ kubectl get svc
+NAME             TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
+tenant-service   ClusterIP   10.97.4.140   <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>none</span><span class="token punctuation">&gt;</span></span>        7000/TCP   23s
+
+// 10.97.4.140 &#x540E;&#x7AEF;&#x7684; realserver &#x5206;&#x522B;&#x4E3A; 10.244.1.2 &#x548C; 10.244.1.3
+$ ipvsadm -L -n
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -&gt; RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  10.97.4.140:7000 rr
+  -&gt; 10.244.1.2:7000              Masq    1      0          0
+  -&gt; 10.244.1.3:7000              Masq    1      0          0
+</code></pre><h4 id="ipvs-&#x6A21;&#x5F0F;&#x4E0B;&#x6570;&#x636E;&#x5305;&#x7684;&#x6D41;&#x5411;"><a name="ipvs-&#x6A21;&#x5F0F;&#x4E0B;&#x6570;&#x636E;&#x5305;&#x7684;&#x6D41;&#x5411;" class="anchor-navigation-ex-anchor" href="#ipvs-&#x6A21;&#x5F0F;&#x4E0B;&#x6570;&#x636E;&#x5305;&#x7684;&#x6D41;&#x5411;"><i class="fa fa-link" aria-hidden="true"></i></a>ipvs &#x6A21;&#x5F0F;&#x4E0B;&#x6570;&#x636E;&#x5305;&#x7684;&#x6D41;&#x5411;</h4>
+<h4 id="clusterip-&#x8BBF;&#x95EE;&#x65B9;&#x5F0F;"><a name="clusterip-&#x8BBF;&#x95EE;&#x65B9;&#x5F0F;" class="anchor-navigation-ex-anchor" href="#clusterip-&#x8BBF;&#x95EE;&#x65B9;&#x5F0F;"><i class="fa fa-link" aria-hidden="true"></i></a>clusterIP &#x8BBF;&#x95EE;&#x65B9;&#x5F0F;</h4>
+<pre class="language-"><code>PREROUTING --&gt; KUBE-SERVICES --&gt; KUBE-CLUSTER-IP --&gt; INPUT --&gt; KUBE-FIREWALL --&gt; POSTROUTING
+</code></pre><ul>
+<li>&#x9996;&#x5148;&#x8FDB;&#x5165; PREROUTING &#x94FE;</li>
+<li>&#x4ECE; PREROUTING &#x94FE;&#x4F1A;&#x8F6C;&#x5230; KUBE-SERVICES &#x94FE;&#xFF0C;10.244.0.0/16 &#x4E3A; ClusterIP &#x7F51;&#x6BB5;</li>
+<li>&#x5728; KUBE-SERVICES &#x94FE;&#x6253;&#x6807;&#x8BB0;</li>
+<li>&#x4ECE; KUBE-SERVICES &#x94FE;&#x518D;&#x8FDB;&#x5165;&#x5230; KUBE-CLUSTER-IP &#x94FE;</li>
+<li>KUBE-CLUSTER-IP &#x4E3A; ipset &#x96C6;&#x5408;&#xFF0C;&#x5728;&#x6B64;&#x5904;&#x4F1A;&#x8FDB;&#x884C; DNAT</li>
+<li>&#x7136;&#x540E;&#x4F1A;&#x8FDB;&#x5165; INPUT &#x94FE;</li>
+<li>&#x4ECE; INPUT &#x94FE;&#x4F1A;&#x8F6C;&#x5230; KUBE-FIREWALL &#x94FE;&#xFF0C;&#x5728;&#x6B64;&#x5904;&#x68C0;&#x67E5;&#x6807;&#x8BB0;</li>
+<li>&#x5728; INPUT &#x94FE;&#x5904;&#xFF0C;ipvs &#x7684; LOCAL_IN Hook &#x53D1;&#x73B0;&#x6B64;&#x5305;&#x5728; ipvs &#x89C4;&#x5219;&#x4E2D;&#x5219;&#x76F4;&#x63A5;&#x8F6C;&#x53D1;&#x5230; POSTROUTING &#x94FE;</li>
+</ul>
+<pre class="language-"><code>-A PREROUTING -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES
+
+-A KUBE-SERVICES ! -s 10.244.0.0/16 -m comment --comment &quot;Kubernetes service cluster ip + port for masquerade purpose&quot; -m set --match-set KUBE-CLUSTER-IP dst,dst -j KUBE-MARK-MASQ
+
+// &#x6267;&#x884C;&#x5B8C; PREROUTING &#x89C4;&#x5219;,&#x6570;&#x636E;&#x6253;&#x4E0A;0x4000/0x4000&#x7684;&#x6807;&#x8BB0;
+-A KUBE-MARK-MASQ -j MARK --set-xmark 0x4000/0x4000
+
+-A KUBE-SERVICES -m set --match-set KUBE-CLUSTER-IP dst,dst -j ACCEPT
+</code></pre><p>KUBE-CLUSTER-IP &#x4E3A; ipset &#x5217;&#x8868;&#xFF1A;</p>
+<pre class="language-"><code># ipset list | grep -A 20 KUBE-CLUSTER-IP
+Name: KUBE-CLUSTER-IP
+Type: hash:ip,port
+Revision: 5
+Header: family inet hashsize 1024 maxelem 65536
+Size in memory: 352
+References: 2
+Members:
+10.96.0.10,17:53
+10.96.0.10,6:53
+10.96.0.1,6:443
+10.96.0.10,6:9153
+</code></pre><p>&#x7136;&#x540E;&#x4F1A;&#x8FDB;&#x5165; INPUT&#xFF1A;</p>
+<pre class="language-"><code>-A INPUT -j KUBE-FIREWALL
+
+-A KUBE-FIREWALL -m comment --comment &quot;kubernetes firewall for dropping marked packets&quot; -m mark --mark 0x8000/0x8000 -j DROP
+</code></pre><p>&#x5982;&#x679C;&#x8FDB;&#x6765;&#x7684;&#x6570;&#x636E;&#x5E26;&#x6709; 0x8000/0x8000 &#x6807;&#x8BB0;&#x5219;&#x4E22;&#x5F03;&#xFF0C;&#x82E5;&#x6709; 0x4000/0x4000 &#x6807;&#x8BB0;&#x5219;&#x6B63;&#x5E38;&#x6267;&#x884C;&#xFF1A;</p>
+<pre class="language-"><code>-A POSTROUTING -m comment --comment &quot;kubernetes postrouting rules&quot; -j KUBE-POSTROUTING
+-A KUBE-POSTROUTING -m comment --comment &quot;kubernetes service traffic requiring SNAT&quot; -m mark --mark 0x4000/0x4000 -j MASQUERADE
+</code></pre><h4 id="nodeport-&#x65B9;&#x5F0F;"><a name="nodeport-&#x65B9;&#x5F0F;" class="anchor-navigation-ex-anchor" href="#nodeport-&#x65B9;&#x5F0F;"><i class="fa fa-link" aria-hidden="true"></i></a>nodePort &#x65B9;&#x5F0F;</h4>
+<pre class="language-"><code>PREROUTING --&gt; KUBE-SERVICES --&gt; KUBE-NODE-PORT --&gt; INPUT --&gt; KUBE-FIREWALL --&gt; POSTROUTING
+</code></pre><ul>
+<li>&#x9996;&#x5148;&#x8FDB;&#x5165; PREROUTING &#x94FE;</li>
+<li>&#x4ECE; PREROUTING &#x94FE;&#x4F1A;&#x8F6C;&#x5230; KUBE-SERVICES &#x94FE;</li>
+<li>&#x5728; KUBE-SERVICES &#x94FE;&#x6253;&#x6807;&#x8BB0;</li>
+<li>&#x4ECE; KUBE-SERVICES &#x94FE;&#x518D;&#x8FDB;&#x5165;&#x5230; KUBE-NODE-PORT &#x94FE;</li>
+<li>KUBE-NODE-PORT &#x4E3A; ipset &#x96C6;&#x5408;&#xFF0C;&#x5728;&#x6B64;&#x5904;&#x4F1A;&#x8FDB;&#x884C; DNAT</li>
+<li>&#x7136;&#x540E;&#x4F1A;&#x8FDB;&#x5165; INPUT &#x94FE;</li>
+<li>&#x4ECE; INPUT &#x94FE;&#x4F1A;&#x8F6C;&#x5230; KUBE-FIREWALL &#x94FE;&#xFF0C;&#x5728;&#x6B64;&#x5904;&#x68C0;&#x67E5;&#x6807;&#x8BB0;</li>
+<li>&#x5728; INPUT &#x94FE;&#x5904;&#xFF0C;ipvs &#x7684; LOCAL_IN Hook &#x53D1;&#x73B0;&#x6B64;&#x5305;&#x5728; ipvs &#x89C4;&#x5219;&#x4E2D;&#x5219;&#x76F4;&#x63A5;&#x8F6C;&#x53D1;&#x5230; POSTROUTING &#x94FE;</li>
+</ul>
+<pre class="language-"><code>-A PREROUTING -m comment --comment &quot;kubernetes service portals&quot; -j KUBE-SERVICES
+
+-A KUBE-SERVICES ! -s 10.244.0.0/16 -m comment --comment &quot;Kubernetes service cluster ip + port for masquerade purpose&quot; -m set --match-set KUBE-CLUSTER-IP dst,dst -j KUBE-MARK-MASQ
+
+-A KUBE-MARK-MASQ -j MARK --set-xmark 0x4000/0x4000
+
+-A KUBE-SERVICES -m addrtype --dst-type LOCAL -j KUBE-NODE-PORT
+</code></pre><p>KUBE-NODE-PORT &#x5BF9;&#x5E94;&#x7684; ipset &#x5217;&#x8868;&#xFF1A;</p>
+<pre class="language-"><code># ipset list | grep -B 10 KUBE-NODE-PORT
+Name: KUBE-NODE-PORT-TCP
+Type: bitmap:port
+Revision: 3
+Header: range 0-65535
+Size in memory: 8268
+References: 0
+Members:
+</code></pre><p>&#x6D41;&#x5165; INPUT &#x540E;&#x4E0E; ClusterIP &#x7684;&#x8BBF;&#x95EE;&#x65B9;&#x5F0F;&#x76F8;&#x540C;&#x3002;</p>
+<h3 id="kube-proxy-ipvs-&#x6E90;&#x7801;&#x5206;&#x6790;"><a name="kube-proxy-ipvs-&#x6E90;&#x7801;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#kube-proxy-ipvs-&#x6E90;&#x7801;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>kube-proxy ipvs &#x6E90;&#x7801;&#x5206;&#x6790;</h3>
+<blockquote>
+<p> kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
+</blockquote>
+<p>&#x5728;&#x524D;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x5DF2;&#x7ECF;&#x4ECB;&#x7ECD;&#x8FC7; ipvs &#x7684;&#x521D;&#x59CB;&#x5316;&#x4E86;&#xFF0C;&#x4E0B;&#x9762;&#x76F4;&#x63A5;&#x770B;&#x5176;&#x6838;&#x5FC3;&#x65B9;&#x6CD5;&#xFF1A;proxier.syncRunner&#x3002;</p>
+<pre class="language-"><code>func NewProxier(......) {
+    ......
+     proxier.syncRunner = async.NewBoundedFrequencyRunner(&quot;sync-runner&quot;, proxier.syncProxyRules, minSyncPeriod, syncPeriod, burstSyncs)
+     ......
+}
+</code></pre><p><code>proxier.syncRunner()</code> &#x6267;&#x884C;&#x6D41;&#x7A0B;&#xFF1A;</p>
+<ul>
+<li>&#x901A;&#x8FC7; iptables-save &#x83B7;&#x53D6;&#x73B0;&#x6709;&#x7684; Filter &#x548C; NAT &#x8868;&#x5B58;&#x5728;&#x7684;&#x94FE;&#x6570;&#x636E;</li>
+<li>&#x521B;&#x5EFA;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#x4E0E;&#x89C4;&#x5219;</li>
+<li>&#x521B;&#x5EFA; Dummy &#x63A5;&#x53E3;&#x548C; ipset &#x9ED8;&#x8BA4;&#x5217;&#x8868;</li>
+<li>&#x4E3A;&#x6BCF;&#x4E2A;&#x670D;&#x52A1;&#x751F;&#x6210; ipvs &#x89C4;&#x5219;</li>
+<li>&#x5BF9; serviceMap &#x5185;&#x7684;&#x6BCF;&#x4E2A;&#x670D;&#x52A1;&#x8FDB;&#x884C;&#x904D;&#x5386;&#x5904;&#x7406;&#xFF0C;&#x5BF9;&#x4E0D;&#x540C;&#x7684;&#x670D;&#x52A1;&#x7C7B;&#x578B;(clusterip/nodePort/externalIPs/load-balancer)&#x8FDB;&#x884C;&#x4E0D;&#x540C;&#x7684;&#x5904;&#x7406;(ipset &#x5217;&#x8868;/vip/ipvs &#x540E;&#x7AEF;&#x670D;&#x52A1;&#x5668;)</li>
+<li>&#x6839;&#x636E; endpoint &#x5217;&#x8868;&#xFF0C;&#x66F4;&#x65B0; KUBE-LOOP-BACK &#x7684; ipset &#x5217;&#x8868;</li>
+<li>&#x82E5;&#x4E3A; clusterIP &#x7C7B;&#x578B;&#x66F4;&#x65B0;&#x5BF9;&#x5E94;&#x7684; ipset &#x5217;&#x8868; KUBE-CLUSTER-IP</li>
+<li>&#x82E5;&#x4E3A; externalIPs &#x7C7B;&#x578B;&#x66F4;&#x65B0;&#x5BF9;&#x5E94;&#x7684; ipset &#x5217;&#x8868; KUBE-EXTERNAL-IP</li>
+<li>&#x82E5;&#x4E3A; load-balancer &#x7C7B;&#x578B;&#x66F4;&#x65B0;&#x5BF9;&#x5E94;&#x7684; ipset &#x5217;&#x8868; KUBE-LOAD-BALANCER&#x3001;KUBE-LOAD-BALANCER-LOCAL&#x3001;KUBE-LOAD-BALANCER-FW&#x3001;KUBE-LOAD-BALANCER-SOURCE-CIDR&#x3001;KUBE-LOAD-BALANCER-SOURCE-IP</li>
+<li>&#x82E5;&#x4E3A; NodePort &#x7C7B;&#x578B;&#x66F4;&#x65B0;&#x5BF9;&#x5E94;&#x7684; ipset &#x5217;&#x8868; KUBE-NODE-PORT-TCP&#x3001;KUBE-NODE-PORT-LOCAL-TCP&#x3001;KUBE-NODE-PORT-LOCAL-SCTP-HASH&#x3001;KUBE-NODE-PORT-LOCAL-UDP&#x3001;KUBE-NODE-PORT-SCTP-HASH&#x3001;KUBE-NODE-PORT-UDP</li>
+<li>&#x540C;&#x6B65; ipset &#x8BB0;&#x5F55;</li>
+<li>&#x5237;&#x65B0; iptables &#x89C4;&#x5219;</li>
+</ul>
+<pre class="language-"><code>func (proxier *Proxier) syncProxyRules() {
+    proxier.mu.Lock()
+    defer proxier.mu.Unlock()
+
+
+    serviceUpdateResult := proxy.UpdateServiceMap(proxier.serviceMap, proxier.serviceChanges)
+    endpointUpdateResult := proxier.endpointsMap.Update(proxier.endpointsChanges)
+
+    staleServices := serviceUpdateResult.UDPStaleClusterIP
+    // &#x5408;&#x5E76; service &#x5217;&#x8868;
+    for _, svcPortName := range endpointUpdateResult.StaleServiceNames {
+        if svcInfo, ok := proxier.serviceMap[svcPortName]; ok &amp;&amp; svcInfo != nil &amp;&amp; svcInfo.Protocol() == v1.ProtocolUDP {
+            staleServices.Insert(svcInfo.ClusterIP().String())
+            for _, extIP := range svcInfo.ExternalIPStrings() {
+                staleServices.Insert(extIP)
+            }
+        }
+    }
+    ......
+</code></pre><p>&#x8BFB;&#x53D6;&#x7CFB;&#x7EDF; iptables &#x5230;&#x5185;&#x5B58;&#xFF0C;&#x521B;&#x5EFA;&#x81EA;&#x5B9A;&#x4E49;&#x94FE;&#x4EE5;&#x53CA; iptables &#x89C4;&#x5219;&#xFF0C;&#x521B;&#x5EFA; dummy interface kube-ipvs0&#xFF0C;&#x521B;&#x5EFA;&#x9ED8;&#x8BA4;&#x7684; ipset &#x89C4;&#x5219;&#x3002;</p>
+<pre class="language-"><code>    proxier.natChains.Reset()
+    proxier.natRules.Reset()
+    proxier.filterChains.Reset()
+    proxier.filterRules.Reset()
+
+    writeLine(proxier.filterChains, &quot;*filter&quot;)
+    writeLine(proxier.natChains, &quot;*nat&quot;)
+
+      // &#x521B;&#x5EFA;kubernetes&#x7684;&#x8868;&#x8FDE;&#x63A5;&#x94FE;&#x6570;&#x636E;
+    proxier.createAndLinkeKubeChain()
+
+        // &#x521B;&#x5EFA; dummy interface kube-ipvs0
+    _, err := proxier.netlinkHandle.EnsureDummyDevice(DefaultDummyDevice)
+    if err != nil {
+        ......
+        return
+    }
+
+        // &#x521B;&#x5EFA;&#x9ED8;&#x8BA4;&#x7684; ipset &#x89C4;&#x5219;
+    for _, set := range proxier.ipsetList {
+        if err := ensureIPSet(set); err != nil {
+            return
+        }
+        set.resetEntries()
+    }
+</code></pre><p> &#x5BF9;&#x6BCF;&#x4E00;&#x4E2A;&#x670D;&#x52A1;&#x521B;&#x5EFA; ipvs &#x89C4;&#x5219;&#x3002;&#x6839;&#x636E; endpoint &#x5217;&#x8868;&#xFF0C;&#x66F4;&#x65B0; KUBE-LOOP-BACK &#x7684; ipset &#x5217;&#x8868;&#x3002;</p>
+<pre class="language-"><code>    for svcName, svc := range proxier.serviceMap {
+        svcInfo, ok := svc.(*serviceInfo)
+        if !ok {
+            ......
+        }
+
+        for _, e := range proxier.endpointsMap[svcName] {
+            ep, ok := e.(*proxy.BaseEndpointInfo)
+            if !ok {
+                klog.Errorf(&quot;Failed to cast BaseEndpointInfo %q&quot;, e.String())
+                continue
+            }
+            ......
+
+            if valid := proxier.ipsetList[kubeLoopBackIPSet].validateEntry(entry); !valid {
+                ......
+            }
+            proxier.ipsetList[kubeLoopBackIPSet].activeEntries.Insert(entry.String())
+        }
+</code></pre><p>&#x5BF9;&#x4E8E; clusterIP &#x7C7B;&#x578B;&#x66F4;&#x65B0;&#x5BF9;&#x5E94;&#x7684; ipset &#x5217;&#x8868; KUBE-CLUSTER-IP&#x3002;</p>
+<pre class="language-"><code>        if valid := proxier.ipsetList[kubeClusterIPSet].validateEntry(entry); !valid {
+            ......
+        }
+        proxier.ipsetList[kubeClusterIPSet].activeEntries.Insert(entry.String())
+        ......
+        if svcInfo.SessionAffinityType() == v1.ServiceAffinityClientIP {
+            ......
+        }
+        // &#x7ED1;&#x5B9A; ClusterIP to dummy interface
+        if err := proxier.syncService(svcNameString, serv, true); err == nil {
+            // &#x540C;&#x6B65; endpoints &#x4FE1;&#x606F;
+            if err := proxier.syncEndpoint(svcName, false, serv); err != nil {
+                ......
+            }
+        } else {
+            ......
+        }
+</code></pre><p>&#x4E3A; externalIP &#x521B;&#x5EFA; ipvs &#x89C4;&#x5219;&#x3002;</p>
+<pre class="language-"><code>        for _, externalIP := range svcInfo.ExternalIPStrings() {
+            if local, err := utilproxy.IsLocalIP(externalIP); err != nil {
+                ......
+            } else if local &amp;&amp; (svcInfo.Protocol() != v1.ProtocolSCTP) {
+                ......
+                if proxier.portsMap[lp] != nil {
+                    ......
+                } else {
+                    socket, err := proxier.portMapper.OpenLocalPort(&amp;lp)
+                    if err != nil {
+                        ......
+                    }
+                    replacementPortsMap[lp] = socket
+                }
+            }
+            ......
+            if valid := proxier.ipsetList[kubeExternalIPSet].validateEntry(entry); !valid {
+                ......
+            }
+            proxier.ipsetList[kubeExternalIPSet].activeEntries.Insert(entry.String())
+
+            ......
+            if svcInfo.SessionAffinityType() == v1.ServiceAffinityClientIP {
+                ......
+            }
+            if err := proxier.syncService(svcNameString, serv, true); err == nil {
+                ......
+                if err := proxier.syncEndpoint(svcName, false, serv); err != nil {
+                    ......
+                }
+            } else {
+                ......
+            }
+        }
+</code></pre><p>&#x4E3A; load-balancer&#x7C7B;&#x578B;&#x521B;&#x5EFA; ipvs &#x89C4;&#x5219;&#x3002;</p>
+<pre class="language-"><code>        for _, ingress := range svcInfo.LoadBalancerIPStrings() {
+            if ingress != &quot;&quot; {
+                ......
+                if valid := proxier.ipsetList[kubeLoadBalancerSet].validateEntry(entry); !valid {
+                    ......
+                }
+                proxier.ipsetList[kubeLoadBalancerSet].activeEntries.Insert(entry.String())
+
+                if svcInfo.OnlyNodeLocalEndpoints() {
+                    ......
+                }
+                if len(svcInfo.LoadBalancerSourceRanges()) != 0 {
+                    ......
+                    for _, src := range svcInfo.LoadBalancerSourceRanges() {
+                          ......
+                    }
+                    ......
+                }
+                ......
+                if svcInfo.SessionAffinityType() == v1.ServiceAffinityClientIP {
+                    ......
+                }
+                if err := proxier.syncService(svcNameString, serv, true); err == nil {
+                    ......
+                    if err := proxier.syncEndpoint(svcName, svcInfo.OnlyNodeLocalEndpoints(), serv); err != nil {
+                       ......
+                    }
+                } else {
+                    ......
+                }
+            }
+        }
+</code></pre><p>&#x4E3A; nodePort &#x7C7B;&#x578B;&#x521B;&#x5EFA; ipvs &#x89C4;&#x5219;&#x3002;</p>
+<pre class="language-"><code>        if svcInfo.NodePort() != 0 {
+            ......
+
+            var lps []utilproxy.LocalPort
+            for _, address := range nodeAddresses {
+                ......
+                lps = append(lps, lp)
+            }
+            for _, lp := range lps {
+                if proxier.portsMap[lp] != nil {
+                    ......
+                } else if svcInfo.Protocol() != v1.ProtocolSCTP {
+                    socket, err := proxier.portMapper.OpenLocalPort(&amp;lp)
+                    if err != nil {
+                        ......
+                    }
+                    if lp.Protocol == &quot;udp&quot; {
+                        ......
+                    }
+                }
+            }
+            switch protocol {
+            case &quot;tcp&quot;:
+                    ......
+            case &quot;udp&quot;:
+                    ......
+            case &quot;sctp&quot;:
+                    ......
+            default:
+                    ......
+            }
+            if nodePortSet != nil {
+                for _, entry := range entries {
+                    ......
+                    nodePortSet.activeEntries.Insert(entry.String())
+                }
+            }
+
+            if svcInfo.OnlyNodeLocalEndpoints() {
+                var nodePortLocalSet *IPSet
+                switch protocol {
+                case &quot;tcp&quot;:
+                    nodePortLocalSet = proxier.ipsetList[kubeNodePortLocalSetTCP]
+                case &quot;udp&quot;:
+                    nodePortLocalSet = proxier.ipsetList[kubeNodePortLocalSetUDP]
+                case &quot;sctp&quot;:
+                    nodePortLocalSet = proxier.ipsetList[kubeNodePortLocalSetSCTP]
+                default:
+                    ......
+                }
+                if nodePortLocalSet != nil {
+                    entryInvalidErr := false
+                    for _, entry := range entries {
+                                                ......
+                        nodePortLocalSet.activeEntries.Insert(entry.String())
+                    }
+                    ......
+                }
+            }
+            for _, nodeIP := range nodeIPs {
+                    ......
+                if svcInfo.SessionAffinityType() == v1.ServiceAffinityClientIP {
+                    ......
+                }
+                if err := proxier.syncService(svcNameString, serv, false); err == nil {
+                    if err := proxier.syncEndpoint(svcName, svcInfo.OnlyNodeLocalEndpoints(), serv); err != nil {
+                        ......
+                    }
+                } else {
+                    ......
+                }
+            }
+        }
+    }
+</code></pre><p>&#x540C;&#x6B65; ipset &#x8BB0;&#x5F55;&#xFF0C;&#x6E05;&#x7406; conntrack&#x3002;</p>
+<pre class="language-"><code>    for _, set := range proxier.ipsetList {
+        set.syncIPSetEntries()
+    }
+
+    proxier.writeIptablesRules()
+
+    proxier.iptablesData.Reset()
+    proxier.iptablesData.Write(proxier.natChains.Bytes())
+    proxier.iptablesData.Write(proxier.natRules.Bytes())
+    proxier.iptablesData.Write(proxier.filterChains.Bytes())
+    proxier.iptablesData.Write(proxier.filterRules.Bytes())
+
+    err = proxier.iptables.RestoreAll(proxier.iptablesData.Bytes(), utiliptables.NoFlushTables, utiliptables.RestoreCounters)
+    if err != nil {
+        ......
+    }
+    ......
+    proxier.deleteEndpointConnections(endpointUpdateResult.StaleEndpoints)
+}
+</code></pre><h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x8BB2;&#x8FF0;&#x4E86; kube-proxy ipvs &#x6A21;&#x5F0F;&#x7684;&#x539F;&#x7406;&#x4E0E;&#x5B9E;&#x73B0;&#xFF0C;iptables &#x6A21;&#x5F0F;&#x4E0E; ipvs &#x6A21;&#x5F0F;&#x4E0B;&#x5728;&#x6E90;&#x7801;&#x5B9E;&#x73B0;&#x4E0A;&#x6709;&#x8BB8;&#x591A;&#x76F8;&#x4F3C;&#x4E4B;&#x5904;&#xFF0C;&#x4F46;&#x4E8C;&#x8005;&#x539F;&#x7406;&#x4E0D;&#x540C;&#xFF0C;&#x7406;&#x89E3;&#x4E86;&#x539F;&#x7406;&#x5206;&#x6790;&#x4EE3;&#x7801;&#x5219;&#x66F4;&#x52A0;&#x5BB9;&#x6613;&#xFF0C;&#x7B14;&#x8005;&#x5BF9;&#x4E8E; ipvs &#x7684;&#x77E5;&#x8BC6;&#x4E5F;&#x662F;&#x73B0;&#x5B66;&#x7684;&#xFF0C;&#x6587;&#x4E2D;&#x5982;&#x6709;&#x4E0D;&#x5F53;&#x4E4B;&#x5904;&#x671B;&#x6307;&#x6B63;&#x3002;&#x867D;&#x7136; ipvs &#x7684;&#x6027;&#x80FD;&#x8981;&#x6BD4; iptables &#x66F4;&#x597D;&#xFF0C;&#x4F46;&#x793E;&#x533A;&#x4E2D;&#x5DF2;&#x6709;&#x76F8;&#x5173;&#x7684;&#x6587;&#x7AE0;&#x6307;&#x51FA;  <a href="https://lwn.net/Articles/747551/" target="_blank">BPF(Berkeley Packet Filter)</a> &#x6BD4; ipvs &#x7684;&#x6027;&#x80FD;&#x66F4;&#x597D;&#xFF0C;&#x4E14; BPF &#x5C06;&#x8981;&#x53D6;&#x4EE3; iptables&#xFF0C;&#x81F3;&#x4E8E;&#x4E0B;&#x4E00;&#x6B65;&#x5982;&#x4F55;&#x53D1;&#x5C55;&#xFF0C;&#x8BA9;&#x6211;&#x4EEC;&#x62ED;&#x76EE;&#x4EE5;&#x5F85;&#x3002;</p>
+<p>&#x53C2;&#x8003;&#xFF1A;</p>
+<p><a href="http://www.austintek.com/LVS/LVS-HOWTO/HOWTO/LVS-HOWTO.filter_rules.html" target="_blank">http://www.austintek.com/LVS/LVS-HOWTO/HOWTO/LVS-HOWTO.filter_rules.html</a></p>
+<p><a href="https://bestsamina.github.io/posts/2018-10-19-ipvs-based-kube-proxy-4-scaled-k8s-lb/" target="_blank">https://bestsamina.github.io/posts/2018-10-19-ipvs-based-kube-proxy-4-scaled-k8s-lb/</a></p>
+<p><a href="https://www.bookstack.cn/read/k8s-source-code-analysis/core-kube-proxy-ipvs.md" target="_blank">https://www.bookstack.cn/read/k8s-source-code-analysis/core-kube-proxy-ipvs.md</a></p>
+<p><a href="https://blog.51cto.com/goome/2369150" target="_blank">https://blog.51cto.com/goome/2369150</a></p>
+<p><a href="https://xigang.github.io/2019/07/21/kubernetes-service/" target="_blank">https://xigang.github.io/2019/07/21/kubernetes-service/</a></p>
+<p><a href="https://segmentfault.com/a/1190000016333317" target="_blank">https://segmentfault.com/a/1190000016333317</a></p>
+<p><a href="https://cilium.io/blog/2018/04/17/why-is-the-kernel-community-replacing-iptables/" target="_blank">https://cilium.io/blog/2018/04/17/why-is-the-kernel-community-replacing-iptables/</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2019-12-02 17:45:47
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="kube_proxy_iptables.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: kube-proxy iptables 模式源码分析">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"kube-proxy ipvs 模式源码分析","date":"2019-11-18T11:40:30.000Z","tags":["kube-proxy","ipvs"],"type":"kube-proxy","level":"1.2.11","depth":2,"previous":{"title":"kube-proxy iptables 模式源码分析","level":"1.2.10","depth":2,"path":"kubernetes/kube_proxy_iptables.md","ref":"kubernetes/kube_proxy_iptables.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0","livereload"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/kube_proxy_ipvs.md","mtime":"2019-12-02T09:45:47.702Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-12-02T11:31:57.771Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+
