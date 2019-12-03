@@ -548,9 +548,14 @@ func (m *kubeGenericRuntimeManager) startContainer(podSandboxID string, podSandb
 
 
 参考：
+
 [k8s源码分析-kubelet](https://sycki.com/articles/kubernetes/k8s-code-kubelet)
+
 [Kubelet源码分析(一):启动流程分析](https://segmentfault.com/a/1190000008267351)
+
 [kubelet 源码分析：pod 新建流程](http://cizixs.com/2017/06/07/kubelet-source-code-analysis-part-2/)
+
 [kubelet创建Pod流程解析](https://fatsheep9146.github.io/2018/07/22/kubelet%E5%88%9B%E5%BB%BAPod%E6%B5%81%E7%A8%8B%E8%A7%A3%E6%9E%90/)
+
 [Kubelet: Pod Lifecycle Event Generator (PLEG) Design-	proposals](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/node/pod-lifecycle-event-generator.md)
 

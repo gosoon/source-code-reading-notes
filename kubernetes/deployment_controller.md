@@ -1275,5 +1275,7 @@ func EqualIgnoreHash(template1, template2 *v1.PodTemplateSpec) bool {
 
 
 参考：
+
 https://my.oschina.net/u/3797264/blog/2966086
+
 https://draveness.me/kubernetes-deployment

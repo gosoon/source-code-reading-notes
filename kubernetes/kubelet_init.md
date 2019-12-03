@@ -530,8 +530,13 @@ syncLoopIteration()  方法对多个管道进行遍历，如果 pod 发生变化
 本篇文章主要讲述了 kubelet 组件从加载配置到初始化内部的各个模块再到启动 kubelet 服务的整个流程，上面的时序图能清楚的看到函数之间的调用关系，但是其中每个组件具体的工作方式以及组件之间的交互方式还不得而知，后面会一探究竟。
 
 参考：
+
 [kubernetes node components – kubelet](http://www.sel.zju.edu.cn/?p=595)
+
 [Kubelet 源码分析(一):启动流程分析](https://segmentfault.com/a/1190000008267351)
+
 [kubelet 源码分析：启动流程](https://cizixs.com/2017/06/06/kubelet-source-code-analysis-part-1/)
+
 [kubernetes 的 kubelet 的工作过程](https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2017/05/02/Kubernetes-kubelet.html)
+
 [kubelet 内部实现解析](https://fatsheep9146.github.io/2018/07/08/kubelet%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0%E8%A7%A3%E6%9E%90/)
