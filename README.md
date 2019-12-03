@@ -5,5 +5,4 @@
 
 本书会不定期更新，最新发表的文章会及时推送到公众号，欢迎关注：
 
-
-![](http://cdn.tianfeiyu.com/qrcode_for_gh_82681b81d20b_258.jpg)
+<img src="images/tianfeiyu.png"></img>
