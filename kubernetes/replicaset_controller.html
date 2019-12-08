@@ -1,0 +1,1283 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>replicaset controller 源码分析 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="kube_scheduler_process.html" />
+    
+    
+    <link rel="prev" href="deployment_controller.html" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.2" data-path="replicaset_controller.html">
+            
+                <a href="replicaset_controller.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    replicaset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.12" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.12.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.13" data-path="node_status.html">
+            
+                <a href="node_status.html">
+            
+                    
+                        <b>1.2.13.</b>
+                    
+                    kubelet 状态上报的方式
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.14" data-path="k8s_events.html">
+            
+                <a href="k8s_events.html">
+            
+                    
+                        <b>1.2.14.</b>
+                    
+                    kubelet 中事件处理机制
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >replicaset controller 源码分析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <p>&#x5728;&#x524D;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x5DF2;&#x7ECF;&#x4ECB;&#x7ECD;&#x4E86; deployment controller &#x7684;&#x8BBE;&#x8BA1;&#x4E0E;&#x5B9E;&#x73B0;&#xFF0C;deployment &#x63A7;&#x5236;&#x7684;&#x662F; replicaset&#xFF0C;&#x800C; replicaset &#x63A7;&#x5236; pod &#x7684;&#x521B;&#x5EFA;&#x4E0E;&#x5220;&#x9664;&#xFF0C;deployment &#x901A;&#x8FC7;&#x63A7;&#x5236; replicaset &#x5B9E;&#x73B0;&#x4E86;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x3001;&#x56DE;&#x6EDA;&#x7B49;&#x64CD;&#x4F5C;&#x3002;&#x800C; replicaset &#x4F1A;&#x76F4;&#x63A5;&#x63A7;&#x5236; pod &#x7684;&#x521B;&#x5EFA;&#x4E0E;&#x5220;&#x9664;&#xFF0C;&#x672C;&#x6587;&#x4F1A;&#x7EE7;&#x7EED;&#x4ECE;&#x6E90;&#x7801;&#x5C42;&#x9762;&#x5206;&#x6790; replicaset &#x7684;&#x8BBE;&#x8BA1;&#x4E0E;&#x5B9E;&#x73B0;&#x3002;</p>
+<p>&#x5728;&#x5206;&#x6790;&#x6E90;&#x7801;&#x524D;&#x5148;&#x8003;&#x8651;&#x4E00;&#x4E0B; replicaset &#x7684;&#x4F7F;&#x7528;&#x573A;&#x666F;&#xFF0C;&#x5728;&#x5E73;&#x65F6;&#x7684;&#x64CD;&#x4F5C;&#x4E2D;&#x5176;&#x5B9E;&#x6211;&#x4EEC;&#x5E76;&#x4E0D;&#x4F1A;&#x76F4;&#x63A5;&#x64CD;&#x4F5C; replicaset&#xFF0C;replicaset &#x4E5F;&#x4EC5;&#x6709;&#x51E0;&#x4E2A;&#x7B80;&#x5355;&#x7684;&#x64CD;&#x4F5C;&#xFF0C;&#x521B;&#x5EFA;&#x3001;&#x5220;&#x9664;&#x3001;&#x66F4;&#x65B0;&#x7B49;&#xFF0C;&#x4F46;&#x5176;&#x5730;&#x4F4D;&#x662F;&#x975E;&#x5E38;&#x91CD;&#x8981;&#x7684;&#xFF0C;replicaset &#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x5C31;&#x662F;&#x901A;&#x8FC7; add/del pod &#x6765;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x7684;&#x72B6;&#x6001;&#x3002;</p>
+<h3 id="replicasetcontroller-&#x6E90;&#x7801;&#x5206;&#x6790;"><a name="replicasetcontroller-&#x6E90;&#x7801;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#replicasetcontroller-&#x6E90;&#x7801;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>ReplicaSetController &#x6E90;&#x7801;&#x5206;&#x6790;</h3>
+<h4 id="&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><a name="&#x542F;&#x52A8;&#x6D41;&#x7A0B;" class="anchor-navigation-ex-anchor" href="#&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x542F;&#x52A8;&#x6D41;&#x7A0B;</h4>
+<p>&#x9996;&#x5148;&#x6765;&#x770B; replicaSetController &#x5BF9;&#x8C61;&#x521D;&#x59CB;&#x5316;&#x4EE5;&#x53CA;&#x542F;&#x52A8;&#x7684;&#x4EE3;&#x7801;&#xFF0C;&#x5728; startReplicaSetController &#x4E2D;&#x6709;&#x4E24;&#x4E2A;&#x6BD4;&#x8F83;&#x91CD;&#x8981;&#x7684;&#x53D8;&#x91CF;&#xFF1A;</p>
+<ul>
+<li>BurstReplicas&#xFF1A;&#x7528;&#x6765;&#x63A7;&#x5236;&#x5728;&#x4E00;&#x4E2A; syncLoop &#x8FC7;&#x7A0B;&#x4E2D; rs &#x6700;&#x591A;&#x80FD;&#x521B;&#x5EFA;&#x7684; pod &#x6570;&#x91CF;&#xFF0C;&#x8BBE;&#x7F6E;&#x4E0A;&#x9650;&#x503C;&#x662F;&#x4E3A;&#x4E86;&#x907F;&#x514D;&#x5355;&#x4E2A; rs &#x5F71;&#x54CD;&#x6574;&#x4E2A;&#x7CFB;&#x7EDF;&#xFF0C;&#x9ED8;&#x8BA4;&#x503C;&#x4E3A; 500&#xFF1B;</li>
+<li>ConcurrentRSSyncs&#xFF1A;&#x6307;&#x7684;&#x662F;&#x9700;&#x8981;&#x542F;&#x52A8;&#x591A;&#x5C11;&#x4E2A; goroutine &#x5904;&#x7406; informer &#x961F;&#x5217;&#x4E2D;&#x7684;&#x5BF9;&#x8C61;&#xFF0C;&#x9ED8;&#x8BA4;&#x503C;&#x4E3A; 5&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kube-controller-manager/app/apps.go:69</code></p>
+<pre class="language-"><code>func startReplicaSetController(ctx ControllerContext) (http.Handler, bool, error) {
+    if !ctx.AvailableResources[schema.GroupVersionResource{Group: &quot;apps&quot;, Version: &quot;v1&quot;, Resource: &quot;replicasets&quot;}] {
+        return nil, false, nil
+    }
+    go replicaset.NewReplicaSetController(
+        ctx.InformerFactory.Apps().V1().ReplicaSets(),
+        ctx.InformerFactory.Core().V1().Pods(),
+        ctx.ClientBuilder.ClientOrDie(&quot;replicaset-controller&quot;),
+        replicaset.BurstReplicas,
+    ).Run(int(ctx.ComponentConfig.ReplicaSetController.ConcurrentRSSyncs), ctx.Stop)
+    return nil, true, nil
+}
+</code></pre><p>&#x4E0B;&#x9762;&#x662F; replicaSetController &#x521D;&#x59CB;&#x5316;&#x7684;&#x5177;&#x4F53;&#x6B65;&#x9AA4;&#xFF0C;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#x5176;&#x4F1A;&#x76D1;&#x542C; pod &#x4EE5;&#x53CA; rs &#x4E24;&#x4E2A;&#x5BF9;&#x8C61;&#x7684;&#x4E8B;&#x4EF6;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:109</code></p>
+<pre class="language-"><code>func NewReplicaSetController(......) *ReplicaSetController {
+    ......
+    // 1&#x3001;&#x6B64;&#x5904;&#x8C03;&#x7528; NewBaseController
+    return NewBaseController(rsInformer, podInformer, kubeClient, burstReplicas,
+        apps.SchemeGroupVersion.WithKind(&quot;ReplicaSet&quot;),
+        &quot;replicaset_controller&quot;,
+        &quot;replicaset&quot;,
+        controller.RealPodControl{
+            KubeClient: kubeClient,
+            Recorder:   eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: &quot;replicaset-controller&quot;}),
+        },
+    )
+}
+
+func NewBaseController(......) *ReplicaSetController {
+    ......
+    // 2&#x3001;ReplicaSetController &#x521D;&#x59CB;&#x5316;
+    rsc := &amp;ReplicaSetController{
+        GroupVersionKind: gvk,
+        kubeClient:       kubeClient,
+        podControl:       podControl,
+        burstReplicas:    burstReplicas,
+        // 3&#x3001;expectations &#x7684;&#x521D;&#x59CB;&#x5316;
+        expectations:     controller.NewUIDTrackingControllerExpectations(controller.NewControllerExpectations()),
+        queue:            workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), queueName),
+    }
+
+    // 4&#x3001;rsInformer &#x4E2D;&#x6CE8;&#x518C;&#x7684; EventHandler
+    rsInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+        AddFunc:    rsc.enqueueReplicaSet,
+        UpdateFunc: rsc.updateRS,
+        DeleteFunc: rsc.enqueueReplicaSet,
+    })
+    ......
+
+    // 5&#x3001;podInformer &#x4E2D;&#x6CE8;&#x518C;&#x7684; EventHandler
+    podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+        AddFunc: rsc.addPod,
+        UpdateFunc: rsc.updatePod,
+        DeleteFunc: rsc.deletePod,
+    })
+    ......
+
+    return rsc
+}
+</code></pre><p>replicaSetController &#x521D;&#x59CB;&#x5316;&#x5B8C;&#x6210;&#x540E;&#x4F1A;&#x8C03;&#x7528; <code>Run</code> &#x65B9;&#x6CD5;&#x542F;&#x52A8; 5 &#x4E2A; goroutine &#x5904;&#x7406; informer &#x961F;&#x5217;&#x4E2D;&#x7684;&#x4E8B;&#x4EF6;&#x5E76;&#x8FDB;&#x884C; sync &#x64CD;&#x4F5C;&#xFF0C;kube-controller-manager &#x4E2D;&#x6BCF;&#x4E2A; controller &#x7684;&#x542F;&#x52A8;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x5982;&#x4E0B;&#x6240;&#x793A;&#x6D41;&#x7A0B;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:177</code></p>
+<pre class="language-"><code>func (rsc *ReplicaSetController) Run(workers int, stopCh &lt;-chan struct{}) {
+    ......
+
+    // 1&#x3001;&#x7B49;&#x5F85; informer &#x540C;&#x6B65;&#x7F13;&#x5B58;
+    if !cache.WaitForNamedCacheSync(rsc.Kind, stopCh, rsc.podListerSynced, rsc.rsListerSynced) {
+        return
+    }
+
+    // 2&#x3001;&#x542F;&#x52A8; 5 &#x4E2A; goroutine &#x6267;&#x884C; worker &#x65B9;&#x6CD5;
+    for i := 0; i &lt; workers; i++ {
+        go wait.Until(rsc.worker, time.Second, stopCh)
+    }
+
+    &lt;-stopCh
+}
+
+// 3&#x3001;worker &#x65B9;&#x6CD5;&#x4E2D;&#x8C03;&#x7528; rocessNextWorkItem
+func (rsc *ReplicaSetController) worker() {
+    for rsc.processNextWorkItem() {
+    }
+}
+
+func (rsc *ReplicaSetController) processNextWorkItem() bool {
+    // 4&#x3001;&#x4ECE;&#x961F;&#x5217;&#x4E2D;&#x53D6;&#x51FA;&#x5BF9;&#x8C61;
+    key, quit := rsc.queue.Get()
+    if quit {
+        return false
+    }
+    defer rsc.queue.Done(key)
+
+    // 5&#x3001;&#x6267;&#x884C; sync &#x64CD;&#x4F5C;
+    err := rsc.syncHandler(key.(string))
+    ......
+
+    return true
+}
+</code></pre><h4 id="eventhandler"><a name="eventhandler" class="anchor-navigation-ex-anchor" href="#eventhandler"><i class="fa fa-link" aria-hidden="true"></i></a>EventHandler</h4>
+<p>&#x521D;&#x59CB;&#x5316; replicaSetController &#x65F6;&#xFF0C;&#x5176;&#x4E2D;&#x6709;&#x4E00;&#x4E2A; <code>expectations</code> &#x5B57;&#x6BB5;&#xFF0C;&#x8FD9;&#x662F; rs &#x4E2D;&#x4E00;&#x4E2A;&#x6BD4;&#x8F83;&#x7279;&#x6B8A;&#x7684;&#x673A;&#x5236;&#xFF0C;&#x4E3A;&#x4E86;&#x8BF4;&#x6E05;&#x695A; expectations&#xFF0C;&#x5148;&#x6765;&#x770B;&#x4E00;&#x4E0B; controller &#x4E2D;&#x6240;&#x6CE8;&#x518C;&#x7684; eventHandler&#xFF0C;replicaSetController &#x4F1A; watch pod &#x548C; replicaSet &#x4E24;&#x4E2A;&#x5BF9;&#x8C61;&#xFF0C;eventHandler &#x4E2D;&#x6CE8;&#x518C;&#x4E86;&#x5BF9;&#x8FD9;&#x4E24;&#x79CD;&#x5BF9;&#x8C61;&#x7684; add&#x3001;update&#x3001;delete &#x4E09;&#x4E2A;&#x64CD;&#x4F5C;&#x3002;</p>
+<h5 id="addpod"><a name="addpod" class="anchor-navigation-ex-anchor" href="#addpod"><i class="fa fa-link" aria-hidden="true"></i></a>addPod</h5>
+<ul>
+<li>1&#x3001;&#x5224;&#x65AD; pod &#x662F;&#x5426;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#xFF1B;</li>
+<li>2&#x3001;&#x83B7;&#x53D6;&#x8BE5; pod &#x5173;&#x8054;&#x7684; rs &#x4EE5;&#x53CA; rsKey&#xFF0C;&#x5165;&#x961F; rs &#x5E76;&#x66F4;&#x65B0; rsKey &#x7684; expectations&#xFF1B;</li>
+<li>3&#x3001;&#x82E5; pod &#x5BF9;&#x8C61;&#x6CA1;&#x4F53;&#x73B0;&#x51FA;&#x5173;&#x8054;&#x7684; rs &#x5219;&#x4E3A;&#x5B64;&#x513F; pod&#xFF0C;&#x904D;&#x5386; rsList &#x67E5;&#x627E;&#x5339;&#x914D;&#x7684; rs&#xFF0C;&#x82E5;&#x8BE5; rs.Namespace == pod.Namespace &#x5E76;&#x4E14; rs.Spec.Selector &#x5339;&#x914D; pod.Labels&#xFF0C;&#x5219;&#x8BF4;&#x660E;&#x8BE5; pod &#x5E94;&#x8BE5;&#x4E0E;&#x6B64; rs &#x5173;&#x8054;&#xFF0C;&#x5C06;&#x5339;&#x914D;&#x7684; rs &#x5165;&#x961F;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:255</code></p>
+<pre class="language-"><code>func (rsc *ReplicaSetController) addPod(obj interface{}) {
+    pod := obj.(*v1.Pod)
+
+    if pod.DeletionTimestamp != nil {
+        rsc.deletePod(pod)
+        return
+    }
+
+    // 1&#x3001;&#x83B7;&#x53D6; pod &#x6240;&#x5173;&#x8054;&#x7684; rs
+    if controllerRef := metav1.GetControllerOf(pod); controllerRef != nil {
+        rs := rsc.resolveControllerRef(pod.Namespace, controllerRef)
+        if rs == nil {
+            return
+        }
+        rsKey, err := controller.KeyFunc(rs)
+        if err != nil {
+            return
+        }
+        // 2&#x3001;&#x66F4;&#x65B0; expectations&#xFF0C;rsKey &#x7684; add - 1
+        rsc.expectations.CreationObserved(rsKey)
+        rsc.enqueueReplicaSet(rs)
+        return
+    }
+
+
+    rss := rsc.getPodReplicaSets(pod)
+    if len(rss) == 0 {
+        return
+    }
+
+    for _, rs := range rss {
+        rsc.enqueueReplicaSet(rs)
+    }
+}
+</code></pre><h5 id="updatepod"><a name="updatepod" class="anchor-navigation-ex-anchor" href="#updatepod"><i class="fa fa-link" aria-hidden="true"></i></a>updatePod</h5>
+<ul>
+<li>1&#x3001;&#x5982;&#x679C; pod label &#x6539;&#x53D8;&#x6216;&#x8005;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#xFF0C;&#x5219;&#x76F4;&#x63A5;&#x5220;&#x9664;&#xFF1B;</li>
+<li>2&#x3001;&#x5982;&#x679C; pod &#x7684; OwnerReference &#x53D1;&#x751F;&#x6539;&#x53D8;&#xFF0C;&#x6B64;&#x65F6; oldRS &#x9700;&#x8981;&#x521B;&#x5EFA; pod&#xFF0C;&#x5C06; oldRS &#x5165;&#x961F;&#xFF1B;</li>
+<li>3&#x3001;&#x83B7;&#x53D6; pod &#x5173;&#x8054;&#x7684; rs&#xFF0C;&#x5165;&#x961F; rs&#xFF0C;&#x82E5; pod &#x5F53;&#x524D;&#x5904;&#x4E8E; ready &#x5E76;&#x975E; available &#x72B6;&#x6001;&#xFF0C;&#x5219;&#x4F1A;&#x518D;&#x6B21;&#x5C06;&#x8BE5; rs &#x52A0;&#x5165;&#x5230;&#x5EF6;&#x8FDF;&#x961F;&#x5217;&#x4E2D;&#xFF0C;&#x56E0;&#x4E3A; pod &#x4ECE; ready &#x5230; available &#x72B6;&#x6001;&#x9700;&#x8981;&#x89E6;&#x53D1;&#x4E00;&#x6B21; status &#x7684;&#x66F4;&#x65B0;&#xFF1B;</li>
+<li>4&#x3001;&#x5426;&#x5219;&#x4E3A;&#x5B64;&#x513F; pod&#xFF0C;&#x904D;&#x5386; rsList &#x67E5;&#x627E;&#x5339;&#x914D;&#x7684; rs&#xFF0C;&#x82E5;&#x627E;&#x5230;&#x5219;&#x5C06; rs &#x5165;&#x961F;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:298</code></p>
+<pre class="language-"><code>func (rsc *ReplicaSetController) updatePod(old, cur interface{}) {
+    curPod := cur.(*v1.Pod)
+    oldPod := old.(*v1.Pod)
+    if curPod.ResourceVersion == oldPod.ResourceVersion {
+        return
+    }
+
+    // 1&#x3001;&#x5982;&#x679C; pod label &#x6539;&#x53D8;&#x6216;&#x8005;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#xFF0C;&#x5219;&#x76F4;&#x63A5;&#x5220;&#x9664;
+    labelChanged := !reflect.DeepEqual(curPod.Labels, oldPod.Labels)
+    if curPod.DeletionTimestamp != nil {
+        rsc.deletePod(curPod)
+        if labelChanged {
+            rsc.deletePod(oldPod)
+        }
+        return
+    }
+
+    // 2&#x3001;&#x5982;&#x679C; pod &#x7684; OwnerReference &#x53D1;&#x751F;&#x6539;&#x53D8;&#xFF0C;&#x5C06; oldRS &#x5165;&#x961F;
+    curControllerRef := metav1.GetControllerOf(curPod)
+    oldControllerRef := metav1.GetControllerOf(oldPod)
+    controllerRefChanged := !reflect.DeepEqual(curControllerRef, oldControllerRef)
+    if controllerRefChanged &amp;&amp; oldControllerRef != nil {
+        if rs := rsc.resolveControllerRef(oldPod.Namespace, oldControllerRef); rs != nil {
+            rsc.enqueueReplicaSet(rs)
+        }
+    }
+
+    // 3&#x3001;&#x83B7;&#x53D6; pod &#x5173;&#x8054;&#x7684; rs&#xFF0C;&#x5165;&#x961F; rs
+    if curControllerRef != nil {
+        rs := rsc.resolveControllerRef(curPod.Namespace, curControllerRef)
+        if rs == nil {
+            return
+        }
+
+        rsc.enqueueReplicaSet(rs)
+        if !podutil.IsPodReady(oldPod) &amp;&amp; podutil.IsPodReady(curPod) &amp;&amp; rs.Spec.MinReadySeconds &gt; 0 {
+            rsc.enqueueReplicaSetAfter(rs, (time.Duration(rs.Spec.MinReadySeconds)*time.Second)+time.Second)
+        }
+        return
+    }
+
+
+    // 4&#x3001;&#x67E5;&#x627E;&#x5339;&#x914D;&#x7684; rs
+    if labelChanged || controllerRefChanged {
+        rss := rsc.getPodReplicaSets(curPod)
+        if len(rss) == 0 {
+            return
+        }
+        for _, rs := range rss {
+            rsc.enqueueReplicaSet(rs)
+        }
+    }
+}
+</code></pre><h5 id="deletepod"><a name="deletepod" class="anchor-navigation-ex-anchor" href="#deletepod"><i class="fa fa-link" aria-hidden="true"></i></a>deletePod</h5>
+<ul>
+<li>1&#x3001;&#x786E;&#x8BA4;&#x8BE5;&#x5BF9;&#x8C61;&#x662F;&#x5426;&#x4E3A; pod&#xFF1B;</li>
+<li>2&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x4E3A;&#x5B64;&#x513F; pod&#xFF1B;</li>
+<li>3&#x3001;&#x83B7;&#x53D6;&#x5176;&#x5BF9;&#x5E94;&#x7684; rs &#x4EE5;&#x53CA; rsKey&#xFF1B;</li>
+<li>4&#x3001;&#x66F4;&#x65B0; expectations &#x4E2D; rsKey &#x7684; del &#x503C;&#xFF1B;</li>
+<li>5&#x3001;&#x5C06; rs &#x5165;&#x961F;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:372</code></p>
+<pre class="language-"><code>func (rsc *ReplicaSetController) deletePod(obj interface{}) {
+    pod, ok := obj.(*v1.Pod)
+
+    if !ok {
+        ......
+    }
+
+    controllerRef := metav1.GetControllerOf(pod)
+    if controllerRef == nil {
+        return
+    }
+    rs := rsc.resolveControllerRef(pod.Namespace, controllerRef)
+    if rs == nil {
+        return
+    }
+    rsKey, err := controller.KeyFunc(rs)
+    if err != nil {
+        return
+    }
+    // &#x66F4;&#x65B0; expectations&#xFF0C;&#x8BE5; rsKey &#x7684; del - 1
+    rsc.expectations.DeletionObserved(rsKey, controller.PodKey(pod))
+    rsc.enqueueReplicaSet(rs)
+}
+</code></pre><h5 id="addrs-&#x548C;-deleters"><a name="addrs-&#x548C;-deleters" class="anchor-navigation-ex-anchor" href="#addrs-&#x548C;-deleters"><i class="fa fa-link" aria-hidden="true"></i></a>AddRS &#x548C; DeleteRS</h5>
+<p>&#x4EE5;&#x4E0A;&#x4E24;&#x4E2A;&#x64CD;&#x4F5C;&#x4EC5;&#x4EC5;&#x662F;&#x5C06;&#x5BF9;&#x5E94;&#x7684; rs &#x5165;&#x961F;&#x3002;</p>
+<h5 id="updaters"><a name="updaters" class="anchor-navigation-ex-anchor" href="#updaters"><i class="fa fa-link" aria-hidden="true"></i></a>UpdateRS</h5>
+<p>&#x5176;&#x5B9E; updateRS &#x4E5F;&#x4EC5;&#x4EC5;&#x662F;&#x5C06;&#x5BF9;&#x5E94;&#x7684; rs &#x8FDB;&#x884C;&#x5165;&#x961F;&#xFF0C;&#x4E0D;&#x8FC7;&#x591A;&#x4E86;&#x4E00;&#x4E2A;&#x6253;&#x5370;&#x65E5;&#x5FD7;&#x7684;&#x64CD;&#x4F5C;&#xFF0C;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:232</code></p>
+<pre class="language-"><code>func (rsc *ReplicaSetController) updateRS(old, cur interface{}) {
+    oldRS := old.(*apps.ReplicaSet)
+    curRS := cur.(*apps.ReplicaSet)
+
+    if *(oldRS.Spec.Replicas) != *(curRS.Spec.Replicas) {
+        klog.V(4).Infof(&quot;%v %v updated. Desired pod count change: %d-&gt;%d&quot;, rsc.Kind, curRS.Name, *(oldRS.Spec.Replicas), *(curRS.Spec.Replicas))
+    }
+    rsc.enqueueReplicaSet(cur)
+}
+</code></pre><p>&#x81F3;&#x4E8E; expectations &#x673A;&#x5236;&#x4F1A;&#x5728;&#x4E0B;&#x6587;&#x8FDB;&#x884C;&#x5206;&#x6790;&#x3002;</p>
+<h4 id="syncreplicaset"><a name="syncreplicaset" class="anchor-navigation-ex-anchor" href="#syncreplicaset"><i class="fa fa-link" aria-hidden="true"></i></a>syncReplicaSet</h4>
+<p>syncReplicaSet &#x662F; controller &#x7684;&#x6838;&#x5FC3;&#x65B9;&#x6CD5;&#xFF0C;&#x5B83;&#x4F1A;&#x9A71;&#x52A8; controller &#x6240;&#x63A7;&#x5236;&#x7684;&#x5BF9;&#x8C61;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x72B6;&#x6001;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x6839;&#x636E; ns/name &#x83B7;&#x53D6; rs &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; expectations.SatisfiedExpectations &#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981;&#x6267;&#x884C;&#x771F;&#x6B63;&#x7684; sync &#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>3&#x3001;&#x83B7;&#x53D6;&#x6240;&#x6709; pod list&#xFF1B;</li>
+<li>4&#x3001;&#x6839;&#x636E; pod label &#x8FDB;&#x884C;&#x8FC7;&#x6EE4;&#x83B7;&#x53D6;&#x4E0E;&#x8BE5; rs &#x5173;&#x8054;&#x7684; pod &#x5217;&#x8868;&#xFF0C;&#x5BF9;&#x4E8E;&#x5176;&#x4E2D;&#x7684;&#x5B64;&#x513F; pod &#x82E5;&#x4E0E;&#x8BE5; rs label &#x5339;&#x914D;&#x5219;&#x8FDB;&#x884C;&#x5173;&#x8054;&#xFF0C;&#x82E5;&#x5DF2;&#x5173;&#x8054;&#x7684; pod &#x4E0E; rs label &#x4E0D;&#x5339;&#x914D;&#x5219;&#x89E3;&#x9664;&#x5173;&#x8054;&#x5173;&#x7CFB;&#xFF1B;</li>
+<li>5&#x3001;&#x8C03;&#x7528; manageReplicas &#x8FDB;&#x884C;&#x540C;&#x6B65; pod &#x64CD;&#x4F5C;&#xFF0C;add/del pod&#xFF1B;</li>
+<li>6&#x3001;&#x8BA1;&#x7B97; rs &#x5F53;&#x524D;&#x7684; status &#x5E76;&#x8FDB;&#x884C;&#x66F4;&#x65B0;&#xFF1B;</li>
+<li>7&#x3001;&#x82E5; rs &#x8BBE;&#x7F6E;&#x4E86; MinReadySeconds &#x5B57;&#x6BB5;&#x5219;&#x5C06;&#x8BE5; rs &#x52A0;&#x5165;&#x5230;&#x5EF6;&#x8FDF;&#x961F;&#x5217;&#x4E2D;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:562</code></p>
+<pre class="language-"><code>func (rsc *ReplicaSetController) syncReplicaSet(key string) error {
+        ......
+
+    namespace, name, err := cache.SplitMetaNamespaceKey(key)
+    if err != nil {
+        return err
+    }
+
+    // 1&#x3001;&#x6839;&#x636E; ns/name &#x4ECE; informer cache &#x4E2D;&#x83B7;&#x53D6; rs &#x5BF9;&#x8C61;&#xFF0C;
+    // &#x82E5; rs &#x5DF2;&#x7ECF;&#x88AB;&#x5220;&#x9664;&#x5219;&#x76F4;&#x63A5;&#x5220;&#x9664; expectations &#x4E2D;&#x7684;&#x5BF9;&#x8C61;
+    rs, err := rsc.rsLister.ReplicaSets(namespace).Get(name)
+    if errors.IsNotFound(err) {
+        rsc.expectations.DeleteExpectations(key)
+        return nil
+    }
+    ......
+
+    // 2&#x3001;&#x5224;&#x65AD;&#x8BE5; rs &#x662F;&#x5426;&#x9700;&#x8981;&#x6267;&#x884C; sync &#x64CD;&#x4F5C;
+    rsNeedsSync := rsc.expectations.SatisfiedExpectations(key)
+    selector, err := metav1.LabelSelectorAsSelector(rs.Spec.Selector)
+    if err != nil {
+        ......
+    }
+
+    // 3&#x3001;&#x83B7;&#x53D6;&#x6240;&#x6709; pod list
+    allPods, err := rsc.podLister.Pods(rs.Namespace).List(labels.Everything())
+        ......
+
+    // 4&#x3001;&#x8FC7;&#x6EE4;&#x6389;&#x5F02;&#x5E38; pod&#xFF0C;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#x6216;&#x8005; failed &#x72B6;&#x6001;&#x7684; pod &#x90FD;&#x4E3A;&#x975E; active &#x72B6;&#x6001;
+    filteredPods := controller.FilterActivePods(allPods)
+
+    // 5&#x3001;&#x68C0;&#x67E5;&#x6240;&#x6709; pod&#xFF0C;&#x6839;&#x636E; pod &#x5E76;&#x8FDB;&#x884C; adopt &#x4E0E; release &#x64CD;&#x4F5C;&#xFF0C;&#x6700;&#x540E;&#x83B7;&#x53D6;&#x4E0E;&#x8BE5; rs &#x5173;&#x8054;&#x7684; pod list
+    filteredPods, err = rsc.claimPods(rs, selector, filteredPods)
+    ......
+
+    // 6&#x3001;&#x82E5;&#x9700;&#x8981; sync &#x5219;&#x6267;&#x884C; manageReplicas &#x521B;&#x5EFA;/&#x5220;&#x9664; pod
+    var manageReplicasErr error
+    if rsNeedsSync &amp;&amp; rs.DeletionTimestamp == nil {
+        manageReplicasErr = rsc.manageReplicas(filteredPods, rs)
+    }
+    rs = rs.DeepCopy()
+    // 7&#x3001;&#x8BA1;&#x7B97; rs &#x5F53;&#x524D;&#x7684; status
+    newStatus := calculateStatus(rs, filteredPods, manageReplicasErr)
+
+    // 8&#x3001;&#x66F4;&#x65B0; rs status
+    updatedRS, err := updateReplicaSetStatus(rsc.kubeClient.AppsV1().ReplicaSets(rs.Namespace), rs, newStatus)
+
+
+    // 9&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981;&#x5C06; rs &#x52A0;&#x5165;&#x5230;&#x5EF6;&#x8FDF;&#x961F;&#x5217;&#x4E2D;
+    if manageReplicasErr == nil &amp;&amp; updatedRS.Spec.MinReadySeconds &gt; 0 &amp;&amp;
+        updatedRS.Status.ReadyReplicas == *(updatedRS.Spec.Replicas) &amp;&amp;
+        updatedRS.Status.AvailableReplicas != *(updatedRS.Spec.Replicas) {
+        rsc.enqueueReplicaSetAfter(updatedRS, time.Duration(updatedRS.Spec.MinReadySeconds)*time.Second)
+    }
+    return manageReplicasErr
+}
+</code></pre><p>&#x5728; <code>syncReplicaSet</code> &#x65B9;&#x6CD5;&#x4E2D;&#x6709;&#x51E0;&#x4E2A;&#x91CD;&#x8981;&#x7684;&#x64CD;&#x4F5C;&#x5206;&#x522B;&#x4E3A;&#xFF1A;<code>rsc.expectations.SatisfiedExpectations</code>&#x3001;<code>rsc.manageReplicas</code>&#x3001;<code>calculateStatus</code>&#xFF0C;&#x4E0B;&#x9762;&#x4E00;&#x4E00;&#x8FDB;&#x884C;&#x5206;&#x6790;&#x3002;</p>
+<h5 id="satisfiedexpectations"><a name="satisfiedexpectations" class="anchor-navigation-ex-anchor" href="#satisfiedexpectations"><i class="fa fa-link" aria-hidden="true"></i></a>SatisfiedExpectations</h5>
+<p>&#x8BE5;&#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x5224;&#x65AD; rs &#x662F;&#x5426;&#x9700;&#x8981;&#x6267;&#x884C;&#x771F;&#x6B63;&#x7684;&#x540C;&#x6B65;&#x64CD;&#x4F5C;&#xFF0C;&#x82E5;&#x9700;&#x8981; add/del pod &#x6216;&#x8005; expectations &#x5DF2;&#x8FC7;&#x671F;&#x5219;&#x9700;&#x8981;&#x8FDB;&#x884C;&#x540C;&#x6B65;&#x64CD;&#x4F5C;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/controller_utils.go:181</code></p>
+<pre class="language-"><code>func (r *ControllerExpectations) SatisfiedExpectations(controllerKey string) bool {
+    // 1&#x3001;&#x82E5;&#x8BE5; key &#x5B58;&#x5728;&#x65F6;&#xFF0C;&#x5224;&#x65AD;&#x662F;&#x5426;&#x6EE1;&#x8DB3;&#x6761;&#x4EF6;&#x6216;&#x8005;&#x662F;&#x5426;&#x8D85;&#x8FC7;&#x540C;&#x6B65;&#x5468;&#x671F;
+    if exp, exists, err := r.GetExpectations(controllerKey); exists {
+        if exp.Fulfilled() {
+            return true
+        } else if exp.isExpired() {
+            return true
+        } else {
+            return false
+        }
+    } else if err != nil {
+        ......
+    } else {
+        // 2&#x3001;&#x8BE5; rs &#x53EF;&#x80FD;&#x4E3A;&#x65B0;&#x521B;&#x5EFA;&#x7684;&#xFF0C;&#x9700;&#x8981;&#x8FDB;&#x884C; sync
+        ......
+    }
+    return true
+}
+
+// 3&#x3001;&#x82E5; add &lt;= 0 &#x4E14; del &lt;= 0 &#x8BF4;&#x660E;&#x672C;&#x5730;&#x89C2;&#x5BDF;&#x5230;&#x7684;&#x72B6;&#x6001;&#x5DF2;&#x7ECF;&#x4E3A;&#x671F;&#x671B;&#x72B6;&#x6001;&#x4E86;
+func (e *ControlleeExpectations) Fulfilled() bool {
+    return atomic.LoadInt64(&amp;e.add) &lt;= 0 &amp;&amp; atomic.LoadInt64(&amp;e.del) &lt;= 0
+}
+
+// 4&#x3001;&#x5224;&#x65AD; key &#x662F;&#x5426;&#x8FC7;&#x671F;&#xFF0C;ExpectationsTimeout &#x9ED8;&#x8BA4;&#x503C;&#x4E3A; 5 * time.Minute
+func (exp *ControlleeExpectations) isExpired() bool {
+    return clock.RealClock{}.Since(exp.timestamp) &gt; ExpectationsTimeout
+}
+</code></pre><h5 id="managereplicas"><a name="managereplicas" class="anchor-navigation-ex-anchor" href="#managereplicas"><i class="fa fa-link" aria-hidden="true"></i></a>manageReplicas</h5>
+<p>manageReplicas &#x662F;&#x6700;&#x6838;&#x5FC3;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5B83;&#x4F1A;&#x8BA1;&#x7B97; replicaSet &#x9700;&#x8981;&#x521B;&#x5EFA;&#x6216;&#x8005;&#x5220;&#x9664;&#x591A;&#x5C11;&#x4E2A; pod &#x5E76;&#x8C03;&#x7528; apiserver &#x7684;&#x63A5;&#x53E3;&#x8FDB;&#x884C;&#x64CD;&#x4F5C;&#xFF0C;&#x5728;&#x6B64;&#x9636;&#x6BB5;&#x4EC5;&#x4EC5;&#x662F;&#x8C03;&#x7528; apiserver &#x7684;&#x63A5;&#x53E3;&#x8FDB;&#x884C;&#x521B;&#x5EFA;&#xFF0C;&#x5E76;&#x4E0D;&#x4FDD;&#x8BC1; pod &#x6210;&#x529F;&#x8FD0;&#x884C;&#xFF0C;&#x5982;&#x679C;&#x5728;&#x67D0;&#x4E00;&#x8F6E;&#xFF0C;&#x672A;&#x80FD;&#x6210;&#x529F;&#x521B;&#x5EFA;&#x7684;&#x6240;&#x6709; Pod &#x5BF9;&#x8C61;&#xFF0C;&#x5219;&#x4E0D;&#x518D;&#x521B;&#x5EFA;&#x5269;&#x4F59;&#x7684; pod&#x3002;&#x4E00;&#x4E2A;&#x5468;&#x671F;&#x5185;&#x6700;&#x591A;&#x53EA;&#x80FD;&#x521B;&#x5EFA;&#x6216;&#x5220;&#x9664; 500 &#x4E2A; pod&#xFF0C;&#x82E5;&#x8D85;&#x8FC7;&#x4E0A;&#x9650;&#x503C;&#x672A;&#x521B;&#x5EFA;&#x5B8C;&#x6210;&#x7684; pod &#x6570;&#x4F1A;&#x5728;&#x4E0B;&#x4E00;&#x4E2A; syncLoop &#x7EE7;&#x7EED;&#x8FDB;&#x884C;&#x5904;&#x7406;&#x3002;</p>
+<p>&#x8BE5;&#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8BA1;&#x7B97;&#x5DF2;&#x5B58;&#x5728; pod &#x6570;&#x4E0E;&#x671F;&#x671B;&#x6570;&#x7684;&#x5DEE;&#x5F02;&#xFF1B;</li>
+<li>2&#x3001;&#x5982;&#x679C; diff &lt; 0 &#x8BF4;&#x660E; rs &#x5B9E;&#x9645;&#x7684; pod &#x6570;&#x672A;&#x8FBE;&#x5230;&#x671F;&#x671B;&#x503C;&#x9700;&#x8981;&#x7EE7;&#x7EED;&#x521B;&#x5EFA; pod&#xFF0C;&#x9996;&#x5148;&#x4F1A;&#x5C06;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x7684; pod &#x6570;&#x5728; expectations &#x4E2D;&#x8FDB;&#x884C;&#x8BB0;&#x5F55;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; slowStartBatch &#x521B;&#x5EFA;&#x6240;&#x9700;&#x8981;&#x7684; pod&#xFF0C;slowStartBatch &#x4EE5;&#x6307;&#x6570;&#x7EA7;&#x589E;&#x957F;&#x7684;&#x65B9;&#x5F0F;&#x6279;&#x91CF;&#x521B;&#x5EFA; pod&#xFF0C;&#x521B;&#x5EFA; pod &#x8FC7;&#x7A0B;&#x4E2D;&#x82E5;&#x51FA;&#x73B0; timeout err &#x5219;&#x5FFD;&#x7565;&#xFF0C;&#x82E5;&#x4E3A;&#x5176;&#x4ED6; err &#x5219;&#x7EC8;&#x6B62;&#x521B;&#x5EFA;&#x64CD;&#x4F5C;&#x5E76;&#x66F4;&#x65B0; expectations&#xFF1B;</li>
+<li>3&#x3001;&#x5982;&#x679C; diff &gt; 0 &#x8BF4;&#x660E;&#x53EF;&#x80FD;&#x662F;&#x4E00;&#x6B21;&#x7F29;&#x5BB9;&#x64CD;&#x4F5C;&#x9700;&#x8981;&#x5220;&#x9664;&#x591A;&#x4F59;&#x7684; pod&#xFF0C;&#x5982;&#x679C;&#x9700;&#x8981;&#x5220;&#x9664;&#x5168;&#x90E8;&#x7684; pod &#x5219;&#x76F4;&#x63A5;&#x8FDB;&#x884C;&#x5220;&#x9664;&#xFF0C;&#x5426;&#x5219;&#x4F1A;&#x901A;&#x8FC7; getPodsToDelete &#x65B9;&#x6CD5;&#x7B5B;&#x9009;&#x51FA;&#x9700;&#x8981;&#x5220;&#x9664;&#x7684; pod&#xFF0C;&#x5177;&#x4F53;&#x7684;&#x7B5B;&#x9009;&#x7B56;&#x7565;&#x5728;&#x4E0B;&#x6587;&#x4F1A;&#x5C06;&#x5230;&#xFF0C;&#x7136;&#x540E;&#x5E76;&#x53D1;&#x5220;&#x9664;&#x8FD9;&#x4E9B; pod&#xFF0C;&#x5BF9;&#x4E8E;&#x5220;&#x9664;&#x5931;&#x8D25;&#x64CD;&#x4F5C;&#x4E5F;&#x4F1A;&#x8BB0;&#x5F55;&#x5728; expectations &#x4E2D;&#xFF1B;</li>
+</ul>
+<p>&#x5728; <code>slowStartBatch</code> &#x4E2D;&#x4F1A;&#x8C03;&#x7528; <code>rsc.podControl.CreatePodsWithControllerRef</code> &#x65B9;&#x6CD5;&#x521B;&#x5EFA; pod&#xFF0C;&#x82E5;&#x521B;&#x5EFA; pod &#x5931;&#x8D25;&#x4F1A;&#x5224;&#x65AD;&#x662F;&#x5426;&#x4E3A;&#x521B;&#x5EFA;&#x8D85;&#x65F6;&#x9519;&#x8BEF;&#xFF0C;&#x6216;&#x8005;&#x53EF;&#x80FD;&#x662F;&#x8D85;&#x65F6;&#x540E;&#x5931;&#x8D25;&#xFF0C;&#x4F46;&#x6B64;&#x65F6;&#x8BA4;&#x4E3A;&#x8D85;&#x65F6;&#x5E76;&#x4E0D;&#x5F71;&#x54CD;&#x540E;&#x7EED;&#x7684;&#x6279;&#x91CF;&#x521B;&#x5EFA;&#x52A8;&#x4F5C;&#xFF0C;&#x5927;&#x5BB6;&#x77E5;&#x9053;&#xFF0C;&#x521B;&#x5EFA; pod &#x64CD;&#x4F5C;&#x63D0;&#x4EA4;&#x5230; apiserver &#x540E;&#x4F1A;&#x7ECF;&#x8FC7;&#x8BA4;&#x8BC1;&#x3001;&#x9274;&#x6743;&#x3001;&#x4EE5;&#x53CA;&#x52A8;&#x6001;&#x8BBF;&#x95EE;&#x63A7;&#x5236;&#x4E09;&#x4E2A;&#x6B65;&#x9AA4;&#xFF0C;&#x6B64;&#x8FC7;&#x7A0B;&#x6709;&#x53EF;&#x80FD;&#x4F1A;&#x8D85;&#x65F6;&#xFF0C;&#x5373;&#x4F7F;&#x771F;&#x7684;&#x521B;&#x5EFA;&#x5931;&#x8D25;&#x4E86;&#xFF0C;&#x7B49;&#x5230; expectations &#x8FC7;&#x671F;&#x540E;&#x5728;&#x4E0B;&#x4E00;&#x4E2A; syncLoop &#x65F6;&#x4F1A;&#x91CD;&#x65B0;&#x521B;&#x5EFA;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:459</code></p>
+<pre class="language-"><code>func (rsc *ReplicaSetController) manageReplicas(......) error {
+    // 1&#x3001;&#x8BA1;&#x7B97;&#x5DF2;&#x5B58;&#x5728; pod &#x6570;&#x4E0E;&#x671F;&#x671B;&#x6570;&#x7684;&#x5DEE;&#x5F02;
+    diff := len(filteredPods) - int(*(rs.Spec.Replicas))
+    rsKey, err := controller.KeyFunc(rs)
+    if err != nil {
+        ......
+    }
+    2&#x3001;&#x5982;&#x679C; &lt;0&#xFF0C;&#x5219;&#x9700;&#x8981;&#x521B;&#x5EFA; pod
+    if diff &lt; 0 {
+        diff *= -1
+        3&#x3001;&#x5224;&#x65AD;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x7684; pod &#x6570;&#x662F;&#x5426;&#x8D85;&#x8FC7;&#x5355;&#x6B21; sync &#x4E0A;&#x9650;&#x503C; 500
+        if diff &gt; rsc.burstReplicas {
+            diff = rsc.burstReplicas
+        }
+
+        4&#x3001;&#x5728; expectations &#x4E2D;&#x8FDB;&#x884C;&#x8BB0;&#x5F55;&#xFF0C;&#x82E5;&#x8BE5; key &#x5DF2;&#x7ECF;&#x5B58;&#x5728;&#x4F1A;&#x8FDB;&#x884C;&#x8986;&#x76D6;
+        rsc.expectations.ExpectCreations(rsKey, diff)
+
+        5&#x3001;&#x8C03;&#x7528; slowStartBatch &#x521B;&#x5EFA;&#x6240;&#x9700;&#x8981;&#x7684; pod
+        successfulCreations, err := slowStartBatch(diff, controller.SlowStartInitialBatchSize, func() error {
+            err := rsc.podControl.CreatePodsWithControllerRef(rs.Namespace, &amp;rs.Spec.Template, rs, metav1.NewControllerRef(rs, rsc.GroupVersionKind))
+            // 6&#x3001;&#x82E5;&#x4E3A; timeout err &#x5219;&#x5FFD;&#x7565;
+            if err != nil &amp;&amp; errors.IsTimeout(err) {
+                return nil
+            }
+            return err
+        })
+
+        // 7&#x3001;&#x8BA1;&#x7B97;&#x672A;&#x521B;&#x5EFA;&#x7684; pod &#x6570;&#xFF0C;&#x5E76;&#x8BB0;&#x5F55;&#x5728; expectations &#x4E2D;
+        // &#x82E5; pod &#x521B;&#x5EFA;&#x6210;&#x529F;&#xFF0C;informer watch &#x5230;&#x4E8B;&#x4EF6;&#x540E;&#x4F1A;&#x5728; addPod handler &#x4E2D;&#x66F4;&#x65B0; expectations
+        if skippedPods := diff - successfulCreations; skippedPods &gt; 0 {
+            for i := 0; i &lt; skippedPods; i++ {
+                rsc.expectations.CreationObserved(rsKey)
+            }
+        }
+        return err
+    } else if diff &gt; 0 {
+        // 8&#x3001;&#x82E5; diff &gt;0 &#x8BF4;&#x660E;&#x9700;&#x8981;&#x5220;&#x9664;&#x591A;&#x521B;&#x5EFA;&#x7684; pod
+        if diff &gt; rsc.burstReplicas {
+            diff = rsc.burstReplicas
+        }
+
+        // 9&#x3001;getPodsToDelete &#x4F1A;&#x6309;&#x7167;&#x4E00;&#x5B9A;&#x7684;&#x7B56;&#x7565;&#x627E;&#x51FA;&#x9700;&#x8981;&#x5220;&#x9664;&#x7684; pod &#x5217;&#x8868;
+        podsToDelete := getPodsToDelete(filteredPods, diff)
+
+        // 10&#x3001;&#x5728; expectations &#x4E2D;&#x8FDB;&#x884C;&#x8BB0;&#x5F55;&#xFF0C;&#x82E5;&#x8BE5; key &#x5DF2;&#x7ECF;&#x5B58;&#x5728;&#x4F1A;&#x8FDB;&#x884C;&#x8986;&#x76D6;
+        rsc.expectations.ExpectDeletions(rsKey, getPodKeys(podsToDelete))
+
+        // 11&#x3001;&#x8FDB;&#x884C;&#x5E76;&#x53D1;&#x5220;&#x9664;&#x7684;&#x64CD;&#x4F5C;
+        errCh := make(chan error, diff)
+        var wg sync.WaitGroup
+        wg.Add(diff)
+        for _, pod := range podsToDelete {
+            go func(targetPod *v1.Pod) {
+                defer wg.Done()
+                if err := rsc.podControl.DeletePod(rs.Namespace, targetPod.Name, rs); err != nil {
+                    podKey := controller.PodKey(targetPod)
+                    // 12&#x3001;&#x67D0;&#x6B21;&#x5220;&#x9664;&#x64CD;&#x4F5C;&#x82E5;&#x5931;&#x8D25;&#x4F1A;&#x8BB0;&#x5F55;&#x5728; expectations &#x4E2D;
+                    rsc.expectations.DeletionObserved(rsKey, podKey)
+                    errCh &lt;- err
+                }
+            }(pod)
+        }
+        wg.Wait()
+
+        // 13&#x3001;&#x8FD4;&#x56DE;&#x5176;&#x4E2D;&#x4E00;&#x6761; err
+        select {
+        case err := &lt;-errCh:
+            if err != nil {
+                return err
+            }
+        default:
+        }
+    }
+
+    return nil
+}
+</code></pre><p><code>slowStartBatch</code> &#x4F1A;&#x6279;&#x91CF;&#x521B;&#x5EFA;&#x51FA;&#x5DF2;&#x8BA1;&#x7B97;&#x51FA;&#x7684; diff pod &#x6570;&#xFF0C;&#x521B;&#x5EFA;&#x7684; pod &#x6570;&#x4F9D;&#x6B21;&#x4E3A; 1&#x3001;2&#x3001;4&#x3001;8......&#xFF0C;&#x5448;&#x6307;&#x6570;&#x7EA7;&#x589E;&#x957F;&#xFF0C;&#x5176;&#x65B9;&#x6CD5;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:658</code></p>
+<pre class="language-"><code>func slowStartBatch(count int, initialBatchSize int, fn func() error) (int, error) {
+    remaining := count
+    successes := 0
+    for batchSize := integer.IntMin(remaining, initialBatchSize); batchSize &gt; 0; batchSize = integer.IntMin(2*batchSize, remaining) {
+        errCh := make(chan error, batchSize)
+        var wg sync.WaitGroup
+        wg.Add(batchSize)
+        for i := 0; i &lt; batchSize; i++ {
+            go func() {
+                defer wg.Done()
+                if err := fn(); err != nil {
+                    errCh <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>-</span> <span class="token attr-name">err</span>
+                <span class="token attr-name">}</span>
+            <span class="token attr-name">}()</span>
+        <span class="token attr-name">}</span>
+        <span class="token attr-name">wg.Wait()</span>
+        <span class="token attr-name">curSuccesses</span> <span class="token attr-name">:</span><span class="token attr-value"><span class="token punctuation">=</span> batchSize</span> <span class="token attr-name">-</span> <span class="token attr-name">len(errCh)</span>
+        <span class="token attr-name">successes</span> <span class="token attr-name">+</span><span class="token attr-value"><span class="token punctuation">=</span> curSuccesses</span>
+        <span class="token attr-name">if</span> <span class="token attr-name">len(errCh)</span> <span class="token punctuation">&gt;</span></span> 0 {
+            return successes, &lt;-errCh
+        }
+        remaining -= batchSize
+    }
+    return successes, nil
+}
+</code></pre><p>&#x82E5; diff &gt; 0 &#x65F6;&#x518D;&#x5220;&#x9664; pod &#x9636;&#x6BB5;&#x4F1A;&#x8C03;&#x7528;<code>getPodsToDelete</code> &#x5BF9; pod &#x8FDB;&#x884C;&#x7B5B;&#x9009;&#x64CD;&#x4F5C;&#xFF0C;&#x6B64;&#x9636;&#x6BB5;&#x4F1A;&#x9009;&#x51FA;&#x6700;&#x52A3;&#x8D28;&#x7684; pod&#xFF0C;&#x4E0B;&#x9762;&#x662F;&#x7528;&#x5230;&#x7684; 6 &#x79CD;&#x7B5B;&#x9009;&#x65B9;&#x6CD5;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x5224;&#x65AD;&#x662F;&#x591F;&#x7ED1;&#x5B9A;&#x4E86; node&#xFF1A;Unassigned &lt; assigned&#xFF1B;</li>
+<li>2&#x3001;&#x5224;&#x65AD; pod phase&#xFF1A;PodPending &lt; PodUnknown &lt; PodRunning&#xFF1B;</li>
+<li>3&#x3001;&#x5224;&#x65AD; pod &#x72B6;&#x6001;&#xFF1A;Not ready &lt; ready&#xFF1B;</li>
+<li>4&#x3001;&#x82E5; pod &#x90FD;&#x4E3A; ready&#xFF0C;&#x5219;&#x6309;&#x8FD0;&#x884C;&#x65F6;&#x95F4;&#x6392;&#x5E8F;&#xFF0C;&#x8FD0;&#x884C;&#x65F6;&#x95F4;&#x6700;&#x77ED;&#x4F1A;&#x88AB;&#x5220;&#x9664;&#xFF1A;empty time &lt; less time &lt; more time&#xFF1B;</li>
+<li>5&#x3001;&#x6839;&#x636E; pod &#x91CD;&#x542F;&#x6B21;&#x6570;&#x6392;&#x5E8F;&#xFF1A;higher restart counts &lt; lower restart counts&#xFF1B;</li>
+<li>6&#x3001;&#x6309; pod &#x521B;&#x5EFA;&#x65F6;&#x95F4;&#x8FDB;&#x884C;&#x6392;&#x5E8F;&#xFF1A;Empty creation time pods &lt; newer pods &lt; older pods&#xFF1B;</li>
+</ul>
+<p>&#x4E0A;&#x9762;&#x7684;&#x51E0;&#x4E2A;&#x6392;&#x5E8F;&#x89C4;&#x5219;&#x9075;&#x5FAA;&#x4E92;&#x65A5;&#x539F;&#x5219;&#xFF0C;&#x4ECE;&#x4E0A;&#x5230;&#x4E0B;&#x8FDB;&#x884C;&#x5339;&#x914D;&#xFF0C;&#x7B26;&#x5408;&#x6761;&#x4EF6;&#x5219;&#x6392;&#x5E8F;&#x5B8C;&#x6210;&#xFF0C;&#x4EE3;&#x7801;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set.go:684</code></p>
+<pre class="language-"><code>func getPodsToDelete(filteredPods []*v1.Pod, diff int) []*v1.Pod {
+    if diff &lt; len(filteredPods) {
+        sort.Sort(controller.ActivePods(filteredPods))
+    }
+    return filteredPods[:diff]
+}
+</code></pre><p><code>k8s.io/kubernetes/pkg/controller/controller_utils.go:735</code></p>
+<pre class="language-"><code>type ActivePods []*v1.Pod
+
+func (s ActivePods) Len() int      { return len(s) }
+func (s ActivePods) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+
+func (s ActivePods) Less(i, j int) bool {
+    // 1. Unassigned &lt; assigned
+    if s[i].Spec.NodeName != s[j].Spec.NodeName &amp;&amp; (len(s[i].Spec.NodeName) == 0 || len(s[j].Spec.NodeName) == 0) {
+        return len(s[i].Spec.NodeName) == 0
+    }
+
+    // 2. PodPending &lt; PodUnknown &lt; PodRunning
+    m := map[v1.PodPhase]int{v1.PodPending: 0, v1.PodUnknown: 1, v1.PodRunning: 2}
+    if m[s[i].Status.Phase] != m[s[j].Status.Phase] {
+        return m[s[i].Status.Phase] &lt; m[s[j].Status.Phase]
+    }
+
+    // 3. Not ready &lt; ready
+    if podutil.IsPodReady(s[i]) != podutil.IsPodReady(s[j]) {
+        return !podutil.IsPodReady(s[i])
+    }
+
+    // 4. Been ready for empty time &lt; less time &lt; more time
+    if podutil.IsPodReady(s[i]) &amp;&amp; podutil.IsPodReady(s[j]) &amp;&amp; !podReadyTime(s[i]).Equal(podReadyTime(s[j])) {
+        return afterOrZero(podReadyTime(s[i]), podReadyTime(s[j]))
+    }
+
+    // 5. Pods with containers with higher restart counts &lt; lower restart counts
+    if maxContainerRestarts(s[i]) != maxContainerRestarts(s[j]) {
+        return maxContainerRestarts(s[i]) &gt; maxContainerRestarts(s[j])
+    }
+
+    // 6. Empty creation time pods &lt; newer pods &lt; older pods
+    if !s[i].CreationTimestamp.Equal(&amp;s[j].CreationTimestamp) {
+        return afterOrZero(&amp;s[i].CreationTimestamp, &amp;s[j].CreationTimestamp)
+    }
+    return false
+}
+</code></pre><h5 id="calculatestatus"><a name="calculatestatus" class="anchor-navigation-ex-anchor" href="#calculatestatus"><i class="fa fa-link" aria-hidden="true"></i></a>calculateStatus</h5>
+<p>calculateStatus &#x4F1A;&#x901A;&#x8FC7;&#x5F53;&#x524D; pod &#x7684;&#x72B6;&#x6001;&#x8BA1;&#x7B97;&#x51FA; rs &#x4E2D; status &#x5B57;&#x6BB5;&#x503C;&#xFF0C;status &#x5B57;&#x6BB5;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>status:
+  availableReplicas: 10
+  fullyLabeledReplicas: 10
+  observedGeneration: 1
+  readyReplicas: 10
+  replicas: 10
+</code></pre><p><code>k8s.io/kubernetes/pkg/controller/replicaset/replica_set_utils.go:85</code></p>
+<pre class="language-"><code>func calculateStatus(......) apps.ReplicaSetStatus {
+    newStatus := rs.Status
+    fullyLabeledReplicasCount := 0
+    readyReplicasCount := 0
+    availableReplicasCount := 0
+    templateLabel := labels.Set(rs.Spec.Template.Labels).AsSelectorPreValidated()
+    for _, pod := range filteredPods {
+        if templateLabel.Matches(labels.Set(pod.Labels)) {
+            fullyLabeledReplicasCount++
+        }
+        if podutil.IsPodReady(pod) {
+            readyReplicasCount++
+            if podutil.IsPodAvailable(pod, rs.Spec.MinReadySeconds, metav1.Now()) {
+                availableReplicasCount++
+            }
+        }
+    }
+
+    failureCond := GetCondition(rs.Status, apps.ReplicaSetReplicaFailure)
+    if manageReplicasErr != nil &amp;&amp; failureCond == nil {
+        var reason string
+        if diff := len(filteredPods) - int(*(rs.Spec.Replicas)); diff &lt; 0 {
+            reason = &quot;FailedCreate&quot;
+        } else if diff &gt; 0 {
+            reason = &quot;FailedDelete&quot;
+        }
+        cond := NewReplicaSetCondition(apps.ReplicaSetReplicaFailure, v1.ConditionTrue, reason, manageReplicasErr.Error())
+        SetCondition(&amp;newStatus, cond)
+    } else if manageReplicasErr == nil &amp;&amp; failureCond != nil {
+        RemoveCondition(&amp;newStatus, apps.ReplicaSetReplicaFailure)
+    }
+
+    newStatus.Replicas = int32(len(filteredPods))
+    newStatus.FullyLabeledReplicas = int32(fullyLabeledReplicasCount)
+    newStatus.ReadyReplicas = int32(readyReplicasCount)
+    newStatus.AvailableReplicas = int32(availableReplicasCount)
+    return newStatus
+}
+</code></pre><h4 id="expectations-&#x673A;&#x5236;"><a name="expectations-&#x673A;&#x5236;" class="anchor-navigation-ex-anchor" href="#expectations-&#x673A;&#x5236;"><i class="fa fa-link" aria-hidden="true"></i></a>expectations &#x673A;&#x5236;</h4>
+<p>&#x901A;&#x8FC7;&#x4E0A;&#x9762;&#x7684;&#x5206;&#x6790;&#x53EF;&#x77E5;&#xFF0C;&#x5728; rs &#x6BCF;&#x6B21;&#x5165;&#x961F;&#x540E;&#x8FDB;&#x884C; sync &#x64CD;&#x4F5C;&#x65F6;&#xFF0C;&#x9996;&#x5148;&#x9700;&#x8981;&#x5224;&#x65AD;&#x8BE5; rs &#x662F;&#x5426;&#x6EE1;&#x8DB3; expectations &#x673A;&#x5236;&#xFF0C;&#x90A3;&#x4E48;&#x8FD9;&#x4E2A; expectations &#x7684;&#x76EE;&#x7684;&#x662F;&#x4EC0;&#x4E48;&#xFF1F;&#x5176;&#x5B9E;&#xFF0C;rs &#x9664;&#x4E86;&#x6709; informer &#x7684;&#x7F13;&#x5B58;&#x5916;&#xFF0C;&#x8FD8;&#x6709;&#x4E00;&#x4E2A;&#x672C;&#x5730;&#x7F13;&#x5B58;&#x5C31;&#x662F; expectations&#xFF0C;expectations &#x4F1A;&#x8BB0;&#x5F55; rs &#x6240;&#x6709;&#x5BF9;&#x8C61;&#x9700;&#x8981; add/del &#x7684; pod &#x6570;&#x91CF;&#xFF0C;&#x82E5;&#x4E24;&#x8005;&#x90FD;&#x4E3A; 0 &#x5219;&#x8BF4;&#x660E;&#x8BE5; rs &#x6240;&#x671F;&#x671B;&#x521B;&#x5EFA;&#x7684; pod &#x6216;&#x8005;&#x5220;&#x9664;&#x7684; pod &#x6570;&#x5DF2;&#x7ECF;&#x88AB;&#x6EE1;&#x8DB3;&#xFF0C;&#x82E5;&#x4E0D;&#x6EE1;&#x8DB3;&#x5219;&#x8BF4;&#x660E;&#x67D0;&#x6B21;&#x5728; syncLoop &#x4E2D;&#x521B;&#x5EFA;&#x6216;&#x8005;&#x5220;&#x9664; pod &#x65F6;&#x6709;&#x5931;&#x8D25;&#x7684;&#x64CD;&#x4F5C;&#xFF0C;&#x5219;&#x9700;&#x8981;&#x7B49;&#x5F85; expectations &#x8FC7;&#x671F;&#x540E;&#x518D;&#x6B21;&#x540C;&#x6B65;&#x8BE5; rs&#x3002;</p>
+<p>&#x901A;&#x8FC7;&#x4E0A;&#x9762;&#x5BF9; eventHandler &#x7684;&#x5206;&#x6790;&#xFF0C;&#x518D;&#x6765;&#x603B;&#x7ED3;&#x4E00;&#x4E0B;&#x89E6;&#x53D1; replicaSet &#x5BF9;&#x8C61;&#x53D1;&#x751F;&#x540C;&#x6B65;&#x4E8B;&#x4EF6;&#x7684;&#x6761;&#x4EF6;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x4E0E; rs &#x76F8;&#x5173;&#x7684;&#xFF1A;AddRS&#x3001;UpdateRS&#x3001;DeleteRS&#xFF1B;</li>
+<li>2&#x3001;&#x4E0E; pod &#x76F8;&#x5173;&#x7684;&#xFF1A;AddPod&#x3001;UpdatePod&#x3001;DeletePod&#xFF1B;</li>
+<li>3&#x3001;informer &#x4E8C;&#x7EA7;&#x7F13;&#x5B58;&#x7684;&#x540C;&#x6B65;&#xFF1B;</li>
+</ul>
+<p>&#x4F46;&#x662F;&#x6240;&#x6709;&#x7684;&#x66F4;&#x65B0;&#x4E8B;&#x4EF6;&#x662F;&#x5426;&#x90FD;&#x9700;&#x8981;&#x6267;&#x884C; sync &#x64CD;&#x4F5C;&#xFF1F;&#x5BF9;&#x4E8E;&#x9664; rs.Spec.Replicas &#x4E4B;&#x5916;&#x7684;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#x5176;&#x5B9E;&#x90FD;&#x6CA1;&#x5FC5;&#x8981;&#x6267;&#x884C; sync &#x64CD;&#x4F5C;&#xFF0C;&#x56E0;&#x4E3A; spec &#x5176;&#x4ED6;&#x5B57;&#x6BB5;&#x548C; status &#x7684;&#x66F4;&#x65B0;&#x90FD;&#x4E0D;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x6216;&#x8005;&#x5220;&#x9664; pod&#x3002;</p>
+<p>&#x5728; sync &#x64CD;&#x4F5C;&#x771F;&#x6B63;&#x5F00;&#x59CB;&#x4E4B;&#x524D;&#xFF0C;&#x4F9D;&#x636E; expectations &#x673A;&#x5236;&#x8FDB;&#x884C;&#x5224;&#x65AD;&#xFF0C;&#x786E;&#x5B9A;&#x662F;&#x5426;&#x8981;&#x771F;&#x6B63;&#x5730;&#x542F;&#x52A8;&#x4E00;&#x6B21; sync&#xFF0C;&#x56E0;&#x4E3A;&#x5728; eventHandler &#x9636;&#x6BB5;&#x4E5F;&#x4F1A;&#x66F4;&#x65B0; expectations &#x503C;&#xFF0C;&#x4ECE;&#x4E0A;&#x9762;&#x7684; eventHandler &#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#x5728; addPod &#x4E2D;&#x4F1A;&#x8C03;&#x7528; rsc.expectations.CreationObserved &#x66F4;&#x65B0; rsKey &#x7684;  expectations&#xFF0C;&#x5C06;&#x5176; add &#x503C; -1&#xFF0C;&#x5728; deletePod &#x4E2D;&#x8C03;&#x7528; rsc.expectations.DeletionObserved &#x5C06;&#x5176; del &#x503C; -1&#x3002;&#x6240;&#x4EE5;&#x7B49;&#x5230; sync &#x65F6;&#xFF0C;&#x82E5; controllerKey(name &#x6216;&#x8005; ns/name)&#x6EE1;&#x8DB3; expectations &#x673A;&#x5236;&#x5219;&#x8FDB;&#x884C; sync &#x64CD;&#x4F5C;&#xFF0C;&#x800C; updatePod &#x5E76;&#x4E0D;&#x4F1A;&#x4FEE;&#x6539; expectations&#xFF0C;&#x6240;&#x4EE5;&#xFF0C;expectations &#x7684;&#x8BBE;&#x8BA1;&#x5C31;&#x662F;&#x5F53;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x6216;&#x5220;&#x9664; pod &#x624D;&#x4F1A;&#x89E6;&#x53D1;&#x5BF9;&#x5E94;&#x7684; sync &#x64CD;&#x4F5C;&#xFF0C;expectations &#x673A;&#x5236;&#x7684;&#x76EE;&#x7684;&#x5C31;&#x662F;&#x51CF;&#x5C11;&#x4E0D;&#x5FC5;&#x8981;&#x7684; sync &#x64CD;&#x4F5C;&#x3002;</p>
+<p>&#x4EC0;&#x4E48;&#x6761;&#x4EF6;&#x4E0B; expectations &#x673A;&#x5236;&#x4F1A;&#x6EE1;&#x8DB3;&#xFF1F;</p>
+<ul>
+<li>1&#x3001;&#x5F53; expectations &#x4E2D;&#x4E0D;&#x5B58;&#x5728; rsKey &#x65F6;&#xFF0C;&#x4E5F;&#x5C31;&#x8BF4;&#x9996;&#x6B21;&#x521B;&#x5EFA; rs &#x65F6;&#xFF1B;</li>
+<li>2&#x3001;&#x5F53; expectations &#x4E2D; del &#x4EE5;&#x53CA; add &#x503C;&#x90FD;&#x4E3A; 0 &#x65F6;&#xFF0C;&#x5373; rs &#x6240;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x6216;&#x8005;&#x5220;&#x9664;&#x7684; pod &#x6570;&#x90FD;&#x5DF2;&#x6EE1;&#x8DB3;&#xFF1B;</li>
+<li>3&#x3001;&#x5F53; expectations &#x8FC7;&#x671F;&#x65F6;&#xFF0C;&#x5373;&#x8D85;&#x8FC7; 5 &#x5206;&#x949F;&#x672A;&#x8FDB;&#x884C; sync &#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p>&#x6700;&#x540E;&#x518D;&#x770B;&#x4E00;&#x4E0B; expectations &#x4E2D;&#x7528;&#x5230;&#x7684;&#x51E0;&#x4E2A;&#x65B9;&#x6CD5;&#xFF1A;</p>
+<pre class="language-"><code> // &#x521B;&#x5EFA;&#x4E86;&#x4E00;&#x4E2A; pod &#x8BF4;&#x660E; expectations &#x4E2D;&#x5BF9;&#x5E94;&#x7684; key add &#x671F;&#x671B;&#x503C;&#x9700;&#x8981;&#x51CF;&#x5C11;&#x4E00;&#x4E2A; pod&#xFF0C; add -1
+ CreationObserved(controllerKey string)
+
+ // &#x5220;&#x9664;&#x4E86;&#x4E00;&#x4E2A; pod &#x8BF4;&#x660E; expectations &#x4E2D;&#x5BF9;&#x5E94;&#x7684; key del &#x671F;&#x671B;&#x503C;&#x9700;&#x8981;&#x51CF;&#x5C11;&#x4E00;&#x4E2A; pod&#xFF0C; del - 1
+ DeletionObserved(controllerKey string)
+
+ // &#x5199;&#x5165; key &#x9700;&#x8981; add &#x7684; pod &#x6570;&#x91CF;
+ ExpectCreations(controllerKey string, adds int) error
+
+ // &#x5199;&#x5165; key &#x9700;&#x8981; del &#x7684; pod &#x6570;&#x91CF;
+ ExpectDeletions(controllerKey string, dels int) error
+
+ // &#x5220;&#x9664;&#x8BE5; key
+ DeleteExpectations(controllerKey string)
+</code></pre><p>&#x5F53;&#x5728; syncLoop &#x4E2D;&#x53D1;&#x73B0;&#x6EE1;&#x8DB3;&#x6761;&#x4EF6;&#x65F6;&#xFF0C;&#x4F1A;&#x6267;&#x884C; manageReplicas &#x65B9;&#x6CD5;&#xFF0C;&#x5728; manageReplicas &#x4E2D;&#x65E0;&#x8BBA;&#x662F;&#x4E3A; rs &#x521B;&#x5EFA;&#x8FD8;&#x662F;&#x5220;&#x9664; pod &#x90FD;&#x4F1A;&#x8C03;&#x7528; ExpectCreations &#x548C; ExpectDeletions &#x4E3A; rsKey &#x521B;&#x5EFA; expectations &#x5BF9;&#x8C61;&#x3002;</p>
+<h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x4ECE;&#x6E90;&#x7801;&#x5C42;&#x9762;&#x5206;&#x6790;&#x4E86; replicaSetController &#x7684;&#x8BBE;&#x8BA1;&#x4E0E;&#x5B9E;&#x73B0;&#xFF0C;&#x4F46;&#x662F;&#x4E0D;&#x5F97;&#x4E0D;&#x8BF4;&#x5176;&#x5728;&#x8BBE;&#x8BA1;&#x65B9;&#x9762;&#x8003;&#x8651;&#x4E86;&#x5F88;&#x591A;&#x56E0;&#x7D20;&#xFF0C;&#x6587;&#x4E2D;&#x53EA;&#x63D0;&#x5230;&#x4E86;&#x7B14;&#x8005;&#x7406;&#x89E3;&#x4E86;&#x6216;&#x8005;&#x601D;&#x8003;&#x540E;&#x7A0D;&#x6709;&#x4E86;&#x89E3;&#x7684;&#x4E00;&#x4E9B;&#x673A;&#x5236;&#xFF0C;&#x81F3;&#x4E8E;&#x5176;&#x4ED6;&#x8BBE;&#x8BA1;&#x601D;&#x60F3;&#x8FD8;&#x5F97;&#x81EA;&#x884C;&#x9605;&#x8BFB;&#x4EE3;&#x7801;&#x4F53;&#x4F1A;&#x3002;</p>
+<p>&#x4E0B;&#x9762;&#x4EE5;&#x4E00;&#x4E2A;&#x6D41;&#x7A0B;&#x56FE;&#x603B;&#x7ED3;&#x4E0B;&#x521B;&#x5EFA; rs &#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#x3002;</p>
+<pre class="language-"><code>                                    SatisfiedExpectations
+                                    (expectations &#x4E2D;&#x4E0D;&#x5B58;&#x5728;
+                                     rsKey&#xFF0C;rsNeedsSync
+                                     &#x4E3A; true)
+                                              |              &#x5224;&#x65AD; add/del pod
+                                              |                     |
+                                              |                     &#x2228;
+                                              |             &#x521B;&#x5EFA; expectations &#x5BF9;&#x8C61;,
+                                              |             &#x5E76;&#x8BBE;&#x7F6E; add/del &#x503C;
+                                              &#x2228;                     |
+create rs --&gt; syncReplicaSet --&gt;       manageReplicas  --&gt;          &#x2228;
+                                       (&#x4E3A; rs &#x521B;&#x5EFA; pod)       &#x8C03;&#x7528; slowStartBatch &#x6279;&#x91CF;&#x521B;&#x5EFA; pod/
+                                              |               &#x5220;&#x9664;&#x7B5B;&#x9009;&#x51FA;&#x7684;&#x591A;&#x4F59; pod
+                                              |                     |
+                                              |                     &#x2228;
+                                              |               &#x66F4;&#x65B0; expectations &#x5BF9;&#x8C61;
+                                              &#x2228;
+                                    updateReplicaSetStatus
+                                    (&#x66F4;&#x65B0; rs &#x7684; status
+                                    subResource)
+</code></pre><p>&#x53C2;&#x8003;&#xFF1A;</p>
+<p><a href="https://keyla.vip/k8s/3-master/controller/replica-set/" target="_blank">https://keyla.vip/k8s/3-master/controller/replica-set/</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2019-12-08 18:04:53
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="deployment_controller.html" class="navigation navigation-prev " aria-label="Previous page: deployment controller 源码分析">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="kube_scheduler_process.html" class="navigation navigation-next " aria-label="Next page: kube-scheduler 源码分析">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"replicaset controller 源码分析","date":"2019-12-08T17:00:30.000Z","tags":["kube-controller-manager","replicaset controller"],"type":"replicaset controller","level":"1.2.2","depth":2,"next":{"title":"kube-scheduler 源码分析","level":"1.2.3","depth":2,"path":"kubernetes/kube_scheduler_process.md","ref":"kubernetes/kube_scheduler_process.md","articles":[]},"previous":{"title":"deployment controller 源码分析","level":"1.2.1","depth":2,"path":"kubernetes/deployment_controller.md","ref":"kubernetes/deployment_controller.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0","livereload"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/replicaset_controller.md","mtime":"2019-12-08T10:04:53.771Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-12-08T10:26:28.512Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

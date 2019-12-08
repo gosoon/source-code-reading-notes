@@ -3,14 +3,17 @@
 <url> <loc>https://blog.tianfeiyu.com/</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/deployment_controller.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
+<url> <loc>https://blog.tianfeiyu.com/kubernetes/replicaset_controller.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/kube_scheduler_process.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/kube_scheduler_algorithm.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/kube_scheduler_preempt.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/k8s_service_theory.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
-<url> <loc>https://blog.tianfeiyu.com/kubernetes/kubelet-modules.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
-<url> <loc>https://blog.tianfeiyu.com/kubernetes/kubelet_init.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
-<url> <loc>https://blog.tianfeiyu.com/kubernetes/kubelet_create_pod.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/kube_proxy_process.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/kube_proxy_iptables.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 <url> <loc>https://blog.tianfeiyu.com/kubernetes/kube_proxy_ipvs.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
+<url> <loc>https://blog.tianfeiyu.com/kubernetes/kubelet-modules.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
+<url> <loc>https://blog.tianfeiyu.com/kubernetes/kubelet_init.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
+<url> <loc>https://blog.tianfeiyu.com/kubernetes/kubelet_create_pod.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
+<url> <loc>https://blog.tianfeiyu.com/kubernetes/node_status.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
+<url> <loc>https://blog.tianfeiyu.com/kubernetes/k8s_events.html</loc> <changefreq>weekly</changefreq> <priority>0.5</priority> </url>
 </urlset>
