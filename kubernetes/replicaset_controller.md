@@ -17,7 +17,7 @@ type: "replicaset controller"
 
 ### ReplicaSetController 源码分析
 
-
+> kubernetes 版本: v1.16
 
 #### 启动流程
 
