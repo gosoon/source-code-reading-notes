@@ -1,0 +1,1335 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>daemonset controller 源码分析 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="statefulset_controller.html" />
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.2.1" data-path="daemonset_controller.html">
+            
+                <a href="daemonset_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    daemonset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="statefulset_controller.html">
+            
+                <a href="statefulset_controller.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    statefulset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="replicaset_controller.html">
+            
+                <a href="replicaset_controller.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    replicaset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.12" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.12.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.13" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.13.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.14" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.14.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.15" data-path="node_status.html">
+            
+                <a href="node_status.html">
+            
+                    
+                        <b>1.2.15.</b>
+                    
+                    kubelet 状态上报的方式
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.16" data-path="k8s_events.html">
+            
+                <a href="k8s_events.html">
+            
+                    
+                        <b>1.2.16.</b>
+                    
+                    kubelet 中事件处理机制
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >daemonset controller 源码分析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <p><img src="http://cdn.tianfeiyu.com/daemonset_controlller.png" alt=""></p>
+<p>&#x5728;&#x524D;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x8FC7; deployment&#x3001;statefulset &#x4E24;&#x4E2A;&#x91CD;&#x8981;&#x5BF9;&#x8C61;&#x4E86;&#xFF0C;&#x672C;&#x6587;&#x4F1A;&#x7EE7;&#x7EED;&#x5206;&#x6790; kubernetes &#x4E2D;&#x53E6;&#x4E00;&#x4E2A;&#x91CD;&#x8981;&#x7684;&#x5BF9;&#x8C61; daemonset&#xFF0C;&#x5728; kubernetes &#x4E2D; daemonset &#x7C7B;&#x4F3C;&#x4E8E; linux &#x4E0A;&#x7684;&#x5B88;&#x62A4;&#x8FDB;&#x7A0B;&#x4F1A;&#x8FD0;&#x884C;&#x5728;&#x6BCF;&#x4E00;&#x4E2A; node &#x4E0A;&#xFF0C;&#x5728;&#x5B9E;&#x9645;&#x573A;&#x666F;&#x4E2D;&#xFF0C;&#x4E00;&#x822C;&#x4F1A;&#x5C06;&#x65E5;&#x5FD7;&#x91C7;&#x96C6;&#x6216;&#x8005;&#x7F51;&#x7EDC;&#x63D2;&#x4EF6;&#x91C7;&#x7528; daemonset &#x7684;&#x65B9;&#x5F0F;&#x90E8;&#x7F72;&#x3002;</p>
+<h3 id="daemonset-&#x7684;&#x57FA;&#x672C;&#x64CD;&#x4F5C;"><a name="daemonset-&#x7684;&#x57FA;&#x672C;&#x64CD;&#x4F5C;" class="anchor-navigation-ex-anchor" href="#daemonset-&#x7684;&#x57FA;&#x672C;&#x64CD;&#x4F5C;"><i class="fa fa-link" aria-hidden="true"></i></a>DaemonSet &#x7684;&#x57FA;&#x672C;&#x64CD;&#x4F5C;</h3>
+<h4 id="&#x521B;&#x5EFA;"><a name="&#x521B;&#x5EFA;" class="anchor-navigation-ex-anchor" href="#&#x521B;&#x5EFA;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x521B;&#x5EFA;</h4>
+<p>daemonset &#x5728;&#x521B;&#x5EFA;&#x540E;&#x4F1A;&#x5728;&#x6BCF;&#x4E2A; node &#x4E0A;&#x90FD;&#x542F;&#x52A8;&#x4E00;&#x4E2A; pod&#x3002;</p>
+<pre class="language-"><code>$ kubectl create -f nginx-ds.yaml
+</code></pre><h4 id="&#x6269;&#x7F29;&#x5BB9;"><a name="&#x6269;&#x7F29;&#x5BB9;" class="anchor-navigation-ex-anchor" href="#&#x6269;&#x7F29;&#x5BB9;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6269;&#x7F29;&#x5BB9;</h4>
+<p>&#x7531;&#x4E8E; daemonset &#x662F;&#x5728;&#x6BCF;&#x4E2A; node &#x4E0A;&#x542F;&#x52A8;&#x4E00;&#x4E2A; pod&#xFF0C;&#x5176;&#x4E0D;&#x5B58;&#x5728;&#x6269;&#x7F29;&#x5BB9;&#x64CD;&#x4F5C;&#xFF0C;&#x526F;&#x672C;&#x6570;&#x91CF;&#x8DDF; node &#x6570;&#x91CF;&#x4FDD;&#x6301;&#x4E00;&#x81F4;&#x3002;</p>
+<h4 id="&#x66F4;&#x65B0;"><a name="&#x66F4;&#x65B0;" class="anchor-navigation-ex-anchor" href="#&#x66F4;&#x65B0;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x66F4;&#x65B0;</h4>
+<p>daemonset &#x6709;&#x4E24;&#x79CD;&#x66F4;&#x65B0;&#x7B56;&#x7565; <code>OnDelete</code> &#x548C; <code>RollingUpdate</code>&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; <code>RollingUpdate</code>&#x3002;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x65F6;&#xFF0C;&#x9700;&#x8981;&#x6307;&#x5B9A; <code>.spec.updateStrategy.rollingUpdate.maxUnavailable</code>&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A;1&#xFF09;&#x548C; <code>.spec.minReadySeconds</code>&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A; 0&#xFF09;&#x3002;</p>
+<pre class="language-"><code>// &#x66F4;&#x65B0;&#x955C;&#x50CF;
+$ kubectl set image ds/nginx-ds nginx-ds=nginx:1.16
+
+// &#x67E5;&#x770B;&#x66F4;&#x65B0;&#x72B6;&#x6001;
+$ kubectl rollout status ds/nginx-ds
+</code></pre><h4 id="&#x56DE;&#x6EDA;"><a name="&#x56DE;&#x6EDA;" class="anchor-navigation-ex-anchor" href="#&#x56DE;&#x6EDA;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x56DE;&#x6EDA;</h4>
+<p>&#x5728; statefulset &#x6E90;&#x7801;&#x5206;&#x6790;&#x4E00;&#x8282;&#x5DF2;&#x7ECF;&#x63D0;&#x5230;&#x8FC7; <code>controllerRevision</code> &#x8FD9;&#x4E2A;&#x5BF9;&#x8C61;&#x4E86;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x7528;&#x6765;&#x4FDD;&#x5B58;&#x5386;&#x53F2;&#x7248;&#x672C;&#x4FE1;&#x606F;&#xFF0C;&#x5728;&#x66F4;&#x65B0;&#x4EE5;&#x53CA;&#x56DE;&#x6EDA;&#x64CD;&#x4F5C;&#x65F6;&#x4F7F;&#x7528;&#xFF0C;daemonset controller &#x4E5F;&#x662F;&#x4F7F;&#x7528; <code>controllerrevision</code> &#x4FDD;&#x5B58;&#x5386;&#x53F2;&#x7248;&#x672C;&#x4FE1;&#x606F;&#xFF0C;&#x5728;&#x56DE;&#x6EDA;&#x65F6;&#x4F1A;&#x4F7F;&#x7528;&#x5386;&#x53F2; <code>controllerrevision</code> &#x4E2D;&#x7684;&#x4FE1;&#x606F;&#x66FF;&#x6362; daemonset &#x4E2D; <code>Spec.Template</code>&#x3002;</p>
+<pre class="language-"><code>// &#x67E5;&#x770B; ds &#x5386;&#x53F2;&#x7248;&#x672C;&#x4FE1;&#x606F;
+$ kubectl get controllerrevision
+NAME                  CONTROLLER                REVISION   AGE
+nginx-ds-5c4b75bdbb   daemonset.apps/nginx-ds   2          122m
+nginx-ds-7cd7798dcd   daemonset.apps/nginx-ds   1          133m
+
+// &#x56DE;&#x6EDA;&#x5230;&#x7248;&#x672C; 1
+$ kubectl rollout undo daemonset nginx-ds --to-revision=1
+
+// &#x67E5;&#x770B;&#x56DE;&#x6EDA;&#x72B6;&#x6001;
+$ kubectl rollout status ds/nginx-ds
+</code></pre><h4 id="&#x6682;&#x505C;"><a name="&#x6682;&#x505C;" class="anchor-navigation-ex-anchor" href="#&#x6682;&#x505C;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x6682;&#x505C;</h4>
+<p>daemonset &#x76EE;&#x524D;&#x4E0D;&#x652F;&#x6301;&#x6682;&#x505C;&#x64CD;&#x4F5C;&#x3002;</p>
+<h4 id="&#x5220;&#x9664;"><a name="&#x5220;&#x9664;" class="anchor-navigation-ex-anchor" href="#&#x5220;&#x9664;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x5220;&#x9664;</h4>
+<p>daemonset &#x4E5F;&#x652F;&#x6301;&#x4E24;&#x79CD;&#x5220;&#x9664;&#x64CD;&#x4F5C;&#x3002;</p>
+<pre class="language-"><code>// &#x975E;&#x7EA7;&#x8054;&#x5220;&#x9664;
+$ kubectl delete ds/nginx-ds --cascade=false
+
+// &#x7EA7;&#x8054;&#x5220;&#x9664;
+$ kubectl delete ds/nginx-ds
+</code></pre><h3 id="daemonsetcontroller-&#x6E90;&#x7801;&#x5206;&#x6790;"><a name="daemonsetcontroller-&#x6E90;&#x7801;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#daemonsetcontroller-&#x6E90;&#x7801;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>DaemonSetController &#x6E90;&#x7801;&#x5206;&#x6790;</h3>
+<blockquote>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
+</blockquote>
+<p>&#x9996;&#x5148;&#x8FD8;&#x662F;&#x770B; <code>startDaemonSetController</code> &#x65B9;&#x6CD5;&#xFF0C;&#x5728;&#x6B64;&#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x521D;&#x59CB;&#x5316; <code>DaemonSetsController</code> &#x5BF9;&#x8C61;&#x5E76;&#x8C03;&#x7528; <code>Run</code>&#x65B9;&#x6CD5;&#x542F;&#x52A8; daemonset controller&#xFF0C;&#x4ECE;&#x8BE5;&#x65B9;&#x6CD5;&#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x51FA; daemonset controller &#x4F1A;&#x76D1;&#x542C; <code>daemonsets</code>&#x3001;<code>controllerRevision</code>&#x3001;<code>pod</code> &#x548C; <code>node</code> &#x56DB;&#x79CD;&#x5BF9;&#x8C61;&#x8D44;&#x6E90;&#x7684;&#x53D8;&#x52A8;&#x3002;&#x5176;&#x4E2D; <code>ConcurrentDaemonSetSyncs</code>&#x7684;&#x9ED8;&#x8BA4;&#x503C;&#x4E3A; 2&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kube-controller-manager/app/apps.go:36</code></p>
+<pre class="language-"><code>func startDaemonSetController(ctx ControllerContext) (http.Handler, bool, error) {
+    if !ctx.AvailableResources[schema.GroupVersionResource{Group: &quot;apps&quot;, Version: &quot;v1&quot;, Resource: &quot;daemonsets&quot;}] {
+        return nil, false, nil
+    }
+    dsc, err := daemon.NewDaemonSetsController(
+        ctx.InformerFactory.Apps().V1().DaemonSets(),
+        ctx.InformerFactory.Apps().V1().ControllerRevisions(),
+        ctx.InformerFactory.Core().V1().Pods(),
+        ctx.InformerFactory.Core().V1().Nodes(),
+        ctx.ClientBuilder.ClientOrDie(&quot;daemon-set-controller&quot;),
+        flowcontrol.NewBackOff(1*time.Second, 15*time.Minute),
+    )
+    if err != nil {
+        return nil, true, fmt.Errorf(&quot;error creating DaemonSets controller: %v&quot;, err)
+    }
+    go dsc.Run(int(ctx.ComponentConfig.DaemonSetController.ConcurrentDaemonSetSyncs), ctx.Stop)
+    return nil, true, nil
+}
+</code></pre><p>&#x5728; <code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x542F;&#x52A8;&#x4E24;&#x4E2A;&#x64CD;&#x4F5C;&#xFF0C;&#x4E00;&#x4E2A;&#x5C31;&#x662F; <code>dsc.runWorker</code> &#x6267;&#x884C;&#x7684; sync &#x64CD;&#x4F5C;&#xFF0C;&#x53E6;&#x4E00;&#x4E2A;&#x5C31;&#x662F; <code>dsc.failedPodsBackoff.GC</code> &#x6267;&#x884C;&#x7684; gc &#x64CD;&#x4F5C;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x7B49;&#x5F85; informer &#x7F13;&#x5B58;&#x540C;&#x6B65;&#x5B8C;&#x6210;&#xFF1B;</li>
+<li>2&#x3001;&#x542F;&#x52A8;&#x4E24;&#x4E2A; goroutine &#x5206;&#x522B;&#x6267;&#x884C; <code>dsc.runWorker</code>&#xFF1B;</li>
+<li>3&#x3001;&#x542F;&#x52A8;&#x4E00;&#x4E2A; goroutine &#x6BCF;&#x5206;&#x949F;&#x6267;&#x884C;&#x4E00;&#x6B21; <code>dsc.failedPodsBackoff.GC</code>&#xFF0C;&#x4ECE; <code>startDaemonSetController</code> &#x65B9;&#x6CD5;&#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x5230; <code>failedPodsBackoff</code> &#x7684; duration&#x4E3A;1s&#xFF0C;max duration&#x4E3A;15m&#xFF0C;<code>failedPodsBackoff</code> &#x7684;&#x4E3B;&#x8981;&#x4F5C;&#x7528;&#x662F;&#x5F53;&#x53D1;&#x73B0; daemon pod &#x72B6;&#x6001;&#x4E3A; failed &#x65F6;&#xFF0C;&#x4F1A;&#x5B9A;&#x65F6;&#x91CD;&#x542F;&#x8BE5; pod&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/daemon_controller.go:263</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) Run(workers int, stopCh &lt;-chan struct{}) {
+    defer utilruntime.HandleCrash()
+    defer dsc.queue.ShutDown()
+
+    defer klog.Infof(&quot;Shutting down daemon sets controller&quot;)
+
+    if !cache.WaitForNamedCacheSync(&quot;daemon sets&quot;, stopCh, dsc.podStoreSynced, dsc.nodeStoreSynced, dsc.historyStoreSynced, dsc.dsStoreSynced) {
+        return
+    }
+
+    for i := 0; i &lt; workers; i++ {
+        // sync &#x64CD;&#x4F5C;
+        go wait.Until(dsc.runWorker, time.Second, stopCh)
+    }
+
+    // GC &#x64CD;&#x4F5C;
+    go wait.Until(dsc.failedPodsBackoff.GC, BackoffGCInterval, stopCh)
+
+    &lt;-stopCh
+}
+</code></pre><h4 id="syncdaemonset"><a name="syncdaemonset" class="anchor-navigation-ex-anchor" href="#syncdaemonset"><i class="fa fa-link" aria-hidden="true"></i></a>syncDaemonSet</h4>
+<p>daemonset &#x4E2D; pod &#x7684;&#x521B;&#x5EFA;&#x4E0E;&#x5220;&#x9664;&#x662F;&#x4E0E; node &#x76F8;&#x5173;&#x8054;&#x7684;&#xFF0C;&#x6240;&#x4EE5;&#x6BCF;&#x6B21;&#x6267;&#x884C; sync &#x64CD;&#x4F5C;&#x65F6;&#x9700;&#x8981;&#x904D;&#x5386;&#x6240;&#x6709;&#x7684; node &#x8FDB;&#x884C;&#x5224;&#x65AD;&#x3002;<code>syncDaemonSet</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x901A;&#x8FC7; key &#x83B7;&#x53D6; ns &#x548C; name&#xFF1B;</li>
+<li>2&#x3001;&#x4ECE; dsLister &#x4E2D;&#x83B7;&#x53D6; ds &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>3&#x3001;&#x4ECE; nodeLister &#x83B7;&#x53D6;&#x6240;&#x6709; node&#xFF1B;</li>
+<li>4&#x3001;&#x83B7;&#x53D6; dsKey&#xFF1B;</li>
+<li>5&#x3001;&#x5224;&#x65AD; ds &#x662F;&#x5426;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#xFF1B;</li>
+<li>6&#x3001;&#x8C03;&#x7528; <code>constructHistory</code> &#x83B7;&#x53D6; current &#x548C; old <code>controllerRevision</code>&#xFF1B;</li>
+<li>7&#x3001;&#x8C03;&#x7528; <code>dsc.expectations.SatisfiedExpectations</code> &#x5224;&#x65AD;&#x662F;&#x5426;&#x6EE1;&#x8DB3; <code>expectations</code> &#x673A;&#x5236;&#xFF0C;<code>expectations</code> &#x673A;&#x5236;&#x7684;&#x76EE;&#x7684;&#x5C31;&#x662F;&#x51CF;&#x5C11;&#x4E0D;&#x5FC5;&#x8981;&#x7684; sync &#x64CD;&#x4F5C;&#xFF0C;&#x5173;&#x4E8E; <code>expectations</code> &#x673A;&#x5236;&#x7684;&#x8BE6;&#x7EC6;&#x8BF4;&#x660E;&#x53EF;&#x4EE5;&#x53C2;&#x8003;&#x7B14;&#x8005;&#x4EE5;&#x524D;&#x5199;&#x7684; &quot;replicaset controller &#x6E90;&#x7801;&#x5206;&#x6790;&quot;&#x4E00;&#x6587;&#xFF1B;</li>
+<li>8&#x3001;&#x8C03;&#x7528; <code>dsc.manage</code> &#x6267;&#x884C;&#x5B9E;&#x9645;&#x7684; sync &#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>9&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x4E3A;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#xFF0C;&#x5E76;&#x6267;&#x884C;&#x5BF9;&#x5E94;&#x7684;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#x903B;&#x8F91;&#xFF1B;</li>
+<li>10&#x3001;&#x8C03;&#x7528; <code>dsc.cleanupHistory</code> &#x6839;&#x636E; <code>spec.revisionHistoryLimit</code>&#x5B57;&#x6BB5;&#x6E05;&#x7406;&#x8FC7;&#x671F;&#x7684; <code>controllerrevision</code>&#xFF1B;</li>
+<li>11&#x3001;&#x8C03;&#x7528; <code>dsc.updateDaemonSetStatus</code> &#x66F4;&#x65B0; ds &#x72B6;&#x6001;&#xFF1B; </li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/daemon_controller.go:1212</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) syncDaemonSet(key string) error {
+    ......
+
+    // 1&#x3001;&#x901A;&#x8FC7; key &#x83B7;&#x53D6; ns &#x548C; name
+    namespace, name, err := cache.SplitMetaNamespaceKey(key)
+    if err != nil {
+        return err
+    }
+
+    // 2&#x3001;&#x4ECE; dsLister &#x4E2D;&#x83B7;&#x53D6; ds &#x5BF9;&#x8C61;
+    ds, err := dsc.dsLister.DaemonSets(namespace).Get(name)
+    if errors.IsNotFound(err) {
+        dsc.expectations.DeleteExpectations(key)
+        return nil
+    }
+    ......
+
+    // 3&#x3001;&#x4ECE; nodeLister &#x83B7;&#x53D6;&#x6240;&#x6709; node
+    nodeList, err := dsc.nodeLister.List(labels.Everything())
+    ......
+
+    everything := metav1.LabelSelector{}
+    if reflect.DeepEqual(ds.Spec.Selector, &amp;everything) {
+        dsc.eventRecorder.Eventf(ds, v1.EventTypeWarning, SelectingAllReason, &quot;This daemon set is selecting all pods. A non-empty selector is required. &quot;)
+        return nil
+    }
+
+    // 4&#x3001;&#x83B7;&#x53D6; dsKey
+    dsKey, err := controller.KeyFunc(ds)
+    if err != nil {
+        return fmt.Errorf(&quot;couldn&apos;t get key for object %#v: %v&quot;, ds, err)
+    }
+
+    // 5&#x3001;&#x5224;&#x65AD; ds &#x662F;&#x5426;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;
+    if ds.DeletionTimestamp != nil {
+        return nil
+    }
+
+    // 6&#x3001;&#x83B7;&#x53D6; current &#x548C; old controllerRevision
+    cur, old, err := dsc.constructHistory(ds)
+    if err != nil {
+        return fmt.Errorf(&quot;failed to construct revisions of DaemonSet: %v&quot;, err)
+    }
+    hash := cur.Labels[apps.DefaultDaemonSetUniqueLabelKey]
+
+    // 7&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x6EE1;&#x8DB3; expectations &#x673A;&#x5236;
+    if !dsc.expectations.SatisfiedExpectations(dsKey) {
+        return dsc.updateDaemonSetStatus(ds, nodeList, hash, false)
+    }
+
+    // 8&#x3001;&#x6267;&#x884C;&#x5B9E;&#x9645;&#x7684; sync &#x64CD;&#x4F5C;
+    err = dsc.manage(ds, nodeList, hash)
+    if err != nil {
+        return err
+    }
+
+    // 9&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x4E3A;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#xFF0C;&#x5E76;&#x6267;&#x884C;&#x5BF9;&#x5E94;&#x7684;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;
+    if dsc.expectations.SatisfiedExpectations(dsKey) {
+        switch ds.Spec.UpdateStrategy.Type {
+        case apps.OnDeleteDaemonSetStrategyType:
+        case apps.RollingUpdateDaemonSetStrategyType:
+            err = dsc.rollingUpdate(ds, nodeList, hash)
+        }
+        if err != nil {
+            return err
+        }
+    }
+    // 10&#x3001;&#x6E05;&#x7406;&#x8FC7;&#x671F;&#x7684; controllerrevision
+    err = dsc.cleanupHistory(ds, old)
+    if err != nil {
+        return fmt.Errorf(&quot;failed to clean up revisions of DaemonSet: %v&quot;, err)
+    }
+
+    // 11&#x3001;&#x66F4;&#x65B0; ds &#x72B6;&#x6001;
+    return dsc.updateDaemonSetStatus(ds, nodeList, hash, true)
+}
+</code></pre><p><code>syncDaemonSet</code> &#x4E2D;&#x4E3B;&#x8981;&#x6709; <code>manage</code>&#x3001;<code>rollingUpdate</code>&#x548C;<code>updateDaemonSetStatus</code> &#x4E09;&#x4E2A;&#x65B9;&#x6CD5;&#xFF0C;&#x5206;&#x522B;&#x5BF9;&#x5E94;&#x521B;&#x5EFA;&#x3001;&#x66F4;&#x65B0;&#x4E0E;&#x72B6;&#x6001;&#x540C;&#x6B65;&#xFF0C;&#x4E0B;&#x9762;&#x4E3B;&#x8981;&#x6765;&#x5206;&#x6790;&#x8FD9;&#x4E09;&#x4E2A;&#x65B9;&#x6CD5;&#x3002;</p>
+<h4 id="manage"><a name="manage" class="anchor-navigation-ex-anchor" href="#manage"><i class="fa fa-link" aria-hidden="true"></i></a>manage</h4>
+<p><code>manage</code> &#x4E3B;&#x8981;&#x662F;&#x7528;&#x6765;&#x4FDD;&#x8BC1; ds &#x7684; pod &#x6570;&#x6B63;&#x5E38;&#x8FD0;&#x884C;&#x5728;&#x6BCF;&#x4E00;&#x4E2A; node &#x4E0A;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>dsc.getNodesToDaemonPods</code> &#x83B7;&#x53D6;&#x5DF2;&#x5B58;&#x5728; daemon pod &#x4E0E; node &#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;&#xFF1B;</li>
+<li>2&#x3001;&#x904D;&#x5386;&#x6240;&#x6709; node&#xFF0C;&#x8C03;&#x7528; <code>dsc.podsShouldBeOnNode</code> &#x65B9;&#x6CD5;&#x6765;&#x786E;&#x5B9A;&#x5728;&#x7ED9;&#x5B9A;&#x7684;&#x8282;&#x70B9;&#x4E0A;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x8FD8;&#x662F;&#x5220;&#x9664; daemon pod&#xFF1B;</li>
+<li>3&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x52A8;&#x4E86; <code>ScheduleDaemonSetPods</code>feature-gates &#x7279;&#x6027;&#xFF0C;&#x82E5;&#x542F;&#x52A8;&#x4E86;&#x5219;&#x9700;&#x8981;&#x5220;&#x9664;&#x901A;&#x8FC7;&#x9ED8;&#x8BA4;&#x8C03;&#x5EA6;&#x5668;&#x5DF2;&#x7ECF;&#x8C03;&#x5EA6;&#x5230;&#x4E0D;&#x5B58;&#x5728; node &#x4E0A;&#x7684; daemon pod&#xFF1B;</li>
+<li>4&#x3001;&#x8C03;&#x7528; <code>dsc.syncNodes</code> &#x4E3A;&#x5BF9;&#x5E94;&#x7684; node &#x521B;&#x5EFA; daemon pod &#x4EE5;&#x53CA;&#x5220;&#x9664;&#x591A;&#x4F59;&#x7684; pods&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/daemon_controller.go:952</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) manage(ds *apps.DaemonSet, nodeList []*v1.Node, hash string) error {
+    // 1&#x3001;&#x83B7;&#x53D6;&#x5DF2;&#x5B58;&#x5728; daemon pod &#x4E0E; node &#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;
+    nodeToDaemonPods, err := dsc.getNodesToDaemonPods(ds)
+    ......
+
+    // 2&#x3001;&#x5224;&#x65AD;&#x6BCF;&#x4E00;&#x4E2A; node &#x662F;&#x5426;&#x9700;&#x8981;&#x8FD0;&#x884C; daemon pod
+    var nodesNeedingDaemonPods, podsToDelete []string
+    for _, node := range nodeList {
+        nodesNeedingDaemonPodsOnNode, podsToDeleteOnNode, err := dsc.podsShouldBeOnNode(
+            node, nodeToDaemonPods, ds)
+
+        if err != nil {
+            continue
+        }
+
+        nodesNeedingDaemonPods = append(nodesNeedingDaemonPods, nodesNeedingDaemonPodsOnNode...)
+        podsToDelete = append(podsToDelete, podsToDeleteOnNode...)
+    }
+
+    // 3&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x52A8;&#x4E86; ScheduleDaemonSetPods feature-gates &#x7279;&#x6027;&#xFF0C;&#x82E5;&#x542F;&#x7528;&#x4E86;&#x5219;&#x5BF9;&#x4E0D;&#x5B58;&#x5728; node &#x4E0A;&#x7684; 
+    // daemon pod &#x8FDB;&#x884C;&#x5220;&#x9664; 
+    if utilfeature.DefaultFeatureGate.Enabled(features.ScheduleDaemonSetPods) {
+        podsToDelete = append(podsToDelete, getUnscheduledPodsWithoutNode(nodeList, nodeToDaemonPods)...)
+    }
+
+    // 4&#x3001;&#x4E3A;&#x5BF9;&#x5E94;&#x7684; node &#x521B;&#x5EFA; daemon pod &#x4EE5;&#x53CA;&#x5220;&#x9664;&#x591A;&#x4F59;&#x7684; pods
+    if err = dsc.syncNodes(ds, podsToDelete, nodesNeedingDaemonPods, hash); err != nil {
+        return err
+    }
+
+    return nil
+}
+</code></pre><p>&#x5728; <code>manage</code> &#x65B9;&#x6CD5;&#x4E2D;&#x53C8;&#x8C03;&#x7528;&#x4E86; <code>getNodesToDaemonPods</code>&#x3001;<code>podsShouldBeOnNode</code> &#x548C; <code>syncNodes</code> &#x4E09;&#x4E2A;&#x65B9;&#x6CD5;&#xFF0C;&#x7EE7;&#x7EED;&#x6765;&#x770B;&#x8FD9;&#x51E0;&#x79CD;&#x65B9;&#x6CD5;&#x7684;&#x4F5C;&#x7528;&#x3002;</p>
+<h5 id="getnodestodaemonpods"><a name="getnodestodaemonpods" class="anchor-navigation-ex-anchor" href="#getnodestodaemonpods"><i class="fa fa-link" aria-hidden="true"></i></a>getNodesToDaemonPods</h5>
+<p><code>getNodesToDaemonPods</code> &#x662F;&#x7528;&#x6765;&#x83B7;&#x53D6;&#x5DF2;&#x5B58;&#x5728; daemon pod &#x4E0E; node &#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;&#xFF0C;&#x5E76;&#x4E14;&#x4F1A;&#x901A;&#x8FC7; <code>adopt/orphan</code> &#x65B9;&#x6CD5;&#x5173;&#x8054;&#x4EE5;&#x53CA;&#x91CA;&#x653E;&#x5BF9;&#x5E94;&#x7684; pod&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/daemon_controller.go:820</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) getNodesToDaemonPods(ds *apps.DaemonSet) (map[string][]*v1.Pod, error) {
+    claimedPods, err := dsc.getDaemonPods(ds)
+    if err != nil {
+        return nil, err
+    }
+    nodeToDaemonPods := make(map[string][]*v1.Pod)
+    for _, pod := range claimedPods {
+        nodeName, err := util.GetTargetNodeName(pod)
+        if err != nil {
+            klog.Warningf(&quot;Failed to get target node name of Pod %v/%v in DaemonSet %v/%v&quot;,
+                pod.Namespace, pod.Name, ds.Namespace, ds.Name)
+            continue
+        }
+
+        nodeToDaemonPods[nodeName] = append(nodeToDaemonPods[nodeName], pod)
+    }
+
+    return nodeToDaemonPods, nil
+}
+</code></pre><h5 id="podsshouldbeonnode"><a name="podsshouldbeonnode" class="anchor-navigation-ex-anchor" href="#podsshouldbeonnode"><i class="fa fa-link" aria-hidden="true"></i></a>podsShouldBeOnNode</h5>
+<p><code>podsShouldBeOnNode</code> &#x65B9;&#x6CD5;&#x7528;&#x6765;&#x786E;&#x5B9A;&#x5728;&#x7ED9;&#x5B9A;&#x7684;&#x8282;&#x70B9;&#x4E0A;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x8FD8;&#x662F;&#x5220;&#x9664; daemon pod&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>dsc.nodeShouldRunDaemonPod</code> &#x5224;&#x65AD;&#x8BE5; node &#x662F;&#x5426;&#x9700;&#x8981;&#x8FD0;&#x884C; daemon pod &#x4EE5;&#x53CA; pod &#x80FD;&#x4E0D;&#x80FD;&#x8C03;&#x5EA6;&#x6210;&#x529F;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x8FD4;&#x56DE;&#x4E09;&#x4E2A;&#x503C; <code>wantToRun</code>, <code>shouldSchedule</code>, <code>shouldContinueRunning</code>&#xFF1B;</li>
+<li>2&#x3001;&#x901A;&#x8FC7;&#x5224;&#x65AD; <code>wantToRun</code>, <code>shouldSchedule</code>, <code>shouldContinueRunning</code> &#x5C06;&#x9700;&#x8981;&#x521B;&#x5EFA; daemon pod  &#x7684; node &#x5217;&#x8868;&#x4EE5;&#x53CA;&#x9700;&#x8981;&#x5220;&#x9664;&#x7684; pod &#x5217;&#x8868;&#x83B7;&#x53D6;&#x5230;&#xFF0C; <code>wantToRun</code>&#x4E3B;&#x8981;&#x68C0;&#x67E5;&#x7684;&#x662F; selector&#x3001;taints &#x7B49;&#x662F;&#x5426;&#x5339;&#x914D;&#xFF0C;<code>shouldSchedule</code> &#x4E3B;&#x8981;&#x68C0;&#x67E5; node &#x4E0A;&#x7684;&#x8D44;&#x6E90;&#x662F;&#x5426;&#x5145;&#x8DB3;&#xFF0C;<code>shouldContinueRunning</code> &#x9ED8;&#x8BA4;&#x4E3A; true&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/daemon_controller.go:866</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) podsShouldBeOnNode(...) (nodesNeedingDaemonPods, podsToDelete []string, err error) {
+    // 1&#x3001;&#x5224;&#x65AD;&#x8BE5; node &#x662F;&#x5426;&#x9700;&#x8981;&#x8FD0;&#x884C; daemon pod &#x4EE5;&#x53CA;&#x80FD;&#x4E0D;&#x80FD;&#x8C03;&#x5EA6;&#x6210;&#x529F;
+    wantToRun, shouldSchedule, shouldContinueRunning, err := dsc.nodeShouldRunDaemonPod(node, ds)
+    if err != nil {
+        return
+    }
+    // 2&#x3001;&#x83B7;&#x53D6;&#x8BE5;&#x8282;&#x70B9;&#x4E0A;&#x7684;&#x6307;&#x5B9A;ds&#x7684;pod&#x5217;&#x8868;
+    daemonPods, exists := nodeToDaemonPods[node.Name]
+    dsKey, err := cache.MetaNamespaceKeyFunc(ds)
+    if err != nil {
+        utilruntime.HandleError(err)
+        return
+    }
+
+    // 3&#x3001;&#x4ECE; suspended list &#x4E2D;&#x79FB;&#x9664;&#x5728;&#x8BE5;&#x8282;&#x70B9;&#x4E0A; ds &#x7684; pod
+    dsc.removeSuspendedDaemonPods(node.Name, dsKey)
+
+    switch {
+    // 4&#x3001;&#x5BF9;&#x4E8E;&#x9700;&#x8981;&#x521B;&#x5EFA; pod &#x4F46;&#x662F;&#x4E0D;&#x80FD;&#x8C03;&#x5EA6; pod &#x7684; node&#xFF0C;&#x5148;&#x628A; pod &#x653E;&#x5165;&#x5230; suspended &#x961F;&#x5217;&#x4E2D;
+    case wantToRun &amp;&amp; !shouldSchedule:
+        dsc.addSuspendedDaemonPods(node.Name, dsKey)
+    // 5&#x3001;&#x9700;&#x8981;&#x521B;&#x5EFA; pod &#x4E14; pod &#x672A;&#x8FD0;&#x884C;&#xFF0C;&#x5219;&#x521B;&#x5EFA; pod
+    case shouldSchedule &amp;&amp; !exists:
+        nodesNeedingDaemonPods = append(nodesNeedingDaemonPods, node.Name)
+    // 6&#x3001;&#x9700;&#x8981; pod &#x4E00;&#x76F4;&#x8FD0;&#x884C;
+    case shouldContinueRunning:
+        var daemonPodsRunning []*v1.Pod
+        for _, pod := range daemonPods {
+            if pod.DeletionTimestamp != nil {
+                continue
+            }
+            // 7&#x3001;&#x5982;&#x679C; pod &#x8FD0;&#x884C;&#x72B6;&#x6001;&#x4E3A; failed&#xFF0C;&#x5219;&#x5220;&#x9664;&#x8BE5; pod
+            if pod.Status.Phase == v1.PodFailed {
+                backoffKey := failedPodsBackoffKey(ds, node.Name)
+
+                now := dsc.failedPodsBackoff.Clock.Now()
+                inBackoff := dsc.failedPodsBackoff.IsInBackOffSinceUpdate(backoffKey, now)
+                if inBackoff {
+                    delay := dsc.failedPodsBackoff.Get(backoffKey)
+                    dsc.enqueueDaemonSetAfter(ds, delay)
+                    continue
+                }
+
+                dsc.failedPodsBackoff.Next(backoffKey, now)
+                podsToDelete = append(podsToDelete, pod.Name)
+            } else {
+                daemonPodsRunning = append(daemonPodsRunning, pod)
+            }
+        }
+        // 8&#x3001;&#x5982;&#x679C;&#x8282;&#x70B9;&#x4E0A;&#x5DF2;&#x7ECF;&#x8FD0;&#x884C; daemon pod &#x6570; &gt; 1&#xFF0C;&#x4FDD;&#x7559;&#x8FD0;&#x884C;&#x65F6;&#x95F4;&#x6700;&#x957F;&#x7684; pod&#xFF0C;&#x5176;&#x4F59;&#x7684;&#x5220;&#x9664;
+        if len(daemonPodsRunning) &gt; 1 {
+            sort.Sort(podByCreationTimestampAndPhase(daemonPodsRunning))
+            for i := 1; i &lt; len(daemonPodsRunning); i++ {
+                podsToDelete = append(podsToDelete, daemonPodsRunning[i].Name)
+            }
+        }
+    // 9&#x3001;&#x5982;&#x679C; pod &#x4E0D;&#x9700;&#x8981;&#x7EE7;&#x7EED;&#x8FD0;&#x884C;&#x4F46; pod &#x5DF2;&#x5B58;&#x5728;&#x5219;&#x9700;&#x8981;&#x5220;&#x9664; pod
+    case !shouldContinueRunning &amp;&amp; exists:
+        for _, pod := range daemonPods {
+            if pod.DeletionTimestamp != nil {
+                continue
+            }
+            podsToDelete = append(podsToDelete, pod.Name)
+        }
+    }
+
+    return nodesNeedingDaemonPods, podsToDelete, nil
+}
+</code></pre><p>&#x7136;&#x540E;&#x7EE7;&#x7EED;&#x770B; <code>nodeShouldRunDaemonPod</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>NewPod</code> &#x4E3A;&#x8BE5; node &#x6784;&#x5EFA;&#x4E00;&#x4E2A; daemon pod object&#xFF1B;</li>
+<li>2&#x3001;&#x5224;&#x65AD; ds &#x662F;&#x5426;&#x6307;&#x5B9A;&#x4E86; <code>.Spec.Template.Spec.NodeName</code> &#x5B57;&#x6BB5;&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>dsc.simulate</code> &#x6267;&#x884C; <code>GeneralPredicates</code> &#x9884;&#x9009;&#x7B97;&#x6CD5;&#x68C0;&#x67E5;&#x8BE5; node &#x662F;&#x5426;&#x80FD;&#x591F;&#x8C03;&#x5EA6;&#x6210;&#x529F;&#xFF1B;</li>
+<li>4&#x3001;&#x5224;&#x65AD;  <code>GeneralPredicates</code> &#x9884;&#x9009;&#x7B97;&#x6CD5;&#x6267;&#x884C;&#x540E;&#x7684;  <code>reasons</code> &#x786E;&#x5B9A; <code>wantToRun</code>, <code>shouldSchedule</code>, <code>shouldContinueRunning</code> &#x7684;&#x503C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/daemon_controller.go:1337</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) nodeShouldRunDaemonPod(node *v1.Node, ds *apps.DaemonSet) (wantToRun, shouldSchedule, shouldContinueRunning bool, err   error) {
+    // 1&#x3001;&#x6784;&#x5EFA; daemon pod object
+    newPod := NewPod(ds, node.Name)
+
+    wantToRun, shouldSchedule, shouldContinueRunning = true, true, true
+    // 2&#x3001;&#x5224;&#x65AD; ds &#x662F;&#x5426;&#x6307;&#x5B9A;&#x4E86; node&#xFF0C;&#x82E5;&#x6307;&#x5B9A;&#x4E86;&#x4E14;&#x4E0D;&#x4E3A;&#x5F53;&#x524D; node &#x76F4;&#x63A5;&#x8FD4;&#x56DE; false
+    if !(ds.Spec.Template.Spec.NodeName == &quot;&quot; || ds.Spec.Template.Spec.NodeName == node.Name) {
+        return false, false, false, nil
+    }
+
+    // 3&#x3001;&#x6267;&#x884C; GeneralPredicates &#x9884;&#x9009;&#x7B97;&#x6CD5;
+    reasons, nodeInfo, err := dsc.simulate(newPod, node, ds)
+    if err != nil {
+        ......
+    }
+
+    // 4&#x3001;&#x68C0;&#x67E5;&#x9884;&#x9009;&#x7B97;&#x6CD5;&#x6267;&#x884C;&#x7684;&#x7ED3;&#x679C;
+    var insufficientResourceErr error
+    for _, r := range reasons {
+        switch reason := r.(type) {
+        case *predicates.InsufficientResourceError:
+            insufficientResourceErr = reason
+        case *predicates.PredicateFailureError:
+            var emitEvent bool
+            switch reason {
+            case
+                predicates.ErrNodeSelectorNotMatch,
+                predicates.ErrPodNotMatchHostName,
+                predicates.ErrNodeLabelPresenceViolated,
+
+                predicates.ErrPodNotFitsHostPorts:
+                return false, false, false, nil
+            case predicates.ErrTaintsTolerationsNotMatch:
+                fitsNoExecute, _, err := predicates.PodToleratesNodeNoExecuteTaints(newPod, nil, nodeInfo)
+                if err != nil {
+                    return false, false, false, err
+                }
+                if !fitsNoExecute {
+                    return false, false, false, nil
+                }
+                wantToRun, shouldSchedule = false, false
+            case
+                predicates.ErrDiskConflict,
+                predicates.ErrVolumeZoneConflict,
+                predicates.ErrMaxVolumeCountExceeded,
+                predicates.ErrNodeUnderMemoryPressure,
+                predicates.ErrNodeUnderDiskPressure:
+                shouldSchedule = false
+                emitEvent = true
+            case
+                predicates.ErrPodAffinityNotMatch,
+                predicates.ErrServiceAffinityViolated:
+
+                return false, false, false, fmt.Errorf(&quot;unexpected reason: DaemonSet Predicates should not return reason %s&quot;, reason.GetReason())
+            default:             
+                wantToRun, shouldSchedule, shouldContinueRunning = false, false, false
+                emitEvent = true
+            }
+            ......
+        }
+    }
+
+    if shouldSchedule &amp;&amp; insufficientResourceErr != nil {
+        dsc.eventRecorder.Eventf(ds, v1.EventTypeWarning, FailedPlacementReason, &quot;failed to place pod on %q: %s&quot;, node.ObjectMeta.Name,                  insufficientResourceErr.Error())
+        shouldSchedule = false
+    }
+    return
+}
+</code></pre><h5 id="syncnodes"><a name="syncnodes" class="anchor-navigation-ex-anchor" href="#syncnodes"><i class="fa fa-link" aria-hidden="true"></i></a>syncNodes</h5>
+<p><code>syncNodes</code> &#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x662F;&#x4E3A;&#x9700;&#x8981; daemon pod &#x7684; node &#x521B;&#x5EFA; pod &#x4EE5;&#x53CA;&#x5220;&#x9664;&#x591A;&#x4F59;&#x7684; pod&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x5C06; <code>createDiff</code> &#x548C; <code>deleteDiff</code> &#x4E0E; <code>burstReplicas</code> &#x8FDB;&#x884C;&#x6BD4;&#x8F83;&#xFF0C;<code>burstReplicas</code> &#x9ED8;&#x8BA4;&#x503C;&#x4E3A; 250 &#x5373;&#x6BCF;&#x4E2A; syncLoop &#x4E2D;&#x521B;&#x5EFA;&#x6216;&#x8005;&#x5220;&#x9664;&#x7684; pod &#x6570;&#x6700;&#x591A;&#x4E3A; 250 &#x4E2A;&#xFF0C;&#x82E5;&#x8D85;&#x8FC7;&#x5176;&#x503C;&#x5219;&#x5269;&#x4F59;&#x9700;&#x8981;&#x521B;&#x5EFA;&#x6216;&#x8005;&#x5220;&#x9664;&#x7684; pod &#x5728;&#x4E0B;&#x4E00;&#x4E2A; syncLoop &#x7EE7;&#x7EED;&#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>2&#x3001;&#x5C06; <code>createDiff</code> &#x548C; <code>deleteDiff</code> &#x5199;&#x5165;&#x5230; <code>expectations</code> &#x4E2D;&#xFF1B;</li>
+<li>3&#x3001;&#x5E76;&#x53D1;&#x521B;&#x5EFA; pod&#xFF0C;&#x521B;&#x5EFA; pod &#x6709;&#x4E24;&#x79CD;&#x65B9;&#x6CD5;:&#xFF08;1&#xFF09;&#x521B;&#x5EFA;&#x7684; pod &#x4E0D;&#x7ECF;&#x8FC7;&#x9ED8;&#x8BA4;&#x8C03;&#x5EA6;&#x5668;&#xFF0C;&#x76F4;&#x63A5;&#x6307;&#x5B9A;&#x4E86; pod &#x7684;&#x8FD0;&#x884C;&#x8282;&#x70B9;(&#x5373;&#x8BBE;&#x5B9A;<code>pod.Spec.NodeName</code>)&#xFF1B;&#xFF08;2&#xFF09;&#x82E5;&#x542F;&#x7528;&#x4E86; <code>ScheduleDaemonSetPods</code> feature-gates &#x7279;&#x6027;&#xFF0C;&#x5219;&#x4F7F;&#x7528;&#x9ED8;&#x8BA4;&#x8C03;&#x5EA6;&#x5668;&#x8FDB;&#x884C;&#x521B;&#x5EFA; pod&#xFF0C;&#x901A;&#x8FC7; <code>nodeAffinity</code>&#x6765;&#x4FDD;&#x8BC1;&#x6BCF;&#x4E2A;&#x8282;&#x70B9;&#x90FD;&#x8FD0;&#x884C;&#x4E00;&#x4E2A; pod&#xFF1B;</li>
+<li>4&#x3001;&#x5E76;&#x53D1;&#x5220;&#x9664; <code>deleteDiff</code> &#x4E2D;&#x7684;&#x6240;&#x6709; pod&#xFF1B;</li>
+</ul>
+<p><code>ScheduleDaemonSetPods</code> &#x662F;&#x4E00;&#x4E2A; feature-gates &#x7279;&#x6027;&#xFF0C;&#x5176;&#x51FA;&#x73B0;&#x5728; v1.11 &#x4E2D;&#xFF0C;&#x5728; v1.12 &#x4E2D;&#x5904;&#x4E8E; Beta &#x7248;&#x672C;&#xFF0C;v1.17 &#x4E3A; GA &#x7248;&#x3002;&#x6700;&#x521D; daemonset controller &#x53EA;&#x6709;&#x4E00;&#x79CD;&#x521B;&#x5EFA; pod &#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5373;&#x76F4;&#x63A5;&#x6307;&#x5B9A; pod &#x7684; <code>spec.NodeName</code> &#x5B57;&#x6BB5;&#xFF0C;&#x4F46;&#x662F;&#x76EE;&#x524D;&#x8FD9;&#x79CD;&#x65B9;&#x5F0F;&#x5DF2;&#x7ECF;&#x66B4;&#x9732;&#x4E86;&#x8BB8;&#x591A;&#x95EE;&#x9898;&#xFF0C;&#x5728;&#x4EE5;&#x540E;&#x7684;&#x53D1;&#x5C55;&#x4E2D;&#x793E;&#x533A;&#x8FD8;&#x662F;&#x5E0C;&#x671B;&#x80FD;&#x901A;&#x8FC7;&#x9ED8;&#x8BA4;&#x8C03;&#x5EA6;&#x5668;&#x8FDB;&#x884C;&#x8C03;&#x5EA6;&#xFF0C;&#x6240;&#x4EE5;&#x624D;&#x51FA;&#x73B0;&#x4E86;&#x7B2C;&#x4E8C;&#x79CD;&#x65B9;&#x5F0F;&#xFF0C;&#x539F;&#x56E0;&#x4E3B;&#x8981;&#x6709;&#x4EE5;&#x4E0B;&#x4E94;&#x70B9;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;DaemonSet &#x65E0;&#x6CD5;&#x611F;&#x77E5; node &#x4E0A;&#x8D44;&#x6E90;&#x7684;&#x53D8;&#x5316; (<a href="https://github.com/kubernetes/kubernetes/issues/46935" target="_blank">#46935</a>, <a href="https://github.com/kubernetes/kubernetes/issues/58868" target="_blank">#58868</a>)&#xFF1A;&#x5F53; pod &#x7B2C;&#x4E00;&#x6B21;&#x56E0;&#x8D44;&#x6E90;&#x4E0D;&#x591F;&#x65E0;&#x6CD5;&#x521B;&#x5EFA;&#x65F6;&#xFF0C;&#x82E5;&#x5176;&#x4ED6; pod &#x9000;&#x51FA;&#x540E;&#x8D44;&#x6E90;&#x8DB3;&#x591F;&#x65F6; DaemonSet &#x65E0;&#x6CD5;&#x611F;&#x77E5;&#x5230;&#xFF1B;</li>
+<li>2&#x3001;Daemonset &#x65E0;&#x6CD5;&#x652F;&#x6301; Pod Affinity &#x548C; Pod AntiAffinity &#x7684;&#x529F;&#x80FD;(<a href="https://github.com/kubernetes/kubernetes/issues/29276" target="_blank">#29276</a>)&#xFF1B;</li>
+<li>3&#x3001;&#x5728;&#x67D0;&#x4E9B;&#x529F;&#x80FD;&#x4E0A;&#x9700;&#x8981;&#x5B9E;&#x73B0;&#x548C; scheduler &#x91CD;&#x590D;&#x7684;&#x4EE3;&#x7801;&#x903B;&#x8F91;, &#x4F8B;&#x5982;&#xFF1A;critical pods (<a href="https://github.com/kubernetes/kubernetes/issues/42028" target="_blank">#42028</a>), tolerant/taint&#xFF1B;</li>
+<li>4&#x3001;&#x5F53; DaemonSet &#x7684; Pod &#x521B;&#x5EFA;&#x5931;&#x8D25;&#x65F6;&#x96BE;&#x4EE5; debug&#xFF0C;&#x4F8B;&#x5982;&#xFF1A;&#x8D44;&#x6E90;&#x4E0D;&#x8DB3;&#x65F6;&#xFF0C;&#x5BF9;&#x4E8E; pending pod &#x6700;&#x597D;&#x80FD;&#x6253;&#x4E00;&#x4E2A; event &#x8BF4;&#x660E;&#xFF1B;</li>
+<li>5&#x3001;&#x591A;&#x4E2A;&#x7EC4;&#x4EF6;&#x540C;&#x65F6;&#x8C03;&#x5EA6;&#x65F6;&#x96BE;&#x4EE5;&#x5B9E;&#x73B0;&#x62A2;&#x5360;&#x673A;&#x5236;&#xFF1A;&#x8FD9;&#x4E5F;&#x662F;&#x65E0;&#x6CD5;&#x901A;&#x8FC7;&#x6A2A;&#x5411;&#x6269;&#x5C55;&#x8C03;&#x5EA6;&#x5668;&#x63D0;&#x9AD8;&#x8C03;&#x5EA6;&#x541E;&#x5410;&#x91CF;&#x7684;&#x4E00;&#x4E2A;&#x539F;&#x56E0;&#xFF1B; </li>
+</ul>
+<p>&#x66F4;&#x8BE6;&#x7EC6;&#x7684;&#x539F;&#x56E0;&#x53EF;&#x4EE5;&#x53C2;&#x8003;&#x793E;&#x533A;&#x7684;&#x6587;&#x6863;&#xFF1A;<a href="https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/schedule-DS-pod-by-scheduler.md" target="_blank">schedule-DS-pod-by-scheduler.md</a>&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/daemon_controller.go:990</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) syncNodes(ds *apps.DaemonSet, podsToDelete, nodesNeedingDaemonPods []string, hash string) error {
+    ......
+
+    // 1&#x3001;&#x8BBE;&#x7F6E; burstReplicas 
+    createDiff := len(nodesNeedingDaemonPods)
+    deleteDiff := len(podsToDelete)
+
+    if createDiff &gt; dsc.burstReplicas {
+        createDiff = dsc.burstReplicas
+    }
+    if deleteDiff &gt; dsc.burstReplicas {
+        deleteDiff = dsc.burstReplicas
+    }
+
+    // 2&#x3001;&#x5199;&#x5165;&#x5230; expectations &#x4E2D;
+    dsc.expectations.SetExpectations(dsKey, createDiff, deleteDiff)
+
+    errCh := make(chan error, createDiff+deleteDiff)
+    createWait := sync.WaitGroup{}
+    generation, err := util.GetTemplateGeneration(ds)
+    if err != nil {
+        generation = nil
+    }
+    template := util.CreatePodTemplate(ds.Spec.Template, generation, hash)
+
+    // 3&#x3001;&#x5E76;&#x53D1;&#x521B;&#x5EFA; pod&#xFF0C;&#x521B;&#x5EFA;&#x7684; pod &#x6570;&#x4F9D;&#x6B21;&#x4E3A; 1, 2, 4, 8, ...
+    batchSize := integer.IntMin(createDiff, controller.SlowStartInitialBatchSize)
+    for pos := 0; createDiff &gt; pos; batchSize, pos = integer.IntMin(2*batchSize, createDiff-(pos+batchSize)), pos+batchSize {
+        errorCount := len(errCh)
+        createWait.Add(batchSize)
+        for i := pos; i &lt; pos+batchSize; i++ {
+            go func(ix int) {
+                defer createWait.Done()
+                var err error
+
+                podTemplate := template.DeepCopy()
+
+                // 4&#x3001;&#x82E5;&#x542F;&#x52A8;&#x4E86; ScheduleDaemonSetPods &#x529F;&#x80FD;&#xFF0C;&#x5219;&#x901A;&#x8FC7; kube-scheduler &#x521B;&#x5EFA; pod
+                if utilfeature.DefaultFeatureGate.Enabled(features.ScheduleDaemonSetPods) {
+                    podTemplate.Spec.Affinity = util.ReplaceDaemonSetPodNodeNameNodeAffinity(
+                        podTemplate.Spec.Affinity, nodesNeedingDaemonPods[ix])
+
+                    err = dsc.podControl.CreatePodsWithControllerRef(ds.Namespace, podTemplate,
+                        ds, metav1.NewControllerRef(ds, controllerKind))
+                } else {
+                    // 5&#x3001;&#x5426;&#x5219;&#x76F4;&#x63A5;&#x8BBE;&#x7F6E; pod &#x7684; .spec.NodeName &#x521B;&#x5EFA; pod
+                    err = dsc.podControl.CreatePodsOnNode(nodesNeedingDaemonPods[ix], ds.Namespace, podTemplate,
+                        ds, metav1.NewControllerRef(ds, controllerKind))
+                }
+
+                // 6&#x3001;&#x521B;&#x5EFA; pod &#x65F6;&#x5FFD;&#x7565; timeout err
+                if err != nil &amp;&amp; errors.IsTimeout(err) {
+                    return
+                }
+                if err != nil {
+                    dsc.expectations.CreationObserved(dsKey)
+                    errCh &lt;- err
+                    utilruntime.HandleError(err)
+                }
+            }(i)
+        }
+        createWait.Wait()
+
+        // 7&#x3001;&#x5C06;&#x521B;&#x5EFA;&#x5931;&#x8D25;&#x7684; pod &#x6570;&#x8BB0;&#x5F55;&#x5230; expectations &#x4E2D;
+        skippedPods := createDiff - (batchSize + pos)
+        if errorCount &lt; len(errCh) &amp;&amp; skippedPods &gt; 0 {
+            dsc.expectations.LowerExpectations(dsKey, skippedPods, 0)
+            break
+        }
+    }
+
+    // 8&#x3001;&#x5E76;&#x53D1;&#x5220;&#x9664; deleteDiff &#x4E2D;&#x7684; pod
+    deleteWait := sync.WaitGroup{}
+    deleteWait.Add(deleteDiff)
+    for i := 0; i &lt; deleteDiff; i++ {
+        go func(ix int) {
+            defer deleteWait.Done()
+            if err := dsc.podControl.DeletePod(ds.Namespace, podsToDelete[ix], ds); err != nil {
+                dsc.expectations.DeletionObserved(dsKey)
+                errCh &lt;- err
+                utilruntime.HandleError(err)
+            }
+        }(i)
+    }
+    deleteWait.Wait()
+    errors := []error{}
+    close(errCh)
+    for err := range errCh {
+        errors = append(errors, err)
+    }
+    return utilerrors.NewAggregate(errors)
+}
+</code></pre><h4 id="rollingupdate"><a name="rollingupdate" class="anchor-navigation-ex-anchor" href="#rollingupdate"><i class="fa fa-link" aria-hidden="true"></i></a>RollingUpdate</h4>
+<p>daemonset update &#x7684;&#x65B9;&#x5F0F;&#x6709;&#x4E24;&#x79CD; <code>OnDelete</code> &#x548C; <code>RollingUpdate</code>&#xFF0C;&#x5F53;&#x4E3A; <code>OnDelete</code> &#x65F6;&#x9700;&#x8981;&#x7528;&#x6237;&#x624B;&#x52A8;&#x5220;&#x9664;&#x6BCF;&#x4E00;&#x4E2A; pod &#x540E;&#x5B8C;&#x6210;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#xFF0C;&#x5F53;&#x4E3A; <code>RollingUpdate</code> &#x65F6;&#xFF0C;daemonset controller &#x4F1A;&#x81EA;&#x52A8;&#x63A7;&#x5236;&#x5347;&#x7EA7;&#x8FDB;&#x5EA6;&#x3002; </p>
+<p>&#x5F53;&#x4E3A; <code>RollingUpdate</code> &#x65F6;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x83B7;&#x53D6; daemonset pod &#x4E0E; node &#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;&#xFF1B;</li>
+<li>2&#x3001;&#x6839;&#x636E; <code>controllerrevision</code> &#x7684; hash &#x503C;&#x83B7;&#x53D6;&#x6240;&#x6709;&#x672A;&#x66F4;&#x65B0;&#x7684; pods&#xFF1B;</li>
+<li>3&#x3001;&#x83B7;&#x53D6; <code>maxUnavailable</code>, <code>numUnavailable</code> &#x7684; pod &#x6570;&#x503C;&#xFF0C;<code>maxUnavailable</code> &#x662F;&#x4ECE; ds &#x7684; <code>rollingUpdate</code> &#x5B57;&#x6BB5;&#x4E2D;&#x83B7;&#x53D6;&#x7684;&#x9ED8;&#x8BA4;&#x503C;&#x4E3A; 1&#xFF0C;<code>numUnavailable</code> &#x7684;&#x503C;&#x662F;&#x901A;&#x8FC7; daemonset pod &#x4E0E; node &#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;&#x8BA1;&#x7B97;&#x6BCF;&#x4E2A; node &#x4E0B;&#x662F;&#x5426;&#x6709; available pod &#x5F97;&#x5230;&#x7684;&#xFF1B;</li>
+<li>4&#x3001;&#x901A;&#x8FC7; oldPods &#x83B7;&#x53D6; <code>oldAvailablePods</code>, <code>oldUnavailablePods</code> &#x7684; pod &#x5217;&#x8868;&#xFF1B;</li>
+<li>5&#x3001;&#x904D;&#x5386; <code>oldUnavailablePods</code> &#x5217;&#x8868;&#x5C06;&#x9700;&#x8981;&#x5220;&#x9664;&#x7684; pod &#x8FFD;&#x52A0;&#x5230; <code>oldPodsToDelete</code> &#x6570;&#x7EC4;&#x4E2D;&#x3002;<code>oldUnavailablePods</code> &#x5217;&#x8868;&#x4E2D;&#x7684; pod &#x5206;&#x4E3A;&#x4E24;&#x79CD;&#xFF0C;&#x4E00;&#x79CD;&#x5904;&#x4E8E;&#x66F4;&#x65B0;&#x4E2D;&#xFF0C;&#x5373;&#x5220;&#x9664;&#x72B6;&#x6001;&#xFF0C;&#x4E00;&#x79CD;&#x5904;&#x4E8E;&#x672A;&#x66F4;&#x65B0;&#x4E14;&#x5F02;&#x5E38;&#x72B6;&#x6001;&#xFF0C;&#x5904;&#x4E8E;&#x5F02;&#x5E38;&#x72B6;&#x6001;&#x7684;&#x90FD;&#x9700;&#x8981;&#x88AB;&#x5220;&#x9664;&#xFF1B;</li>
+<li>6&#x3001;&#x904D;&#x5386; <code>oldAvailablePods</code> &#x5217;&#x8868;&#xFF0C;&#x6B64;&#x5217;&#x8868;&#x4E2D;&#x7684; pod &#x90FD;&#x5904;&#x4E8E;&#x6B63;&#x5E38;&#x8FD0;&#x884C;&#x72B6;&#x6001;&#xFF0C;&#x6839;&#x636E; <code>maxUnavailable</code> &#x503C;&#x786E;&#x5B9A;&#x662F;&#x5426;&#x9700;&#x8981;&#x5220;&#x9664;&#x8BE5; pod &#x5E76;&#x5C06;&#x9700;&#x8981;&#x5220;&#x9664;&#x7684; pod &#x8FFD;&#x52A0;&#x5230; <code>oldPodsToDelete</code> &#x6570;&#x7EC4;&#x4E2D;&#xFF1B;</li>
+<li>7&#x3001;&#x8C03;&#x7528; <code>dsc.syncNodes</code> &#x5220;&#x9664; <code>oldPodsToDelete</code> &#x6570;&#x7EC4;&#x4E2D;&#x7684; pods&#xFF0C;<code>syncNodes</code> &#x65B9;&#x6CD5;&#x5728; <code>manage</code> &#x9636;&#x6BB5;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x8FC7;&#xFF0C;&#x6B64;&#x5904;&#x4E0D;&#x518D;&#x8BE6;&#x8FF0;&#xFF1B;</li>
+</ul>
+<p><code>rollingUpdate</code>  &#x7684;&#x7ED3;&#x679C;&#x662F;&#x627E;&#x51FA;&#x9700;&#x8981;&#x5220;&#x9664;&#x7684; pods &#x5E76;&#x8FDB;&#x884C;&#x5220;&#x9664;&#xFF0C;&#x88AB;&#x5220;&#x9664;&#x7684; pod &#x5728;&#x4E0B;&#x4E00;&#x4E2A; syncLoop &#x4E2D;&#x4F1A;&#x901A;&#x8FC7; <code>manage</code> &#x65B9;&#x6CD5;&#x4F7F;&#x7528;&#x6700;&#x65B0;&#x7248;&#x672C;&#x7684; daemonset template &#x8FDB;&#x884C;&#x521B;&#x5EFA;&#xFF0C;&#x6574;&#x4E2A;&#x6EDA;&#x52A8;&#x66F4;&#x65B0;&#x7684;&#x8FC7;&#x7A0B;&#x662F;&#x901A;&#x8FC7;&#x5148;&#x5220;&#x9664;&#x518D;&#x521B;&#x5EFA;&#x7684;&#x65B9;&#x5F0F;&#x4E00;&#x6B65;&#x6B65;&#x5B8C;&#x6210;&#x66F4;&#x65B0;&#x7684;&#xFF0C;&#x6BCF;&#x6B21;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x4E25;&#x683C;&#x6309;&#x7167; <code>maxUnavailable</code> &#x7684;&#x503C;&#x786E;&#x5B9A;&#x9700;&#x8981;&#x5220;&#x9664;&#x7684; pod &#x6570;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/update.go:43</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) rollingUpdate(......) error {
+    // 1&#x3001;&#x83B7;&#x53D6; daemonset pod &#x4E0E; node &#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;
+    nodeToDaemonPods, err := dsc.getNodesToDaemonPods(ds)
+    ......
+
+    // 2&#x3001;&#x83B7;&#x53D6;&#x6240;&#x6709;&#x672A;&#x66F4;&#x65B0;&#x7684; pods
+    _, oldPods := dsc.getAllDaemonSetPods(ds, nodeToDaemonPods, hash)
+
+    // 3&#x3001;&#x8BA1;&#x7B97; maxUnavailable, numUnavailable &#x7684; pod &#x6570;&#x503C;
+    maxUnavailable, numUnavailable, err := dsc.getUnavailableNumbers(ds, nodeList, nodeToDaemonPods)
+    if err != nil {
+        return fmt.Errorf(&quot;couldn&apos;t get unavailable numbers: %v&quot;, err)
+    }
+    oldAvailablePods, oldUnavailablePods := util.SplitByAvailablePods(ds.Spec.MinReadySeconds, oldPods)
+
+    // 4&#x3001;&#x5C06;&#x975E; running &#x72B6;&#x6001;&#x7684; pods &#x52A0;&#x5165;&#x5230; oldPodsToDelete &#x4E2D;
+    var oldPodsToDelete []string
+    for _, pod := range oldUnavailablePods {
+        if pod.DeletionTimestamp != nil {
+            continue
+        }
+        oldPodsToDelete = append(oldPodsToDelete, pod.Name)
+    }
+    // 5&#x3001;&#x6839;&#x636E; maxUnavailable &#x503C;&#x786E;&#x5B9A;&#x662F;&#x5426;&#x9700;&#x8981;&#x5220;&#x9664; pod
+    for _, pod := range oldAvailablePods {
+        if numUnavailable &gt;= maxUnavailable {
+            break
+        }
+        oldPodsToDelete = append(oldPodsToDelete, pod.Name)
+        numUnavailable++
+    }
+    // 6&#x3001;&#x8C03;&#x7528; syncNodes &#x65B9;&#x6CD5;&#x5220;&#x9664; oldPodsToDelete &#x6570;&#x7EC4;&#x4E2D;&#x7684; pods
+    return dsc.syncNodes(ds, oldPodsToDelete, []string{}, hash)
+}
+</code></pre><p>&#x603B;&#x7ED3;&#x4E00;&#x4E0B;&#xFF0C;<code>manage</code> &#x65B9;&#x6CD5;&#x4E2D;&#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#x4E3A;&#xFF1A;</p>
+<pre class="language-"><code>            |-&gt;  dsc.getNodesToDaemonPods
+            |
+            |
+manage ---- |-&gt;  dsc.podsShouldBeOnNode  ---&gt; dsc.nodeShouldRunDaemonPod
+            |
+            |
+            |-&gt;  dsc.syncNodes
+</code></pre><h4 id="updatedaemonsetstatus"><a name="updatedaemonsetstatus" class="anchor-navigation-ex-anchor" href="#updatedaemonsetstatus"><i class="fa fa-link" aria-hidden="true"></i></a>updateDaemonSetStatus</h4>
+<p><code>updateDaemonSetStatus</code> &#x662F; <code>syncDaemonSet</code> &#x4E2D;&#x6700;&#x540E;&#x6267;&#x884C;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x7528;&#x6765;&#x8BA1;&#x7B97; ds status subresource &#x4E2D;&#x7684;&#x503C;&#x5E76;&#x66F4;&#x65B0;&#x5176; status&#x3002;status &#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>status:
+  currentNumberScheduled: 1  // &#x5DF2;&#x7ECF;&#x8FD0;&#x884C;&#x4E86; DaemonSet Pod&#x7684;&#x8282;&#x70B9;&#x6570;&#x91CF;
+  desiredNumberScheduled: 1  // &#x9700;&#x8981;&#x8FD0;&#x884C;&#x8BE5;DaemonSet Pod&#x7684;&#x8282;&#x70B9;&#x6570;&#x91CF;
+  numberMisscheduled: 0      // &#x4E0D;&#x9700;&#x8981;&#x8FD0;&#x884C; DeamonSet Pod &#x4F46;&#x662F;&#x5DF2;&#x7ECF;&#x8FD0;&#x884C;&#x4E86;&#x7684;&#x8282;&#x70B9;&#x6570;&#x91CF;
+  numberReady: 0             // DaemonSet Pod&#x72B6;&#x6001;&#x4E3A;Ready&#x7684;&#x8282;&#x70B9;&#x6570;&#x91CF;
+  numberAvailable: 1          // DaemonSet Pod&#x72B6;&#x6001;&#x4E3A;Ready&#x4E14;&#x8FD0;&#x884C;&#x65F6;&#x95F4;&#x8D85;&#x8FC7;                                                                                                      // Spec.MinReadySeconds &#x7684;&#x8282;&#x70B9;&#x6570;&#x91CF;
+  numberUnavailable: 0             // desiredNumberScheduled - numberAvailable &#x7684;&#x8282;&#x70B9;&#x6570;&#x91CF;
+  observedGeneration: 3
+  updatedNumberScheduled: 1  // &#x5DF2;&#x7ECF;&#x5B8C;&#x6210;DaemonSet Pod&#x66F4;&#x65B0;&#x7684;&#x8282;&#x70B9;&#x6570;&#x91CF;
+</code></pre><p><code>updateDaemonSetStatus</code> &#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>dsc.getNodesToDaemonPods</code> &#x83B7;&#x53D6;&#x5DF2;&#x5B58;&#x5728; daemon pod &#x4E0E; node &#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;&#xFF1B;</li>
+<li>2&#x3001;&#x904D;&#x5386;&#x6240;&#x6709; node&#xFF0C;&#x8C03;&#x7528; <code>dsc.nodeShouldRunDaemonPod</code> &#x5224;&#x65AD;&#x8BE5; node &#x662F;&#x5426;&#x9700;&#x8981;&#x8FD0;&#x884C; daemon pod&#xFF0C;&#x7136;&#x540E;&#x8BA1;&#x7B97; status &#x4E2D;&#x7684;&#x90E8;&#x5206;&#x5B57;&#x6BB5;&#x503C;&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>storeDaemonSetStatus</code> &#x66F4;&#x65B0; ds status subresource&#xFF1B;</li>
+<li>4&#x3001;&#x5224;&#x65AD; ds &#x662F;&#x5426;&#x9700;&#x8981; resync&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/daemon/daemon_controller.go:1152</code></p>
+<pre class="language-"><code>func (dsc *DaemonSetsController) updateDaemonSetStatus(......) error {
+    // 1&#x3001;&#x83B7;&#x53D6;&#x5DF2;&#x5B58;&#x5728; daemon pod &#x4E0E; node &#x7684;&#x6620;&#x5C04;&#x5173;&#x7CFB;
+    nodeToDaemonPods, err := dsc.getNodesToDaemonPods(ds)
+    ......
+
+    var desiredNumberScheduled, currentNumberScheduled, numberMisscheduled, numberReady, updatedNumberScheduled, numberAvailable int
+    for _, node := range nodeList {
+        // 2&#x3001;&#x5224;&#x65AD;&#x8BE5; node &#x662F;&#x5426;&#x9700;&#x8981;&#x8FD0;&#x884C; daemon pod
+        wantToRun, _, _, err := dsc.nodeShouldRunDaemonPod(node, ds)
+        if err != nil {
+            return err
+        }
+
+        scheduled := len(nodeToDaemonPods[node.Name]) &gt; 0
+        // 3&#x3001;&#x8BA1;&#x7B97; status &#x4E2D;&#x7684;&#x5B57;&#x6BB5;&#x503C;
+        if wantToRun {
+            desiredNumberScheduled++
+            if scheduled {
+                currentNumberScheduled++
+                daemonPods, _ := nodeToDaemonPods[node.Name]
+                sort.Sort(podByCreationTimestampAndPhase(daemonPods))
+                pod := daemonPods[0]
+                if podutil.IsPodReady(pod) {
+                    numberReady++
+                    if podutil.IsPodAvailable(pod, ds.Spec.MinReadySeconds, metav1.Now()) {
+                        numberAvailable++
+                    }
+                }
+
+                generation, err := util.GetTemplateGeneration(ds)
+                if err != nil {
+                    generation = nil
+                }
+                if util.IsPodUpdated(pod, hash, generation) {
+                    updatedNumberScheduled++
+                }
+            }
+        } else {
+            if scheduled {
+                numberMisscheduled++
+            }
+        }
+    }
+    numberUnavailable := desiredNumberScheduled - numberAvailable
+    // 4&#x3001;&#x66F4;&#x65B0; daemonset status subresource
+    err = storeDaemonSetStatus(dsc.kubeClient.AppsV1().DaemonSets(ds.Namespace), ds, desiredNumberScheduled, currentNumberScheduled, numberMisscheduled, numberReady, updatedNumberScheduled, numberAvailable, numberUnavailable, updateObservedGen)
+    if err != nil {
+        return fmt.Errorf(&quot;error storing status for daemon set %#v: %v&quot;, ds, err)
+    }
+
+    // 5&#x3001;&#x5224;&#x65AD; ds &#x662F;&#x5426;&#x9700;&#x8981; resync
+    if ds.Spec.MinReadySeconds &gt; 0 &amp;&amp; numberReady != numberAvailable {
+        dsc.enqueueDaemonSetAfter(ds, time.Duration(ds.Spec.MinReadySeconds)*time.Second)
+    }
+    return nil
+}
+</code></pre><p>&#x6700;&#x540E;&#xFF0C;&#x518D;&#x603B;&#x7ED3;&#x4E00;&#x4E0B; <code>syncDaemonSet</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#xFF1A;</p>
+<pre class="language-"><code>                                |-&gt; dsc.getNodesToDaemonPods
+                                |
+                                |
+                  |-&gt; manage --&gt;|-&gt; dsc.podsShouldBeOnNode  ---&gt; dsc.nodeShouldRunDaemonPod
+                  |             |
+                  |             |
+syncDaemonSet --&gt; |             |-&gt; dsc.syncNodes
+                  |
+                  |-&gt; rollingUpdate
+                  |
+                  |
+                  |-&gt; updateDaemonSetStatus
+</code></pre><h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x5728; daemonset controller &#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#x8BB8;&#x591A;&#x529F;&#x80FD;&#x90FD;&#x662F; deployment &#x548C; statefulset &#x5DF2;&#x6709;&#x7684;&#x3002;&#x5728;&#x521B;&#x5EFA; pod &#x7684;&#x6D41;&#x7A0B;&#x4E0E; replicaset controller &#x521B;&#x5EFA; pod &#x7684;&#x6D41;&#x7A0B;&#x662F;&#x76F8;&#x4F3C;&#x7684;&#xFF0C;&#x90FD;&#x4F7F;&#x7528;&#x4E86; <code>expectations</code> &#x673A;&#x5236;&#x5E76;&#x4E14;&#x9650;&#x5236;&#x4E86;&#x5728;&#x4E00;&#x4E2A; syncLoop &#x4E2D;&#x6700;&#x591A;&#x521B;&#x5EFA;&#x6216;&#x5220;&#x9664;&#x7684; pod &#x6570;&#x3002;&#x66F4;&#x65B0;&#x65B9;&#x5F0F;&#x4E0E; statefulset &#x4E00;&#x6837;&#x90FD;&#x6709; <code>OnDelete</code> &#x548C; <code>RollingUpdate</code> &#x4E24;&#x79CD;&#xFF0C; <code>OnDelete</code>  &#x65B9;&#x5F0F;&#x4E0E; statefulset &#x76F8;&#x4F3C;&#xFF0C;&#x90FD;&#x9700;&#x8981;&#x624B;&#x52A8;&#x5220;&#x9664;&#x5BF9;&#x5E94;&#x7684; pod&#xFF0C;&#x800C;  <code>RollingUpdate</code>  &#x65B9;&#x5F0F;&#x4E0E; statefulset &#x548C; deployment &#x90FD;&#x6709;&#x70B9;&#x533A;&#x522B;&#xFF0C; <code>RollingUpdate</code>&#x65B9;&#x5F0F;&#x66F4;&#x65B0;&#x65F6;&#x4E0D;&#x652F;&#x6301;&#x6682;&#x505C;&#x64CD;&#x4F5C;&#x5E76;&#x4E14; pod &#x662F;&#x5148;&#x5220;&#x9664;&#x518D;&#x521B;&#x5EFA;&#x7684;&#x987A;&#x5E8F;&#x8FDB;&#x884C;&#x3002;&#x7248;&#x672C;&#x63A7;&#x5236;&#x65B9;&#x5F0F;&#x4E0E; statefulset &#x7684;&#x4E00;&#x6837;&#x90FD;&#x662F;&#x4F7F;&#x7528; <code>controllerRevision</code>&#x3002;&#x6700;&#x540E;&#x8981;&#x8BF4;&#x7684;&#x4E00;&#x70B9;&#x662F;&#x5728; v1.12 &#x53CA;&#x4EE5;&#x540E;&#x7684;&#x7248;&#x672C;&#x4E2D;&#xFF0C;&#x4F7F;&#x7528; daemonset &#x521B;&#x5EFA;&#x7684; pod &#x5DF2;&#x4E0D;&#x518D;&#x4F7F;&#x7528;&#x76F4;&#x63A5;&#x6307;&#x5B9A; <code>.spec.nodeName</code>&#x7684;&#x65B9;&#x5F0F;&#x7ED5;&#x8FC7;&#x8C03;&#x5EA6;&#x5668;&#x8FDB;&#x884C;&#x8C03;&#x5EA6;&#xFF0C;&#x800C;&#x662F;&#x8D70;&#x9ED8;&#x8BA4;&#x8C03;&#x5EA6;&#x5668;&#x901A;&#x8FC7; <code>nodeAffinity</code> &#x7684;&#x65B9;&#x5F0F;&#x8C03;&#x5EA6;&#x5230;&#x6BCF;&#x4E00;&#x4E2A;&#x8282;&#x70B9;&#x4E0A;&#x3002; </p>
+<p>&#x53C2;&#x8003;&#xFF1A;</p>
+<p><a href="https://yq.aliyun.com/articles/702305" target="_blank">https://yq.aliyun.com/articles/702305</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2019-12-18 17:48:17
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: kubernetes">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="statefulset_controller.html" class="navigation navigation-next " aria-label="Next page: statefulset controller 源码分析">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"daemonset controller 源码分析","date":"2019-12-18T10:50:30.000Z","tags":["kube-controller-manager","daemonset controller"],"type":"daemonset controller","level":"1.2.1","depth":2,"next":{"title":"statefulset controller 源码分析","level":"1.2.2","depth":2,"path":"kubernetes/statefulset_controller.md","ref":"kubernetes/statefulset_controller.md","articles":[]},"previous":{"title":"kubernetes","level":"1.2","depth":1,"path":"kubernetes/README.md","ref":"kubernetes/README.md","articles":[{"title":"daemonset controller 源码分析","level":"1.2.1","depth":2,"path":"kubernetes/daemonset_controller.md","ref":"kubernetes/daemonset_controller.md","articles":[]},{"title":"statefulset controller 源码分析","level":"1.2.2","depth":2,"path":"kubernetes/statefulset_controller.md","ref":"kubernetes/statefulset_controller.md","articles":[]},{"title":"deployment controller 源码分析","level":"1.2.3","depth":2,"path":"kubernetes/deployment_controller.md","ref":"kubernetes/deployment_controller.md","articles":[]},{"title":"replicaset controller 源码分析","level":"1.2.4","depth":2,"path":"kubernetes/replicaset_controller.md","ref":"kubernetes/replicaset_controller.md","articles":[]},{"title":"kube-scheduler 源码分析","level":"1.2.5","depth":2,"path":"kubernetes/kube_scheduler_process.md","ref":"kubernetes/kube_scheduler_process.md","articles":[]},{"title":"kube-scheduler predicates 与 priorities 调度算法源码分析","level":"1.2.6","depth":2,"path":"kubernetes/kube_scheduler_algorithm.md","ref":"kubernetes/kube_scheduler_algorithm.md","articles":[]},{"title":"kube-scheduler 优先级与抢占机制源码分析","level":"1.2.7","depth":2,"path":"kubernetes/kube_scheduler_preempt.md","ref":"kubernetes/kube_scheduler_preempt.md","articles":[]},{"title":"kubernetes service 原理解析","level":"1.2.8","depth":2,"path":"kubernetes/k8s_service_theory.md","ref":"kubernetes/k8s_service_theory.md","articles":[]},{"title":"kube-proxy 源码分析","level":"1.2.9","depth":2,"path":"kubernetes/kube_proxy_process.md","ref":"kubernetes/kube_proxy_process.md","articles":[]},{"title":"kube-proxy iptables 模式源码分析","level":"1.2.10","depth":2,"path":"kubernetes/kube_proxy_iptables.md","ref":"kubernetes/kube_proxy_iptables.md","articles":[]},{"title":"kube-proxy ipvs 模式源码分析","level":"1.2.11","depth":2,"path":"kubernetes/kube_proxy_ipvs.md","ref":"kubernetes/kube_proxy_ipvs.md","articles":[]},{"title":"kubelet 架构浅析","level":"1.2.12","depth":2,"path":"kubernetes/kubelet-modules.md","ref":"kubernetes/kubelet-modules.md","articles":[]},{"title":"kubelet 启动流程分析","level":"1.2.13","depth":2,"path":"kubernetes/kubelet_init.md","ref":"kubernetes/kubelet_init.md","articles":[]},{"title":"kubelet 创建 pod 的流程","level":"1.2.14","depth":2,"path":"kubernetes/kubelet_create_pod.md","ref":"kubernetes/kubelet_create_pod.md","articles":[]},{"title":"kubelet 状态上报的方式","level":"1.2.15","depth":2,"path":"kubernetes/node_status.md","ref":"kubernetes/node_status.md","articles":[]},{"title":"kubelet 中事件处理机制","level":"1.2.16","depth":2,"path":"kubernetes/k8s_events.md","ref":"kubernetes/k8s_events.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0","livereload"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/daemonset_controller.md","mtime":"2019-12-18T09:48:17.950Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-12-18T09:59:53.190Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+
