@@ -3,6 +3,7 @@
 * [Introduction](README.md)
 
 * [kubernetes](kubernetes/README.md)
+    * [daemonset controller 源码分析](kubernetes/daemonset_controller.md)
     * [statefulset controller 源码分析](kubernetes/statefulset_controller.md)
     * [deployment controller 源码分析](kubernetes/deployment_controller.md)
     * [replicaset controller 源码分析](kubernetes/replicaset_controller.md)
