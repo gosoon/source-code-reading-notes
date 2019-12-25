@@ -1,0 +1,1259 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>kubelet statusManager 源码分析 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="k8s_events.html" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="daemonset_controller.html">
+            
+                <a href="daemonset_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    daemonset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="statefulset_controller.html">
+            
+                <a href="statefulset_controller.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    statefulset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="replicaset_controller.html">
+            
+                <a href="replicaset_controller.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    replicaset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.12" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.12.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.13" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.13.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.14" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.14.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.15" data-path="node_status.html">
+            
+                <a href="node_status.html">
+            
+                    
+                        <b>1.2.15.</b>
+                    
+                    kubelet 状态上报的方式
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.16" data-path="k8s_events.html">
+            
+                <a href="k8s_events.html">
+            
+                    
+                        <b>1.2.16.</b>
+                    
+                    kubelet 中事件处理机制
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.17" data-path="kubelet_status_manager.html">
+            
+                <a href="kubelet_status_manager.html">
+            
+                    
+                        <b>1.2.17.</b>
+                    
+                    kubelet statusManager 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >kubelet statusManager 源码分析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <p>&#x672C;&#x7BC7;&#x6587;&#x7AE0;&#x6CA1;&#x6709;&#x63A5;&#x4E0A;&#x7BC7;&#x7EE7;&#x7EED;&#x66F4;&#x65B0; kube-controller-manager&#xFF0C;kube-controller-manager &#x7684;&#x6E90;&#x7801;&#x9605;&#x8BFB;&#x7B14;&#x8BB0;&#x4E5F;&#x4F1A;&#x7EE7;&#x7EED;&#x66F4;&#x65B0;&#xFF0C;&#x7B14;&#x8005;&#x4F1A;&#x540C;&#x65F6;&#x9605;&#x8BFB;&#x591A;&#x4E2A;&#x7EC4;&#x4EF6;&#x7684;&#x6E90;&#x7801;&#xFF0C;&#x9605;&#x8BFB;&#x7B14;&#x8BB0;&#x4E5F;&#x4F1A;&#x6309;&#x7EC4;&#x4EF6;&#x8FDB;&#x884C;&#x4EA4;&#x53C9;&#x66F4;&#x65B0;&#xFF0C;&#x4EA4;&#x53C9;&#x66F4;&#x65B0;&#x7684;&#x76EE;&#x7684;&#x4E00;&#x662F;&#x4E3A;&#x4E86;&#x52A0;&#x6DF1;&#x5370;&#x8C61;&#x907F;&#x514D;&#x9605;&#x8BFB;&#x5B8C;&#x540E;&#x53C8;&#x5F88;&#x5FEB;&#x5FD8;&#x8BB0;&#xFF0C;&#x4E8C;&#x662F;&#x67D0;&#x4E9B;&#x4EE3;&#x7801;&#x7684;&#x529F;&#x80FD;&#x96BE;&#x4EE5;&#x7406;&#x89E3;&#xFF0C;&#x907F;&#x514D;&#x6B7B;&#x78D5;&#xFF0C;&#x4F46;&#x6574;&#x4F53;&#x76EE;&#x6807;&#x662F;&#x5C06;&#x6BCF;&#x4E2A;&#x7EC4;&#x4EF6;&#x7684;&#x6838;&#x5FC3;&#x4EE3;&#x7801;&#x9605;&#x8BFB;&#x5B8C;&#x3002;</p>
+<p>&#x5728;&#x524D;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x5DF2;&#x7ECF;&#x4ECB;&#x7ECD;&#x8FC7; kubelet &#x7684;&#x67B6;&#x6784;&#x4EE5;&#x53CA;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#xFF0C;&#x672C;&#x7AE0;&#x4F1A;&#x7EE7;&#x7EED;&#x4ECB;&#x7ECD; kubelet &#x4E2D;&#x7684;&#x6838;&#x5FC3;&#x529F;&#x80FD;&#xFF0C;kubelet &#x4E2D;&#x5305;&#x542B;&#x6570;&#x5341;&#x4E2A; manager &#x4EE5;&#x53CA;&#x5BF9; CNI&#x3001;CRI&#x3001;CSI &#x7684;&#x8C03;&#x7528;&#x3002;&#x6BCF;&#x4E2A; manager &#x7684;&#x529F;&#x80FD;&#x5404;&#x4E0D;&#x76F8;&#x540C;&#xFF0C;manager &#x4E4B;&#x95F4;&#x4E5F;&#x4F1A;&#x6709;&#x4F9D;&#x8D56;&#x5173;&#x7CFB;&#xFF0C;&#x672C;&#x6587;&#x4F1A;&#x4ECB;&#x7ECD;&#x6BD4;&#x8F83;&#x7B80;&#x5355;&#x7684; statusManager&#x3002;</p>
+<h3 id="statusmanager-&#x6E90;&#x7801;&#x5206;&#x6790;"><a name="statusmanager-&#x6E90;&#x7801;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#statusmanager-&#x6E90;&#x7801;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>statusManager &#x6E90;&#x7801;&#x5206;&#x6790;</h3>
+<blockquote>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
+</blockquote>
+<p>statusManager &#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x5C06; pod &#x72B6;&#x6001;&#x4FE1;&#x606F;&#x540C;&#x6B65;&#x5230; apiserver&#xFF0C;statusManage &#x5E76;&#x4E0D;&#x4F1A;&#x4E3B;&#x52A8;&#x76D1;&#x63A7; pod &#x7684;&#x72B6;&#x6001;&#xFF0C;&#x800C;&#x662F;&#x63D0;&#x4F9B;&#x63A5;&#x53E3;&#x4F9B;&#x5176;&#x4ED6; manager &#x8FDB;&#x884C;&#x8C03;&#x7528;&#x3002;</p>
+<h4 id="statusmanager-&#x7684;&#x521D;&#x59CB;&#x5316;"><a name="statusmanager-&#x7684;&#x521D;&#x59CB;&#x5316;" class="anchor-navigation-ex-anchor" href="#statusmanager-&#x7684;&#x521D;&#x59CB;&#x5316;"><i class="fa fa-link" aria-hidden="true"></i></a>statusManager &#x7684;&#x521D;&#x59CB;&#x5316;</h4>
+<p>kubelet &#x5728;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x65F6;&#x4F1A;&#x5728; <code>NewMainKubelet</code> &#x65B9;&#x6CD5;&#x4E2D;&#x521D;&#x59CB;&#x5316;&#x5176;&#x6838;&#x5FC3;&#x7EC4;&#x4EF6;&#xFF0C;&#x5305;&#x62EC;&#x5404;&#x79CD; manager&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:335</code></p>
+<pre class="language-"><code>func NewMainKubelet() (*Kubelet, error) {
+    ......
+    // statusManager &#x7684;&#x521D;&#x59CB;&#x5316;
+    klet.statusManager = status.NewManager(klet.kubeClient, klet.podManager, klet)
+    ......
+}
+</code></pre><p><code>NewManager</code> &#x662F;&#x7528;&#x6765;&#x521D;&#x59CB;&#x5316; statusManager &#x5BF9;&#x8C61;&#x7684;&#xFF0C;&#x5176;&#x4E2D;&#x53C2;&#x6570;&#x7684;&#x529F;&#x80FD;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>kubeClient&#xFF1A;&#x7528;&#x4E8E;&#x548C; apiserver &#x4EA4;&#x4E92;&#xFF1B;</li>
+<li>podManager&#xFF1A;&#x8D1F;&#x8D23;&#x5185;&#x5B58;&#x4E2D; pod &#x7684;&#x7EF4;&#x62A4;&#xFF1B;</li>
+<li>podStatuses&#xFF1A;statusManager &#x7684; cache&#xFF0C;&#x4FDD;&#x5B58; pod &#x4E0E;&#x72B6;&#x6001;&#x7684;&#x5BF9;&#x5E94;&#x5173;&#x7CFB;&#xFF1B;</li>
+<li>podStatusesChannel&#xFF1A;&#x5F53;&#x5176;&#x4ED6;&#x7EC4;&#x4EF6;&#x8C03;&#x7528; statusManager &#x66F4;&#x65B0; pod &#x72B6;&#x6001;&#x65F6;&#xFF0C;&#x4F1A;&#x5C06; pod &#x7684;&#x72B6;&#x6001;&#x4FE1;&#x606F;&#x53D1;&#x9001;&#x5230;podStatusesChannel &#x4E2D;&#xFF1B;</li>
+<li>apiStatusVersions&#xFF1A;&#x7EF4;&#x62A4;&#x6700;&#x65B0;&#x7684; pod status &#x7248;&#x672C;&#x53F7;&#xFF0C;&#x6BCF;&#x66F4;&#x65B0;&#x4E00;&#x6B21;&#x4F1A;&#x52A0;1&#xFF1B;</li>
+<li>podDeletionSafety&#xFF1A;&#x5220;&#x9664; pod &#x7684;&#x63A5;&#x53E3;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:118</code></p>
+<pre class="language-"><code>func NewManager(kubeClient clientset.Interface, podManager kubepod.Manager, podDeletionSafety PodDeletionSafetyProvider) Manager {
+    return &amp;manager{
+        kubeClient:        kubeClient,
+        podManager:        podManager,
+        podStatuses:       make(map[types.UID]versionedPodStatus),
+        podStatusChannel:  make(chan podStatusSyncRequest, 1000), 
+        apiStatusVersions: make(map[kubetypes.MirrorPodUID]uint64),
+        podDeletionSafety: podDeletionSafety,
+    }
+}
+</code></pre><p>&#x5728;&#x521D;&#x59CB;&#x5316;&#x5B8C;&#x6210;&#x540E;&#xFF0C;kubelet &#x4F1A;&#x5728; Run &#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x4EE5; goroutine &#x7684;&#x65B9;&#x5F0F;&#x542F;&#x52A8; statusManager&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:1397</code></p>
+<pre class="language-"><code>func (kl *Kubelet) Run(updates &lt;-chan kubetypes.PodUpdate) {
+    ......
+    kl.statusManager.Start()
+    ......
+}
+</code></pre><p>statusManager &#x7684;&#x4EE3;&#x7801;&#x4E3B;&#x8981;&#x5728; <code>k8s.io/kubernetes/pkg/kubelet/status/</code> &#x76EE;&#x5F55;&#x4E2D;&#xFF0C;&#x5176;&#x5BF9;&#x5916;&#x66B4;&#x9732;&#x7684;&#x63A5;&#x53E3;&#x6709;&#x4EE5;&#x4E0B;&#x51E0;&#x4E2A;&#xFF1A;</p>
+<pre class="language-"><code>type Manager interface {
+    // &#x4E00;&#x4E2A; interface &#x7528;&#x6765;&#x66B4;&#x9732;&#x7ED9;&#x5176;&#x4ED6;&#x7EC4;&#x4EF6;&#x83B7;&#x53D6; pod status &#x7684;
+    PodStatusProvider
+
+    // &#x542F;&#x52A8; statusManager &#x7684;&#x65B9;&#x6CD5;
+    Start()
+
+    // &#x8BBE;&#x7F6E; pod &#x7684;&#x72B6;&#x6001;&#x5E76;&#x4F1A;&#x89E6;&#x53D1;&#x4E00;&#x4E2A;&#x72B6;&#x6001;&#x540C;&#x6B65;&#x64CD;&#x4F5C;
+    SetPodStatus(pod *v1.Pod, status v1.PodStatus)
+
+    // &#x8BBE;&#x7F6E; pod .status.containerStatuses &#x4E2D; container &#x662F;&#x5426;&#x4E3A; ready &#x72B6;&#x6001;&#x5E76;&#x89E6;&#x53D1;&#x72B6;&#x6001;&#x540C;&#x6B65;&#x64CD;&#x4F5C;
+    SetContainerReadiness(podUID types.UID, containerID kubecontainer.ContainerID, ready bool)
+
+    // &#x8BBE;&#x7F6E; pod .status.containerStatuses &#x4E2D; container &#x662F;&#x5426;&#x4E3A; started &#x72B6;&#x6001;&#x5E76;&#x89E6;&#x53D1;&#x72B6;&#x6001;&#x540C;&#x6B65;&#x64CD;&#x4F5C;
+    SetContainerStartup(podUID types.UID, containerID kubecontainer.ContainerID, started bool)
+
+    // &#x5C06; pod .status.containerStatuses &#x548C; .status.initContainerStatuses &#x4E2D; container &#x7684; state &#x7F6E;&#x4E3A; Terminated &#x72B6;&#x6001;&#x5E76;&#x89E6;&#x53D1;&#x72B6;&#x6001;&#x540C;&#x6B65;&#x64CD;&#x4F5C;
+    TerminatePod(pod *v1.Pod)
+
+    // &#x4ECE; statusManager &#x7F13;&#x5B58; podStatuses &#x4E2D;&#x5220;&#x9664;&#x5BF9;&#x5E94;&#x7684; pod
+    RemoveOrphanedStatuses(podUIDs map[types.UID]bool)
+}
+</code></pre><p>pod &#x5BF9;&#x5E94;&#x7684; status &#x5B57;&#x6BB5;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>status:
+  conditions:
+  ......
+  containerStatuses:
+  - containerID: containerd://64e9d88459b38e90c2a4b4d87db5acd180c820c855a55aabe38e4e11b9b83576
+    image: docker.io/library/nginx:1.9
+    imageID: sha256:f568d3158b1e871b713cb33aca5a9377bc21a1f644addf41368393d28c35e894
+    lastState: {}
+    name: nginx-pod
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: &quot;2019-12-15T16:13:29Z&quot;
+  podIP: 10.15.225.15
+  ......
+</code></pre><p>&#x7136;&#x540E;&#x7EE7;&#x7EED;&#x770B; statusManager &#x7684;&#x542F;&#x52A8;&#x65B9;&#x6CD5; <code>start</code>, &#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8BBE;&#x7F6E;&#x5B9A;&#x65F6;&#x5668;&#xFF0C;<code>syncPeriod</code> &#x9ED8;&#x8BA4;&#x4E3A; 10s&#xFF1B;</li>
+<li>2&#x3001;&#x542F;&#x52A8; <code>wait.Forever</code> goroutine &#x540C;&#x6B65; pod &#x7684;&#x72B6;&#x6001;&#xFF0C;&#x6709;&#x4E24;&#x79CD;&#x540C;&#x6B65;&#x65B9;&#x5F0F;&#xFF0C;&#x7B2C;&#x4E00;&#x79CD;&#x662F;&#x5F53;&#x76D1;&#x542C;&#x5230;&#x67D0;&#x4E2A; pod &#x72B6;&#x6001;&#x6539;&#x53D8;&#x65F6;&#x4F1A;&#x8C03;&#x7528; <code>m.syncPod</code> &#x8FDB;&#x884C;&#x540C;&#x6B65;&#xFF0C;&#x7B2C;&#x4E8C;&#x79CD;&#x662F;&#x5F53;&#x89E6;&#x53D1;&#x5B9A;&#x65F6;&#x5668;&#x65F6;&#x8C03;&#x7528; <code>m.syncBatch</code> &#x8FDB;&#x884C;&#x6279;&#x91CF;&#x540C;&#x6B65;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:147</code></p>
+<pre class="language-"><code>func (m *manager) Start() {
+    // 1&#x3001;&#x68C0;&#x67E5; kubeClient &#x662F;&#x5426;&#x88AB;&#x521D;&#x59CB;&#x5316;
+    if m.kubeClient == nil {
+        klog.Infof(&quot;Kubernetes client is nil, not starting status manager.&quot;)
+        return
+    }
+
+    // 2&#x3001;&#x8BBE;&#x7F6E;&#x5B9A;&#x65F6;&#x5668;
+    syncTicker := time.Tick(syncPeriod)
+
+    go wait.Forever(func() {
+        select {
+        // 3&#x3001;&#x76D1;&#x542C; m.podStatusChannel channel&#xFF0C;&#x5F53;&#x63A5;&#x6536;&#x5230;&#x6570;&#x636E;&#x65F6;&#x89E6;&#x53D1;&#x540C;&#x6B65;&#x64CD;&#x4F5C;
+        case syncRequest := &lt;-m.podStatusChannel:
+                ......
+            m.syncPod(syncRequest.podUID, syncRequest.status)
+        // 4&#x3001;&#x5B9A;&#x65F6;&#x540C;&#x6B65;
+        case &lt;-syncTicker:
+            m.syncBatch()
+        }
+    }, 0)
+}
+</code></pre><h4 id="syncpod"><a name="syncpod" class="anchor-navigation-ex-anchor" href="#syncpod"><i class="fa fa-link" aria-hidden="true"></i></a>syncPod</h4>
+<p><code>syncPod</code> &#x662F;&#x7528;&#x6765;&#x540C;&#x6B65; pod &#x6700;&#x65B0;&#x72B6;&#x6001;&#x81F3; apiserver &#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>m.needsUpdate</code> &#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981;&#x540C;&#x6B65;&#x72B6;&#x6001;&#xFF0C;&#x82E5; <code>apiStatusVersions</code> &#x4E2D;&#x7684; status &#x7248;&#x672C;&#x53F7;&#x5C0F;&#x4E8E;&#x5F53;&#x524D;&#x63A5;&#x6536;&#x5230;&#x7684; status &#x7248;&#x672C;&#x53F7;&#x6216;&#x8005; <code>apistatusVersions</code> &#x4E2D;&#x4E0D;&#x5B58;&#x5728;&#x8BE5; status &#x7248;&#x672C;&#x53F7;&#x5219;&#x9700;&#x8981;&#x540C;&#x6B65;&#xFF0C;&#x82E5;&#x4E0D;&#x9700;&#x8981;&#x540C;&#x6B65;&#x5219;&#x7EE7;&#x7EED;&#x68C0;&#x67E5; pod &#x662F;&#x5426;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#xFF0C;&#x82E5;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#x8C03;&#x7528; <code>m.podDeletionSafety.PodResourcesAreReclaimed</code> &#x5C06;  pod &#x5B8C;&#x5168;&#x5220;&#x9664;&#xFF1B;</li>
+<li>2&#x3001;&#x4ECE; apiserver &#x83B7;&#x53D6; pod &#x7684; oldStatus&#xFF1B;</li>
+<li>3&#x3001;&#x68C0;&#x67E5; pod <code>oldStatus</code> &#x4E0E; <code>currentStatus</code> &#x7684; uid &#x662F;&#x5426;&#x76F8;&#x7B49;&#xFF0C;&#x82E5;&#x4E0D;&#x76F8;&#x7B49;&#x5219;&#x8BF4;&#x660E; pod &#x88AB;&#x91CD;&#x5EFA;&#x8FC7;&#xFF1B;</li>
+<li>4&#x3001;&#x8C03;&#x7528; <code>statusutil.PatchPodStatus</code> &#x540C;&#x6B65; pod &#x6700;&#x65B0;&#x7684; status &#x81F3; apiserver&#xFF0C;&#x5E76;&#x5C06;&#x8FD4;&#x56DE;&#x7684; pod &#x4F5C;&#x4E3A; newPod&#xFF1B;</li>
+<li>5&#x3001;&#x68C0;&#x67E5; newPod &#x662F;&#x5426;&#x5904;&#x4E8E; terminated &#x72B6;&#x6001;&#xFF0C;&#x82E5;&#x5904;&#x4E8E; terminated &#x72B6;&#x6001;&#x5219;&#x8C03;&#x7528; apiserver &#x63A5;&#x53E3;&#x8FDB;&#x884C;&#x5220;&#x9664;&#x5E76;&#x4ECE; cache &#x4E2D;&#x6E05;&#x9664;&#xFF0C;&#x5220;&#x9664;&#x540E; pod &#x4F1A;&#x8FDB;&#x884C;&#x91CD;&#x5EFA;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:514</code></p>
+<pre class="language-"><code>func (m *manager) syncPod(uid types.UID, status versionedPodStatus) {
+    // 1&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981;&#x540C;&#x6B65;&#x72B6;&#x6001;
+    if !m.needsUpdate(uid, status) {
+        klog.V(1).Infof(&quot;Status for pod %q is up-to-date; skipping&quot;, uid)
+        return
+    }
+
+    // 2&#x3001;&#x83B7;&#x53D6; pod &#x7684; oldStatus
+    pod, err := m.kubeClient.CoreV1().Pods(status.podNamespace).Get(status.podName, metav1.GetOptions{})
+    if errors.IsNotFound(err) {
+        return
+    }
+    if err != nil {
+        return
+    }
+
+    translatedUID := m.podManager.TranslatePodUID(pod.UID)
+    // 3&#x3001;&#x68C0;&#x67E5; pod UID &#x662F;&#x5426;&#x5DF2;&#x7ECF;&#x6539;&#x53D8;
+    if len(translatedUID) &gt; 0 &amp;&amp; translatedUID != kubetypes.ResolvedPodUID(uid) {
+        return
+    }
+
+    // 4&#x3001;&#x540C;&#x6B65; pod &#x6700;&#x65B0;&#x7684; status &#x81F3; apiserver
+    oldStatus := pod.Status.DeepCopy()
+    newPod, patchBytes, err := statusutil.PatchPodStatus(m.kubeClient, pod.Namespace, pod.Name, *oldStatus, mergePodStatus(*oldStatus, status.status))
+    if err != nil {
+        return
+    }
+    pod = newPod
+
+    m.apiStatusVersions[kubetypes.MirrorPodUID(pod.UID)] = status.version
+
+    // 5&#x3001;&#x82E5; newPod &#x5904;&#x4E8E; terminated &#x72B6;&#x6001;&#x5219;&#x8C03;&#x7528; apiserver &#x5220;&#x9664;&#x8BE5; pod&#xFF0C;&#x5220;&#x9664;&#x540E; pod &#x4F1A;&#x91CD;&#x5EFA;
+    if m.canBeDeleted(pod, status.status) {
+        deleteOptions := metav1.NewDeleteOptions(0)
+        deleteOptions.Preconditions = metav1.NewUIDPreconditions(string(pod.UID))
+        err = m.kubeClient.CoreV1().Pods(pod.Namespace).Delete(pod.Name, deleteOptions)
+        if err != nil {
+            return
+        }
+        // 6&#x3001;&#x4ECE; cache &#x4E2D;&#x6E05;&#x9664;
+        m.deletePodStatus(uid)
+    }
+}
+</code></pre><h5 id="needsupdate"><a name="needsupdate" class="anchor-navigation-ex-anchor" href="#needsupdate"><i class="fa fa-link" aria-hidden="true"></i></a>needsUpdate</h5>
+<p><code>needsUpdate</code> &#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x662F;&#x68C0;&#x67E5; pod &#x7684;&#x72B6;&#x6001;&#x662F;&#x5426;&#x9700;&#x8981;&#x66F4;&#x65B0;&#xFF0C;&#x4EE5;&#x53CA;&#x68C0;&#x67E5;&#x5F53; pod &#x5904;&#x4E8E; terminated &#x72B6;&#x6001;&#x65F6;&#x4FDD;&#x8BC1; pod &#x88AB;&#x5B8C;&#x5168;&#x5220;&#x9664;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:570</code></p>
+<pre class="language-"><code>func (m *manager) needsUpdate(uid types.UID, status versionedPodStatus) bool {
+    latest, ok := m.apiStatusVersions[kubetypes.MirrorPodUID(uid)]
+    if !ok || latest &lt; status.version {
+        return true
+    }
+    pod, ok := m.podManager.GetPodByUID(uid)
+    if !ok {
+        return false
+    }
+    return m.canBeDeleted(pod, status.status)
+}
+
+func (m *manager) canBeDeleted(pod *v1.Pod, status v1.PodStatus) bool {
+    if pod.DeletionTimestamp == nil || kubepod.IsMirrorPod(pod) {
+        return false
+    }
+    // &#x6B64;&#x5904;&#x8BF4;&#x660E; pod &#x5DF2;&#x7ECF;&#x5904;&#x4E8E;&#x5220;&#x9664;&#x72B6;&#x6001;&#x4E86;
+    return m.podDeletionSafety.PodResourcesAreReclaimed(pod, status)
+}
+</code></pre><h6 id="podresourcesarereclaimed"><a name="podresourcesarereclaimed" class="anchor-navigation-ex-anchor" href="#podresourcesarereclaimed"><i class="fa fa-link" aria-hidden="true"></i></a>PodResourcesAreReclaimed</h6>
+<p><code>PodResourcesAreReclaimed</code> &#x68C0;&#x67E5; pod &#x5728; node &#x4E0A;&#x5360;&#x7528;&#x7684;&#x6240;&#x6709;&#x8D44;&#x6E90;&#x662F;&#x5426;&#x5DF2;&#x7ECF;&#x88AB;&#x56DE;&#x6536;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x68C0;&#x67E5; pod &#x4E2D;&#x7684;&#x6240;&#x6709; container &#x662F;&#x5426;&#x90FD;&#x5904;&#x4E8E;&#x975E; running &#x72B6;&#x6001;&#xFF1B;</li>
+<li>2&#x3001;&#x4ECE; podCache &#x4E2D;&#x83B7;&#x53D6; podStatus&#xFF0C;&#x901A;&#x8FC7; podStatus &#x68C0;&#x67E5; pod &#x4E2D;&#x7684; container &#x662F;&#x5426;&#x5DF2;&#x88AB;&#x5B8C;&#x5168;&#x5220;&#x9664;&#xFF1B;</li>
+<li>3&#x3001;&#x68C0;&#x67E5; pod &#x7684; volume &#x662F;&#x5426;&#x88AB;&#x6E05;&#x7406;&#xFF1B;</li>
+<li>4&#x3001;&#x68C0;&#x67E5; pod &#x7684; cgroup &#x662F;&#x5426;&#x88AB;&#x6E05;&#x7406;&#xFF1B;</li>
+<li>5&#x3001;&#x82E5;&#x4EE5;&#x4E0A;&#x51E0;&#x4E2A;&#x68C0;&#x67E5;&#x9879;&#x90FD;&#x901A;&#x8FC7;&#x8BF4;&#x660E;&#x5728; kubelet &#x7AEF; pod &#x5DF2;&#x88AB;&#x5B8C;&#x5168;&#x591F;&#x5220;&#x9664;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet_pods.go:900</code></p>
+<pre class="language-"><code>func (kl *Kubelet) PodResourcesAreReclaimed(pod *v1.Pod, status v1.PodStatus) bool {
+    // 1&#x3001;&#x68C0;&#x67E5; pod &#x4E2D;&#x7684;&#x6240;&#x6709; container &#x662F;&#x5426;&#x90FD;&#x5904;&#x4E8E;&#x975E; running &#x72B6;&#x6001;
+    if !notRunning(status.ContainerStatuses) {
+        return false
+    }
+
+    // 2&#x3001;&#x4ECE; podCache &#x4E2D;&#x83B7;&#x53D6; podStatus&#xFF0C;&#x901A;&#x8FC7; podStatus &#x68C0;&#x67E5; pod &#x4E2D;&#x7684; container &#x662F;&#x5426;&#x5DF2;&#x88AB;&#x5B8C;&#x5168;&#x5220;&#x9664;
+    runtimeStatus, err := kl.podCache.Get(pod.UID)
+    if err != nil {
+        return false
+    }
+    if len(runtimeStatus.ContainerStatuses) &gt; 0 {
+        var statusStr string
+        for _, status := range runtimeStatus.ContainerStatuses {
+            statusStr += fmt.Sprintf(&quot;%+v &quot;, *status)
+        }
+        return false
+    }
+
+    // 3&#x3001;&#x68C0;&#x67E5; pod &#x7684; volume &#x662F;&#x5426;&#x88AB;&#x6E05;&#x7406;
+    if kl.podVolumesExist(pod.UID) &amp;&amp; !kl.keepTerminatedPodVolumes {
+        return false
+    }
+
+    // 4&#x3001;&#x68C0;&#x67E5; pod &#x7684; cgroup &#x662F;&#x5426;&#x88AB;&#x6E05;&#x7406;
+    if kl.kubeletConfiguration.CgroupsPerQOS {
+        pcm := kl.containerManager.NewPodContainerManager()
+        if pcm.Exists(pod) {
+            return false
+        }
+    }
+    return true
+}
+</code></pre><h4 id="syncbatch"><a name="syncbatch" class="anchor-navigation-ex-anchor" href="#syncbatch"><i class="fa fa-link" aria-hidden="true"></i></a>syncBatch</h4>
+<p><code>syncBatch</code> &#x662F;&#x5B9A;&#x671F;&#x5C06; statusManager &#x7F13;&#x5B58; podStatuses &#x4E2D;&#x7684;&#x6570;&#x636E;&#x540C;&#x6B65;&#x5230; apiserver &#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>m.podManager.GetUIDTranslations</code> &#x4ECE; podManager &#x4E2D;&#x83B7;&#x53D6; mirrorPod uid &#x4E0E; staticPod uid &#x7684;&#x5BF9;&#x5E94;&#x5173;&#x7CFB;&#xFF1B;</li>
+<li>2&#x3001;&#x4ECE;  apiStatusVersions &#x4E2D;&#x6E05;&#x7406;&#x5DF2;&#x7ECF;&#x4E0D;&#x5B58;&#x5728;&#x7684; pod&#xFF0C;&#x904D;&#x5386; apiStatusVersions&#xFF0C;&#x68C0;&#x67E5; podStatuses &#x4EE5;&#x53CA; mirrorToPod &#x4E2D;&#x662F;&#x5426;&#x5B58;&#x5728;&#x8BE5;&#x5BF9;&#x5E94;&#x7684; pod&#xFF0C;&#x82E5;&#x4E0D;&#x5B58;&#x5728;&#x5219;&#x4ECE; apiStatusVersions &#x4E2D;&#x5220;&#x9664;&#xFF1B;</li>
+<li>3&#x3001;&#x904D;&#x5386; podStatuses&#xFF0C;&#x9996;&#x5148;&#x8C03;&#x7528; <code>needsUpdate</code> &#x68C0;&#x67E5; pod &#x7684;&#x72B6;&#x6001;&#x662F;&#x5426;&#x4E0E; apiStatusVersions &#x4E2D;&#x7684;&#x4E00;&#x81F4;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>needsReconcile</code> &#x68C0;&#x67E5; pod &#x7684;&#x72B6;&#x6001;&#x662F;&#x5426;&#x4E0E; podManager &#x4E2D;&#x7684;&#x4E00;&#x81F4;&#xFF0C;&#x82E5;&#x4E0D;&#x4E00;&#x81F4;&#x5219;&#x5C06;&#x9700;&#x8981;&#x540C;&#x6B65;&#x7684; pod &#x52A0;&#x5165;&#x5230; updatedStatuses &#x5217;&#x8868;&#x4E2D;&#xFF1B;</li>
+<li>4&#x3001;&#x904D;&#x5386; updatedStatuses &#x5217;&#x8868;&#xFF0C;&#x8C03;&#x7528; <code>m.syncPod</code> &#x65B9;&#x6CD5;&#x540C;&#x6B65;&#x72B6;&#x6001;&#xFF1B;</li>
+</ul>
+<p>syncBatch &#x4E3B;&#x8981;&#x662F;&#x5C06; statusManage cache &#x4E2D;&#x7684;&#x6570;&#x636E;&#x4E0E; apiStatusVersions &#x548C; podManager &#x4E2D;&#x7684;&#x6570;&#x636E;&#x8FDB;&#x884C;&#x5BF9;&#x6BD4;&#x662F;&#x5426;&#x4E00;&#x81F4;&#xFF0C;&#x82E5;&#x4E0D;&#x4E00;&#x81F4;&#x5219;&#x4EE5; statusManage cache &#x4E2D;&#x7684;&#x6570;&#x636E;&#x4E3A;&#x51C6;&#x540C;&#x6B65;&#x81F3; apiserver&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:469</code></p>
+<pre class="language-"><code>func (m *manager) syncBatch() {
+    var updatedStatuses []podStatusSyncRequest
+    // 1&#x3001;&#x83B7;&#x53D6; mirrorPod &#x4E0E; staticPod &#x7684;&#x5BF9;&#x5E94;&#x5173;&#x7CFB;
+    podToMirror, mirrorToPod := m.podManager.GetUIDTranslations()
+    func() { 
+        m.podStatusesLock.RLock()
+        defer m.podStatusesLock.RUnlock()
+
+        // 2&#x3001;&#x4ECE; apiStatusVersions &#x4E2D;&#x6E05;&#x7406;&#x5DF2;&#x7ECF;&#x4E0D;&#x5B58;&#x5728;&#x7684; pod
+        for uid := range m.apiStatusVersions {
+            _, hasPod := m.podStatuses[types.UID(uid)]
+            _, hasMirror := mirrorToPod[uid]
+            if !hasPod &amp;&amp; !hasMirror {
+                delete(m.apiStatusVersions, uid)
+            }
+        }
+
+        // 3&#x3001;&#x904D;&#x5386; podStatuses&#xFF0C;&#x5C06;&#x9700;&#x8981;&#x540C;&#x6B65;&#x72B6;&#x6001;&#x7684; pod &#x52A0;&#x5165;&#x5230; updatedStatuses &#x5217;&#x8868;&#x4E2D;
+        for uid, status := range m.podStatuses {
+            syncedUID := kubetypes.MirrorPodUID(uid)
+            if mirrorUID, ok := podToMirror[kubetypes.ResolvedPodUID(uid)]; ok {
+                if mirrorUID == &quot;&quot; {
+                  continue
+                }
+                syncedUID = mirrorUID
+            }
+            if m.needsUpdate(types.UID(syncedUID), status) {
+                updatedStatuses = append(updatedStatuses, podStatusSyncRequest{uid, status})
+            } else if m.needsReconcile(uid, status.status) {
+                delete(m.apiStatusVersions, syncedUID)
+                updatedStatuses = append(updatedStatuses, podStatusSyncRequest{uid, status})
+            }
+        }
+    }()
+
+    // 4&#x3001;&#x8C03;&#x7528; m.syncPod &#x540C;&#x6B65; pod &#x72B6;&#x6001;
+    for _, update := range updatedStatuses {
+        m.syncPod(update.podUID, update.status)
+    }
+}
+</code></pre><p><code>syncBatch</code> &#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528;&#x4E86;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5; <code>needsUpdate</code> &#x548C; <code>needsReconcile</code> &#xFF0C;<code>needsUpdate</code> &#x5728;&#x4E0A;&#x6587;&#x4E2D;&#x5DF2;&#x7ECF;&#x4ECB;&#x7ECD;&#x8FC7;&#x4E86;&#xFF0C;&#x4E0B;&#x9762;&#x4ECB;&#x7ECD; <code>needsReconcile</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x3002;</p>
+<h5 id="needsreconcile"><a name="needsreconcile" class="anchor-navigation-ex-anchor" href="#needsreconcile"><i class="fa fa-link" aria-hidden="true"></i></a>needsReconcile</h5>
+<p><code>needsReconcile</code> &#x5BF9;&#x6BD4;&#x5F53;&#x524D; pod &#x7684;&#x72B6;&#x6001;&#x4E0E; podManager &#x4E2D;&#x7684;&#x72B6;&#x6001;&#x662F;&#x5426;&#x4E00;&#x81F4;&#xFF0C;podManager &#x4E2D;&#x4FDD;&#x5B58;&#x4E86; node &#x4E0A; pod &#x7684; object&#xFF0C;podManager &#x4E2D;&#x7684;&#x6570;&#x636E;&#x4E0E; apiserver &#x662F;&#x4E00;&#x81F4;&#x7684;&#xFF0C;<code>needsReconcile</code>  &#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x901A;&#x8FC7; uid &#x4ECE; podManager &#x4E2D;&#x83B7;&#x53D6; pod &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x68C0;&#x67E5; pod &#x662F;&#x5426;&#x4E3A; static pod&#xFF0C;&#x82E5;&#x4E3A; static pod &#x5219;&#x83B7;&#x53D6;&#x5176;&#x5BF9;&#x5E94;&#x7684; mirrorPod&#xFF1B;</li>
+<li>3&#x3001;&#x683C;&#x5F0F;&#x5316; pod status subResource&#xFF1B;</li>
+<li>4&#x3001;&#x68C0;&#x67E5; podManager &#x4E2D;&#x7684; status &#x4E0E; statusManager cache &#x4E2D;&#x7684; status &#x662F;&#x5426;&#x4E00;&#x81F4;&#xFF0C;&#x82E5;&#x4E0D;&#x4E00;&#x81F4;&#x5219;&#x4EE5; statusManager &#x4E3A;&#x51C6;&#x8FDB;&#x884C;&#x540C;&#x6B65;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:598</code></p>
+<pre class="language-"><code>func (m *manager) needsReconcile(uid types.UID, status v1.PodStatus) bool {
+    // 1&#x3001;&#x4ECE; podManager &#x4E2D;&#x83B7;&#x53D6; pod &#x5BF9;&#x8C61;
+    pod, ok := m.podManager.GetPodByUID(uid)
+    if !ok {
+        return false
+    }
+
+    // 2&#x3001;&#x68C0;&#x67E5; pod &#x662F;&#x5426;&#x4E3A; static pod&#xFF0C;&#x82E5;&#x4E3A; static pod &#x5219;&#x83B7;&#x53D6;&#x5176;&#x5BF9;&#x5E94;&#x7684; mirrorPod
+    if kubetypes.IsStaticPod(pod) {
+        mirrorPod, ok := m.podManager.GetMirrorPodByPod(pod)
+        if !ok {
+            return false
+        }
+        pod = mirrorPod
+    }
+
+    podStatus := pod.Status.DeepCopy()
+
+    // 3&#x3001;&#x683C;&#x5F0F;&#x5316; pod status subResource
+    normalizeStatus(pod, podStatus)
+
+    // 4&#x3001;&#x68C0;&#x67E5; podManager &#x4E2D;&#x7684; status &#x4E0E; statusManager cache &#x4E2D;&#x7684; status &#x662F;&#x5426;&#x4E00;&#x81F4;
+    if isPodStatusByKubeletEqual(podStatus, &amp;status) {
+        return false
+    }
+
+    return true
+}
+</code></pre><p>&#x4EE5;&#x4E0A;&#x5C31;&#x662F; statusManager &#x540C;&#x6B65; pod status &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#xFF0C;&#x4E0B;&#x9762;&#x518D;&#x4E86;&#x89E3;&#x4E00;&#x4E0B; statusManager &#x5BF9;&#x5176;&#x4ED6;&#x7EC4;&#x4EF6;&#x66B4;&#x9732;&#x7684;&#x65B9;&#x6CD5;&#x3002;</p>
+<h4 id="setpodstatus"><a name="setpodstatus" class="anchor-navigation-ex-anchor" href="#setpodstatus"><i class="fa fa-link" aria-hidden="true"></i></a>SetPodStatus</h4>
+<p><code>SetPodStatus</code> &#x662F;&#x4E3A; pod &#x8BBE;&#x7F6E; status subResource &#x5E76;&#x4F1A;&#x89E6;&#x53D1;&#x540C;&#x6B65;&#x64CD;&#x4F5C;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x68C0;&#x67E5; <code>pod.Status.Conditions</code> &#x4E2D;&#x7684;&#x7C7B;&#x578B;&#x662F;&#x5426;&#x4E3A; kubelet &#x521B;&#x5EFA;&#x7684;&#xFF0C;kubelet &#x4F1A;&#x521B;&#x5EFA; <code>ContainersReady</code>&#x3001;<code>Initialized</code>&#x3001;<code>Ready</code>&#x3001;<code>PodScheduled</code> &#x548C; <code>Unschedulable</code> &#x4E94;&#x79CD;&#x7C7B;&#x578B;&#x7684; conditions&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>m.updateStatusInternal</code> &#x89E6;&#x53D1;&#x66F4;&#x65B0;&#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:179</code></p>
+<pre class="language-"><code>func (m *manager) SetPodStatus(pod *v1.Pod, status v1.PodStatus) {
+    m.podStatusesLock.Lock()
+    defer m.podStatusesLock.Unlock()
+
+    for _, c := range pod.Status.Conditions {
+        if !kubetypes.PodConditionByKubelet(c.Type) {
+            klog.Errorf(&quot;Kubelet is trying to update pod condition %q for pod %q. &quot;+
+                &quot;But it is not owned by kubelet.&quot;, string(c.Type), format.Pod(pod))
+        }
+    }
+
+    status = *status.DeepCopy()
+
+    m.updateStatusInternal(pod, status, pod.DeletionTimestamp != nil)
+}
+</code></pre><h5 id="updatestatusinternal"><a name="updatestatusinternal" class="anchor-navigation-ex-anchor" href="#updatestatusinternal"><i class="fa fa-link" aria-hidden="true"></i></a>updateStatusInternal</h5>
+<p>statusManager &#x5BF9;&#x5916;&#x66B4;&#x9732;&#x7684;&#x65B9;&#x6CD5;&#x4E2D;&#x89E6;&#x53D1;&#x72B6;&#x6001;&#x540C;&#x6B65;&#x7684;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x7531; <code>updateStatusInternal</code> &#x5B8C;&#x6210;&#x7684;&#xFF0C;<code>updateStatusInternal</code> &#x4F1A;&#x66F4;&#x65B0; statusManager &#x7684; cache &#x5E76;&#x4F1A;&#x5C06; newStatus &#x53D1;&#x9001;&#x5230; <code>m.podStatusChannel</code> &#x4E2D;&#xFF0C;&#x7136;&#x540E; statusManager &#x4F1A;&#x8C03;&#x7528; <code>syncPod</code> &#x65B9;&#x6CD5;&#x540C;&#x6B65;&#x5230; apiserver&#x3002;</p>
+<ul>
+<li>1&#x3001;&#x4ECE; cache &#x4E2D;&#x83B7;&#x53D6; oldStatus&#xFF1B;</li>
+<li>2&#x3001;&#x68C0;&#x67E5; <code>ContainerStatuses</code> &#x548C; <code>InitContainerStatuses</code> &#x662F;&#x5426;&#x5408;&#x6CD5;&#xFF1B;</li>
+<li>3&#x3001;&#x4E3A; status &#x8BBE;&#x7F6E; <code>ContainersReady</code>&#x3001;<code>PodReady</code>&#x3001;<code>PodInitialized</code>&#x3001;<code>PodScheduled</code> conditions&#xFF1B;</li>
+<li>4&#x3001;&#x8BBE;&#x7F6E; status &#x7684; <code>StartTime</code>&#xFF1B;</li>
+<li>5&#x3001;&#x683C;&#x5F0F;&#x5316; status&#xFF1B;</li>
+<li>6&#x3001;&#x5C06; newStatus &#x6DFB;&#x52A0;&#x5230; statusManager &#x7684; cache podStatuses &#x4E2D;&#xFF1B;</li>
+<li>7&#x3001;&#x5C06; newStatus &#x53D1;&#x9001;&#x5230; <code>m.podStatusChannel</code> &#x4E2D;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:362</code></p>
+<pre class="language-"><code>func (m *manager) updateStatusInternal(pod *v1.Pod, status v1.PodStatus, forceUpdate bool) bool {
+    var oldStatus v1.PodStatus
+    // 1&#x3001;&#x4ECE; cache &#x4E2D;&#x83B7;&#x53D6; oldStatus
+    cachedStatus, isCached := m.podStatuses[pod.UID]
+    if isCached {
+        oldStatus = cachedStatus.status
+    } else if mirrorPod, ok := m.podManager.GetMirrorPodByPod(pod); ok {
+        oldStatus = mirrorPod.Status
+    } else {
+        oldStatus = pod.Status
+    }
+
+    // 2&#x3001;&#x68C0;&#x67E5; ContainerStatuses &#x548C; InitContainerStatuses &#x662F;&#x5426;&#x5408;&#x6CD5;
+    if err := checkContainerStateTransition(oldStatus.ContainerStatuses, status.ContainerStatuses, pod.Spec.RestartPolicy); err != nil {
+        return false
+    }
+    if err := checkContainerStateTransition(oldStatus.InitContainerStatuses, status.InitContainerStatuses, pod.Spec.RestartPolicy); err != nil {
+        klog.Errorf(&quot;Status update on pod %v/%v aborted: %v&quot;, pod.Namespace, pod.Name, err)
+        return false
+    }
+
+    // 3&#x3001;&#x4E3A; status &#x8BBE;&#x7F6E; ContainersReady&#x3001;PodReady&#x3001;PodInitialized&#x3001;PodScheduled conditions
+    updateLastTransitionTime(&amp;status, &amp;oldStatus, v1.ContainersReady)
+
+    updateLastTransitionTime(&amp;status, &amp;oldStatus, v1.PodReady)
+
+    updateLastTransitionTime(&amp;status, &amp;oldStatus, v1.PodInitialized)
+
+    updateLastTransitionTime(&amp;status, &amp;oldStatus, v1.PodScheduled)
+
+    // 4&#x3001;&#x8BBE;&#x7F6E; status &#x7684; StartTime
+    if oldStatus.StartTime != nil &amp;&amp; !oldStatus.StartTime.IsZero() {
+        status.StartTime = oldStatus.StartTime
+    } else if status.StartTime.IsZero() {
+        now := metav1.Now()
+        status.StartTime = &amp;now
+    }
+
+    // 5&#x3001;&#x683C;&#x5F0F;&#x5316; status
+    normalizeStatus(pod, &amp;status)
+
+    if isCached &amp;&amp; isPodStatusByKubeletEqual(&amp;cachedStatus.status, &amp;status) &amp;&amp; !forceUpdate {
+        return false 
+    }
+
+    // 6&#x3001;&#x5C06; newStatus &#x6DFB;&#x52A0;&#x5230; statusManager &#x7684; cache podStatuses &#x4E2D;
+    newStatus := versionedPodStatus{
+        status:       status,
+        version:      cachedStatus.version + 1,
+        podName:      pod.Name,
+        podNamespace: pod.Namespace,
+    }
+    m.podStatuses[pod.UID] = newStatus
+
+    // 7&#x3001;&#x5C06; newStatus &#x53D1;&#x9001;&#x5230; m.podStatusChannel &#x4E2D;
+    select {
+    case m.podStatusChannel &lt;- podStatusSyncRequest{pod.UID, newStatus}:
+        return true
+    default:
+        return false
+    }
+}
+</code></pre><p><code>SetPodStatus</code> &#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x4F1A;&#x7528;&#x5728; kubelet &#x7684;&#x4E3B; syncLoop &#x4E2D;&#xFF0C;&#x5E76;&#x5728; <code>syncPod</code> &#x65B9;&#x6CD5;&#x4E2D;&#x521B;&#x5EFA; pod &#x65F6;&#x4F7F;&#x7528;&#x3002;</p>
+<h4 id="setcontainerreadiness"><a name="setcontainerreadiness" class="anchor-navigation-ex-anchor" href="#setcontainerreadiness"><i class="fa fa-link" aria-hidden="true"></i></a>SetContainerReadiness</h4>
+<p><code>SetContainerReadiness</code> &#x65B9;&#x6CD5;&#x4F1A;&#x8BBE;&#x7F6E; pod status subResource &#x4E2D; container &#x662F;&#x5426;&#x4E3A; ready &#x72B6;&#x6001;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x83B7;&#x53D6; pod &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x4ECE; <code>m.podStatuses</code> &#x83B7;&#x53D6; oldStatus&#xFF1B;</li>
+<li>3&#x3001;&#x901A;&#x8FC7; containerID &#x4ECE; pod &#x4E2D;&#x83B7;&#x53D6; containerStatus&#xFF1B;</li>
+<li>4&#x3001;&#x82E5; container status &#x4E3A; Ready &#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#xFF0C;&#x6B64;&#x65F6;&#x8BE5; container &#x72B6;&#x6001;&#x65E0;&#x987B;&#x66F4;&#x65B0;&#xFF1B;</li>
+<li>5&#x3001;&#x6DFB;&#x52A0; PodReadyCondition &#x548C; ContainersReadyCondition&#xFF1B;</li>
+<li>6&#x3001;&#x8C03;&#x7528; <code>m.updateStatusInternal</code> &#x89E6;&#x53D1;&#x540C;&#x6B65;&#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:198</code></p>
+<pre class="language-"><code>func (m *manager) SetContainerReadiness(podUID types.UID, containerID kubecontainer.ContainerID, ready bool) {
+    m.podStatusesLock.Lock()
+    defer m.podStatusesLock.Unlock()
+
+    // 1&#x3001;&#x83B7;&#x53D6; pod &#x5BF9;&#x8C61;
+    pod, ok := m.podManager.GetPodByUID(podUID)
+    if !ok {
+        return
+    }
+
+    // 2&#x3001;&#x4ECE; m.podStatuses &#x83B7;&#x53D6; oldStatus
+    oldStatus, found := m.podStatuses[pod.UID]
+    if !found {
+        return
+    }
+
+    // 3&#x3001;&#x901A;&#x8FC7; containerID &#x4ECE; pod &#x4E2D;&#x83B7;&#x53D6; containerStatus
+    containerStatus, _, ok := findContainerStatus(&amp;oldStatus.status, containerID.String())
+    if !ok {
+        return
+    }
+
+    // 4&#x3001;&#x82E5; container status &#x4E3A; Ready &#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#xFF0C;&#x6B64;&#x65F6;&#x8BE5; container &#x72B6;&#x6001;&#x65E0;&#x987B;&#x66F4;&#x65B0;
+    if containerStatus.Ready == ready {
+        return
+    }
+
+
+    status := *oldStatus.status.DeepCopy()
+    containerStatus, _, _ = findContainerStatus(&amp;status, containerID.String())
+    containerStatus.Ready = ready
+
+    updateConditionFunc := func(conditionType v1.PodConditionType, condition v1.PodCondition) {
+        conditionIndex := -1
+        for i, condition := range status.Conditions {
+            if condition.Type == conditionType {
+                conditionIndex = i
+                break
+            }
+        }
+        if conditionIndex != -1 {
+            status.Conditions[conditionIndex] = condition
+        } else {
+            status.Conditions = append(status.Conditions, condition)
+        }
+    }
+    // 5&#x3001;&#x6DFB;&#x52A0; PodReadyCondition &#x548C; ContainersReadyCondition
+    updateConditionFunc(v1.PodReady, GeneratePodReadyCondition(&amp;pod.Spec, status.Conditions, status.ContainerStatuses, status.Phase))
+    updateConditionFunc(v1.ContainersReady, GenerateContainersReadyCondition(&amp;pod.Spec, status.ContainerStatuses, status.Phase))
+    // 6&#x3001;&#x8C03;&#x7528; m.updateStatusInternal &#x89E6;&#x53D1;&#x540C;&#x6B65;&#x64CD;&#x4F5C;
+    m.updateStatusInternal(pod, status, false)
+}
+</code></pre><p><code>SetContainerReadiness</code> &#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x88AB;&#x7528;&#x5728; proberManager &#x4E2D;&#xFF0C;&#x5173;&#x4E8E; proberManager &#x7684;&#x529F;&#x80FD;&#x4F1A;&#x5728;&#x540E;&#x6587;&#x8BF4;&#x660E;&#x3002;</p>
+<h4 id="setcontainerstartup"><a name="setcontainerstartup" class="anchor-navigation-ex-anchor" href="#setcontainerstartup"><i class="fa fa-link" aria-hidden="true"></i></a>SetContainerStartup</h4>
+<p><code>SetContainerStartup</code> &#x65B9;&#x6CD5;&#x4F1A;&#x8BBE;&#x7F6E; pod status subResource &#x4E2D; container &#x662F;&#x5426;&#x4E3A; started &#x72B6;&#x6001;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x901A;&#x8FC7; podUID &#x4ECE; podManager &#x4E2D;&#x83B7;&#x53D6; pod &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x4ECE; statusManager &#x4E2D;&#x83B7;&#x53D6; pod &#x7684; oldStatus&#xFF1B;</li>
+<li>3&#x3001;&#x68C0;&#x67E5;&#x8981;&#x66F4;&#x65B0;&#x7684; container &#x662F;&#x5426;&#x5B58;&#x5728;&#xFF1B;</li>
+<li>4&#x3001;&#x68C0;&#x67E5;&#x76EE;&#x6807; container &#x7684; started &#x72B6;&#x6001;&#x662F;&#x5426;&#x5DF2;&#x4E3A;&#x671F;&#x671B;&#x503C;&#xFF1B;</li>
+<li>5&#x3001;&#x8BBE;&#x7F6E;&#x76EE;&#x6807; container &#x7684; started &#x72B6;&#x6001;&#xFF1B;</li>
+<li>6&#x3001;&#x8C03;&#x7528; <code>m.updateStatusInternal</code> &#x89E6;&#x53D1;&#x540C;&#x6B65;&#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:255</code></p>
+<pre class="language-"><code>func (m *manager) SetContainerStartup(podUID types.UID, containerID kubecontainer.ContainerID, started bool) {
+    m.podStatusesLock.Lock()
+    defer m.podStatusesLock.Unlock()
+
+    // 1&#x3001;&#x901A;&#x8FC7; podUID &#x4ECE; podManager &#x4E2D;&#x83B7;&#x53D6; pod &#x5BF9;&#x8C61;
+    pod, ok := m.podManager.GetPodByUID(podUID)
+    if !ok {
+        return
+    }
+
+    // 2&#x3001;&#x4ECE; statusManager &#x4E2D;&#x83B7;&#x53D6; pod &#x7684; oldStatus
+    oldStatus, found := m.podStatuses[pod.UID]
+    if !found {
+        return
+    }
+
+    // 3&#x3001;&#x68C0;&#x67E5;&#x8981;&#x66F4;&#x65B0;&#x7684; container &#x662F;&#x5426;&#x5B58;&#x5728;
+    containerStatus, _, ok := findContainerStatus(&amp;oldStatus.status, containerID.String())
+    if !ok {
+        klog.Warningf(&quot;Container startup changed for unknown container: %q - %q&quot;,
+            format.Pod(pod), containerID.String())
+        return
+    }
+
+    // 4&#x3001;&#x68C0;&#x67E5;&#x76EE;&#x6807; container &#x7684; started &#x72B6;&#x6001;&#x662F;&#x5426;&#x5DF2;&#x4E3A;&#x671F;&#x671B;&#x503C;
+    if containerStatus.Started != nil &amp;&amp; *containerStatus.Started == started {
+        return
+    }
+
+    // 5&#x3001;&#x8BBE;&#x7F6E;&#x76EE;&#x6807; container &#x7684; started &#x72B6;&#x6001;
+    status := *oldStatus.status.DeepCopy()
+    containerStatus, _, _ = findContainerStatus(&amp;status, containerID.String())
+    containerStatus.Started = &amp;started
+
+    // 6&#x3001;&#x89E6;&#x53D1;&#x540C;&#x6B65;&#x64CD;&#x4F5C;
+    m.updateStatusInternal(pod, status, false)
+}
+</code></pre><p><code>SetContainerStartup</code> &#x65B9;&#x6CD5;&#x4E5F;&#x662F;&#x4E3B;&#x8981;&#x88AB;&#x7528;&#x5728; proberManager &#x4E2D;&#x3002;</p>
+<h4 id="terminatepod"><a name="terminatepod" class="anchor-navigation-ex-anchor" href="#terminatepod"><i class="fa fa-link" aria-hidden="true"></i></a>TerminatePod</h4>
+<p><code>TerminatePod</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x662F;&#x628A; pod <code>.status.containerStatuses</code> &#x548C; <code>.status.initContainerStatuses</code> &#x4E2D; container &#x7684; state &#x7F6E;&#x4E3A; <code>Terminated</code> &#x72B6;&#x6001;&#x5E76;&#x89E6;&#x53D1;&#x72B6;&#x6001;&#x540C;&#x6B65;&#x64CD;&#x4F5C;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:312</code></p>
+<pre class="language-"><code>func (m *manager) TerminatePod(pod *v1.Pod) {
+    m.podStatusesLock.Lock()
+    defer m.podStatusesLock.Unlock()
+    oldStatus := &amp;pod.Status
+    if cachedStatus, ok := m.podStatuses[pod.UID]; ok {
+        oldStatus = &amp;cachedStatus.status
+    }
+    status := *oldStatus.DeepCopy()
+    for i := range status.ContainerStatuses {
+        status.ContainerStatuses[i].State = v1.ContainerState{
+            Terminated: &amp;v1.ContainerStateTerminated{},
+        }
+    }
+    for i := range status.InitContainerStatuses {
+        status.InitContainerStatuses[i].State = v1.ContainerState{
+            Terminated: &amp;v1.ContainerStateTerminated{},
+        }
+    }
+    m.updateStatusInternal(pod, status, true)
+}
+</code></pre><p><code>TerminatePod</code> &#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x4F1A;&#x7528;&#x5728; kubelet &#x7684;&#x4E3B; syncLoop &#x4E2D;&#x3002;</p>
+<h4 id="removeorphanedstatuses"><a name="removeorphanedstatuses" class="anchor-navigation-ex-anchor" href="#removeorphanedstatuses"><i class="fa fa-link" aria-hidden="true"></i></a>RemoveOrphanedStatuses</h4>
+<p><code>RemoveOrphanedStatuses</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x662F;&#x4ECE; statusManager &#x7F13;&#x5B58; podStatuses &#x4E2D;&#x5220;&#x9664;&#x5BF9;&#x5E94;&#x7684; pod&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/status/status_manager.go:457</code></p>
+<pre class="language-"><code>func (m *manager) RemoveOrphanedStatuses(podUIDs map[types.UID]bool) {
+    m.podStatusesLock.Lock()
+    defer m.podStatusesLock.Unlock()
+    for key := range m.podStatuses {
+        if _, ok := podUIDs[key]; !ok {
+            klog.V(5).Infof(&quot;Removing %q from status map.&quot;, key)
+            delete(m.podStatuses, key)
+        }
+    }
+}
+</code></pre><h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x4ECB;&#x7ECD;&#x4E86; statusManager &#x7684;&#x529F;&#x80FD;&#x4EE5;&#x53CA;&#x4F7F;&#x7528;&#xFF0C;&#x5176;&#x529F;&#x80FD;&#x5176;&#x5B9E;&#x975E;&#x5E38;&#x7B80;&#x5355;&#xFF0C;&#x5F53; pod &#x72B6;&#x6001;&#x6539;&#x53D8;&#x65F6; statusManager &#x4F1A;&#x5C06;&#x72B6;&#x6001;&#x540C;&#x6B65;&#x5230; apiserver&#xFF0C;statusManager &#x4E5F;&#x63D0;&#x4F9B;&#x4E86;&#x591A;&#x4E2A;&#x63A5;&#x53E3;&#x4F9B;&#x5176;&#x4ED6;&#x7EC4;&#x4EF6;&#x8C03;&#x7528;&#xFF0C;&#x5F53;&#x5176;&#x4ED6;&#x7EC4;&#x4EF6;&#x9700;&#x8981;&#x6539;&#x53D8; pod &#x7684;&#x72B6;&#x6001;&#x65F6;&#x4F1A;&#x5C06; pod &#x7684; status &#x4FE1;&#x606F;&#x53D1;&#x9001;&#x5230; statusManager &#x8FDB;&#x884C;&#x540C;&#x6B65;&#x3002;</p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2019-12-25 15:54:09
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="k8s_events.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: kubelet 中事件处理机制">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"kubelet statusManager 源码分析","date":"2019-12-25T15:22:30.000Z","tags":["kubelet","statusManager"],"type":"statusManager","level":"1.2.17","depth":2,"previous":{"title":"kubelet 中事件处理机制","level":"1.2.16","depth":2,"path":"kubernetes/k8s_events.md","ref":"kubernetes/k8s_events.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/kubelet_status_manager.md","mtime":"2019-12-25T07:54:09.917Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-12-25T07:55:43.098Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

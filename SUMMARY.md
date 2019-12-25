@@ -19,3 +19,4 @@
     * [kubelet 创建 pod 的流程](kubernetes/kubelet_create_pod.md)
     * [kubelet 状态上报的方式](kubernetes/node_status.md)
     * [kubelet 中事件处理机制](kubernetes/k8s_events.md)
+    * [kubelet statusManager 源码分析](kubernetes/kubelet_status_manager.md)
