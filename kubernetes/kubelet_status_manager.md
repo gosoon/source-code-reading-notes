@@ -270,7 +270,7 @@ func (m *manager) canBeDeleted(pod *v1.Pod, status v1.PodStatus) bool {
 - 2、从 podCache 中获取 podStatus，通过 podStatus 检查 pod 中的 container 是否已被完全删除；
 - 3、检查 pod 的 volume 是否被清理；
 - 4、检查 pod 的 cgroup 是否被清理；
-- 5、若以上几个检查项都通过说明在 kubelet 端 pod 已被完全够删除；
+- 5、若以上几个检查项都通过说明在 kubelet 端 pod 已被完全删除；
 
 
 
