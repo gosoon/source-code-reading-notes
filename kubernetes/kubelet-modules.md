@@ -6,6 +6,11 @@ type: "kubelet"
 
 ---
 
+* [一、概要](#一概要)
+* [二、kubelet 的主要功能](#二kubelet-的主要功能)
+* [三、kubelet 组件中的模块](#三kubelet-组件中的模块)
+
+
 ## 一、概要
 kubelet 是运行在每个节点上的主要的“节点代理”，每个节点都会启动 kubelet进程，用来处理 Master 节点下发到本节点的任务，按照 PodSpec 描述来管理Pod 和其中的容器（PodSpec 是用来描述一个 pod 的 YAML 或者 JSON 对象）。
 

@@ -1,5 +1,15 @@
 
-<extoc></extoc>
+
+* [kube-proxy 启动流程](#kube-proxy-启动流程)
+* [proxier 的初始化](#proxier-的初始化)
+   * [iptables proxier 初始化](#iptables-proxier-初始化)
+   * [ipvs proxier 初始化](#ipvs-proxier-初始化)
+   * [userspace proxier 初始化](#userspace-proxier-初始化)
+* [proxier 接口实现](#proxier-接口实现)
+   * [handler 的实现](#handler-的实现)
+   * [Sync() 以及 SyncLoop() 的实现](#sync-以及-syncloop-的实现)
+* [总结](#总结)
+
 
 上篇文章 [kubernetes service 原理解析](https://blog.tianfeiyu.com/2019/10/31/k8s_service_theory/) 已经分析了 service 原理以 kube-proxy 中三种模式的原理，本篇文章会从源码角度分析 kube-proxy 的设计与实现。
 

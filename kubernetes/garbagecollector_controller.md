@@ -1,10 +1,28 @@
----
-title: garbage collector controller 源码分析
-date: 2019-12-28 20:23:30
-tags: ["kube-controller-manager","garbage collector controller"]
-type: "garbage collector controller"
+* [kubernetes 中的删除策略](#kubernetes-中的删除策略)
+   * [finalizer 机制](#finalizer-机制)
+* [GarbageCollectorController 源码分析](#garbagecollectorcontroller-源码分析)
+   * [startGarbageCollectorController](#startgarbagecollectorcontroller)
+   * [garbagecollector.NewGarbageCollector](#garbagecollectornewgarbagecollector)
+      * [gb.syncMonitors](#gbsyncmonitors)
+         * [gb.controllerFor](#gbcontrollerfor)
+   * [garbageCollector.Run](#garbagecollectorrun)
+      * [gc.dependencyGraphBuilder.Run](#gcdependencygraphbuilderrun)
+         * [uidToNode](#uidtonode)
+         * [gb.startMonitors](#gbstartmonitors)
+         * [gb.runProcessGraphChanges](#gbrunprocessgraphchanges)
+         * [processTransitions](#processtransitions)
+      * [gc.runAttemptToDeleteWorker](#gcrunattempttodeleteworker)
+         * [gc.attemptToDeleteItem](#gcattempttodeleteitem)
+      * [gc.runAttemptToOrphanWorker](#gcrunattempttoorphanworker)
+   * [garbageCollector.Sync](#garbagecollectorsync)
+      * [GetDeletableResources](#getdeletableresources)
+         * [ServerPreferredResources](#serverpreferredresources)
+      * [gc.resyncMonitors](#gcresyncmonitors)
+   * [garbagecollector.NewDebugHandler](#garbagecollectornewdebughandler)
+* [示例](#示例)
+* [总结](#总结)
 
----
+
 
 在前面几篇关于 controller 源码分析的文章中多次提到了当删除一个对象时，其对应的 controller 并不会执行删除对象的操作，在 kubernetes 中对象的回收操作是由 GarbageCollectorController 负责的，其作用就是当删除一个对象时，会根据指定的删除策略回收该对象及其依赖对象，本文会深入分析垃圾收集背后的实现。
 

@@ -6,6 +6,17 @@ type: "kubelet"
 
 ---
 
+* [kubelet 启动流程](#kubelet-启动流程)
+   * [1、kubelet 入口函数 main（cmd/kubelet/kubelet.go）](#1kubelet-入口函数-maincmdkubeletkubeletgo)
+   * [2、初始化 kubelet 配置（cmd/kubelet/app/server.go）](#2初始化-kubelet-配置cmdkubeletappservergo)
+   * [3、创建和 apiserver 通信的对象（cmd/kubelet/app/server.go）](#3创建和-apiserver-通信的对象cmdkubeletappservergo)
+   * [4、初始化 kubelet 组件内部的模块（cmd/kubelet/app/server.go）](#4初始化-kubelet-组件内部的模块cmdkubeletappservergo)
+   * [5、启动 kubelet 内部的模块及服务（cmd/kubelet/app/server.go）](#5启动-kubelet-内部的模块及服务cmdkubeletappservergo)
+* [总结](#总结)
+
+
+
+
 上篇文章（[kubelet 架构浅析](https://blog.tianfeiyu.com/2018/12/16/kubelet-modules/) ）已经介绍过 kubelet 在整个集群架构中的功能以及自身各模块的用途，本篇文章主要介绍 kubelet 的启动流程。
 
  > kubernetes 版本： v1.12 

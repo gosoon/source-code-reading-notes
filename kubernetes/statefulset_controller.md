@@ -6,6 +6,20 @@ type: "statefulset controller"
 
 ---
 
+* [Statefulset 的基本功能](#statefulset-的基本功能)
+   * [创建](#创建)
+   * [扩容](#扩容)
+   * [缩容](#缩容)
+   * [更新](#更新)
+   * [回滚](#回滚)
+   * [删除](#删除)
+   * [Pod 管理策略](#pod-管理策略)
+* [StatefulSetController 源码分析](#statefulsetcontroller-源码分析)
+   * [sync](#sync)
+   * [syncStatefulSet](#syncstatefulset)
+   * [updateStatefulSet](#updatestatefulset)
+* [总结](#总结)
+
 
 
 ### Statefulset 的基本功能

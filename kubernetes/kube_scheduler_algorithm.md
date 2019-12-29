@@ -6,6 +6,15 @@ type: "kube-scheduler"
 
 ---
 
+* [predicates 调度算法源码分析](#predicates-调度算法源码分析)
+   * [调度算法说明](#调度算法说明)
+   * [源码分析](#源码分析)
+* [priorities 调度算法源码分析](#priorities-调度算法源码分析)
+   * [调度算法说明](#调度算法说明-1)
+   * [源码分析](#源码分析-1)
+* [总结](#总结)
+
+
 在上篇文章[kube-scheduler 源码分析](http://blog.tianfeiyu.com/2019/10/21/kube_scheduler_process/)中已经介绍了 kube-scheduler 的设计以及从源码角度分析了其执行流程，这篇文章会专注介绍调度过程中 predicates 和 priorities 这两个调度策略主要发生作用的阶段。
 
 > kubernetes 版本: v1.16

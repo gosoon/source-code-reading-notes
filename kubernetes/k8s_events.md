@@ -5,6 +5,15 @@ tags: ["events","kubelet"]
 type: "k8s-events"
 
 ---
+* [1、Events 的定义](#1events-的定义)
+* [2、EventBroadcaster 的初始化](#2eventbroadcaster-的初始化)
+* [3、Events 的生成](#3events-的生成)
+* [4、Events 的广播](#4events-的广播)
+* [5、Events 的处理](#5events-的处理)
+* [6、Events 简单实现](#6events-简单实现)
+* [7、总结](#7总结)
+
+
 
 当集群中的 node 或 pod 异常时，大部分用户会使用 kubectl 查看对应的 events，那么 events 是从何而来的？其实 k8s 中的各个组件会将运行时产生的各种事件汇报到 apiserver，对于 k8s 中的可描述资源，使用 kubectl describe 都可以看到其相关的 events，那 k8s 中又有哪几个组件都上报 events 呢？ 
 

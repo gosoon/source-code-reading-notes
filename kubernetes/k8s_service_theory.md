@@ -5,6 +5,27 @@ tags: ["kubernetes service",]
 type: "kubernetes service"
 
 ---
+* [为什么需要 service](#为什么需要-service)
+* [service 的工作原理](#service-的工作原理)
+* [service 的负载均衡](#service-的负载均衡)
+   * [userspace 模式](#userspace-模式)
+   * [iptables 模式](#iptables-模式)
+   * [ipvs 模式](#ipvs-模式)
+* [service 的类型](#service-的类型)
+   * [ClusterIP](#clusterip)
+   * [NodePort](#nodeport)
+   * [LoadBalancer](#loadbalancer)
+   * [ExternelName](#externelname)
+   * [Ingress](#ingress)
+* [service 的服务发现](#service-的服务发现)
+   * [环境变量](#环境变量)
+   * [DNS](#dns)
+* [service 的使用](#service-的使用)
+   * [ClusterIP 方式](#clusterip-方式)
+   * [NodePort 方式](#nodeport-方式)
+   * [Headless service(就是没有 Cluster IP 的 service )](#headless-service就是没有-cluster-ip-的-service-)
+* [总结](#总结)
+
 
 
 ### 为什么需要 service

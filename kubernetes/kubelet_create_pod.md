@@ -5,6 +5,19 @@ tags: "kubelet"
 type: "kubelet"
 
 ---
+* [kubelet 创建 pod 的流程](#kubelet-创建-pod-的流程)
+   * [1、kubelet 的控制循环（syncLoop）](#1kubelet-的控制循环syncloop)
+   * [2、监听 pod 变化（syncLoopIteration）](#2监听-pod-变化syncloopiteration)
+   * [3、处理新增 pod（HandlePodAddtions）](#3处理新增-podhandlepodaddtions)
+   * [4、下发任务（dispatchWork）](#4下发任务dispatchwork)
+   * [5、更新事件的 channel（UpdatePod）](#5更新事件的-channelupdatepod)
+   * [6、调用 syncPodFn 方法同步 pod（managePodLoop）](#6调用-syncpodfn-方法同步-podmanagepodloop)
+   * [7、完成创建容器前的准备工作（SyncPod）](#7完成创建容器前的准备工作syncpod)
+   * [8、创建容器](#8创建容器)
+   * [9、启动容器](#9启动容器)
+* [总结](#总结)
+
+
 上篇文章介绍了 [kubelet 的启动流程](http://blog.tianfeiyu.com/2018/12/23/kubelet_init/)，本篇文章主要介绍 kubelet 创建 pod 的流程。
  
 > kubernetes 版本： v1.12 

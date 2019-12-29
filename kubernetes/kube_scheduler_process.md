@@ -6,6 +6,12 @@ type: "kube-scheduler"
 
 ---
 
+* [kube-scheduler 的设计](#kube-scheduler-的设计)
+* [kube-scheduler 源码分析](#kube-scheduler-源码分析)
+* [总结](#总结)
+
+
+
 ### kube-scheduler 的设计
 
 Kube-scheduler 是 kubernetes 的核心组件之一，也是所有核心组件之间功能比较单一的，其代码也相对容易理解。kube-scheduler 的目的就是为每一个 pod 选择一个合适的 node，整体流程可以概括为三步，获取未调度的 podList，通过执行一系列调度算法为 pod 选择一个合适的 node，提交数据到 apiserver，其核心则是一系列调度算法的设计与执行。

@@ -6,6 +6,16 @@ type: "node status"
 
 ---
 
+* [一、kubelet 上报哪些状态](#一kubelet-上报哪些状态)
+   * [1、Addresses](#1addresses)
+   * [2、Condition](#2condition)
+   * [3、Capacity](#3capacity)
+   * [4、Info](#4info)
+* [二、kubelet 状态异常时的影响](#二kubelet-状态异常时的影响)
+* [三、kubelet 状态上报的实现](#三kubelet-状态上报的实现)
+* [四、总结](#四总结)
+
+
 
  分布式系统中服务端会通过心跳机制确认客户端是否存活，在 k8s 中，kubelet 也会定时上报心跳到 apiserver，以此判断该 node 是否存活，若 node 超过一定时间没有上报心跳，其状态会被置为 NotReady，宿主上容器的状态也会被置为 Nodelost 或者 Unknown 状态。kubelet 自身会定期更新状态到 apiserver，通过参数 `--node-status-update-frequency` 指定上报频率，默认是 10s 上报一次，kubelet 不止上报心跳信息还会上报自身的一些数据信息。
 
@@ -319,7 +329,11 @@ func PatchNodeStatus(c v1core.CoreV1Interface, nodeName types.NodeName, oldNode 
 
 
 参考：
+
 https://www.qikqiak.com/post/kubelet-sync-node-status/
+
 https://www.jianshu.com/p/054450557818
+
 https://blog.csdn.net/shida_csdn/article/details/84286058
+
 https://kubernetes.io/docs/concepts/architecture/nodes/

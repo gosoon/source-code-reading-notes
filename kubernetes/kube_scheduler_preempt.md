@@ -6,6 +6,12 @@ type: "kube-scheduler"
 
 ---
 
+* [为什么要有优先级与抢占机制](#为什么要有优先级与抢占机制)
+* [优先级与抢占机制源码分析](#优先级与抢占机制源码分析)
+* [优先级与抢占机制的使用](#优先级与抢占机制的使用)
+* [总结](#总结)
+
+
 前面已经分析了 kube-scheduler 的代码逻辑以及 predicates 与 priorities 算法，本节会继续讲 scheduler 中的一个重要机制，pod 优先级与抢占机制(Pod Priority and Preemption)，该功能是在 v1.8 中引入的，v1.11 中该功能为 beta 版本且默认启用了，v1.14 为 stable 版本。
 
 - [kube-scheduler 源码分析](http://blog.tianfeiyu.com/2019/10/21/kube_scheduler_process/)

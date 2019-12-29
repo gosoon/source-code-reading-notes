@@ -6,6 +6,20 @@ type: "replicaset controller"
 
 ---
 
+* [ReplicaSetController 源码分析](#replicasetcontroller-源码分析)
+   * [启动流程](#启动流程)
+   * [EventHandler](#eventhandler)
+      * [addPod](#addpod)
+      * [updatePod](#updatepod)
+      * [deletePod](#deletepod)
+      * [AddRS 和 DeleteRS](#addrs-和-deleters)
+   * [syncReplicaSet](#syncreplicaset)
+      * [SatisfiedExpectations](#satisfiedexpectations)
+      * [manageReplicas](#managereplicas)
+      * [calculateStatus](#calculatestatus)
+   * [expectations 机制](#expectations-机制)
+* [总结](#总结)
+
 
 在前面的文章中已经介绍了 deployment controller 的设计与实现，deployment 控制的是 replicaset，而 replicaset 控制 pod 的创建与删除，deployment 通过控制 replicaset 实现了滚动更新、回滚等操作。而 replicaset 会直接控制 pod 的创建与删除，本文会继续从源码层面分析 replicaset 的设计与实现。
 

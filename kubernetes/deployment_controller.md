@@ -6,6 +6,26 @@ type: "deployment controller"
 
 ---
 
+* [deployment 的功能](#deployment-的功能)
+   * [deployment、replicaSet 和 pod 之间的关系](#deploymentreplicaset-和-pod-之间的关系)
+   * [deployment 的基本功能](#deployment-的基本功能)
+      * [创建](#创建)
+      * [滚动更新](#滚动更新)
+      * [回滚](#回滚)
+      * [扩缩容](#扩缩容)
+      * [暂停与恢复](#暂停与恢复)
+      * [删除](#删除)
+* [deployment controller 源码分析](#deployment-controller-源码分析)
+   * [deployment controller 启动流程](#deployment-controller-启动流程)
+   * [删除](#删除-1)
+   * [暂停和恢复](#暂停和恢复)
+   * [回滚](#回滚-1)
+   * [扩缩容](#扩缩容-1)
+   * [滚动更新](#滚动更新-1)
+      * [滚动更新示例](#滚动更新示例)
+   * [重新创建](#重新创建)
+* [总结](#总结)
+
 
 
 在前面的文章中已经分析过 kubernetes 中多个组件的源码了，本章会继续解读 kube-controller-manager 源码，kube-controller-manager  中有数十个 controller，本文会分析最常用到的 deployment controller。

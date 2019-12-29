@@ -6,7 +6,24 @@ type: "daemonset controller"
 
 ---
 
-![](http://cdn.tianfeiyu.com/daemonset_controlller.png)
+* [DaemonSet 的基本操作](#daemonset-的基本操作)
+   * [创建](#创建)
+   * [扩缩容](#扩缩容)
+   * [更新](#更新)
+   * [回滚](#回滚)
+   * [暂停](#暂停)
+   * [删除](#删除)
+* [DaemonSetController 源码分析](#daemonsetcontroller-源码分析)
+   * [syncDaemonSet](#syncdaemonset)
+   * [manage](#manage)
+      * [getNodesToDaemonPods](#getnodestodaemonpods)
+      * [podsShouldBeOnNode](#podsshouldbeonnode)
+      * [syncNodes](#syncnodes)
+   * [RollingUpdate](#rollingupdate)
+   * [updateDaemonSetStatus](#updatedaemonsetstatus)
+* [总结](#总结)
+
+
 
 在前面的文章中已经分析过 deployment、statefulset 两个重要对象了，本文会继续分析 kubernetes 中另一个重要的对象 daemonset，在 kubernetes 中 daemonset 类似于 linux 上的守护进程会运行在每一个 node 上，在实际场景中，一般会将日志采集或者网络插件采用 daemonset 的方式部署。
 

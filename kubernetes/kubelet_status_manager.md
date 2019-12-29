@@ -5,6 +5,22 @@ tags: ["kubelet","statusManager"]
 type: "statusManager"
 
 ---
+* [statusManager 源码分析](#statusmanager-源码分析)
+   * [statusManager 的初始化](#statusmanager-的初始化)
+   * [syncPod](#syncpod)
+      * [needsUpdate](#needsupdate)
+         * [PodResourcesAreReclaimed](#podresourcesarereclaimed)
+   * [syncBatch](#syncbatch)
+      * [needsReconcile](#needsreconcile)
+   * [SetPodStatus](#setpodstatus)
+      * [updateStatusInternal](#updatestatusinternal)
+   * [SetContainerReadiness](#setcontainerreadiness)
+   * [SetContainerStartup](#setcontainerstartup)
+   * [TerminatePod](#terminatepod)
+   * [RemoveOrphanedStatuses](#removeorphanedstatuses)
+* [总结](#总结)
+
+
 
 本篇文章没有接上篇继续更新 kube-controller-manager，kube-controller-manager 的源码阅读笔记也会继续更新，笔者会同时阅读多个组件的源码，阅读笔记也会按组件进行交叉更新，交叉更新的目的一是为了加深印象避免阅读完后又很快忘记，二是某些代码的功能难以理解，避免死磕，但整体目标是将每个组件的核心代码阅读完。
 
