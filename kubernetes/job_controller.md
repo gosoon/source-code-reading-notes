@@ -18,8 +18,6 @@ type: "job controller"
       * [jm.manageJob](#jmmanagejob)
 * [总结](#总结)
 
-
-
 job 在 kubernetes 中主要用来处理离线任务，job 直接管理 pod，可以创建一个或多个 pod 并会确保指定数量的 pod 运行完成。kubernetes 中有两种类型的 job，分别为 cronjob 和 batchjob，cronjob 类似于定时任务是定时触发的而 batchjob 创建后会直接运行，本文主要介绍 batchjob，下面简称为 job。
 
 
@@ -37,7 +35,7 @@ metadata:
 spec:
   backoffLimit: 6                // 标记为 failed 前的重试次数，默认为 6
   completions: 4                 // 要完成job 的 pod 数，若没有设定该值则默认等于 parallelism 的值
-  parallelism: 2                 // 任意时间最多可以启动多少个 pod 同时运行，默认为 1 
+  parallelism: 2                 // 任意时间最多可以启动多少个 pod 同时运行，默认为 1
   activeDeadlineSeconds: 120     // job 运行时间
   ttlSecondsAfterFinished: 60    // job 在运行完成后 60 秒就会自动删除掉
   template:
@@ -58,14 +56,14 @@ spec:
 
 job 不支持运行时扩缩容，job 在创建后其 `spec.completions` 字段也不支持修改。
 
- 
+
 
 #### 删除
 
 通常系统中已执行完成的 job 不再需要，将它们保留在系统中会占用一定的资源，需要进行回收，pod 在执行完任务后会进入到 `Completed` 状态，删除 job 也会清除其创建的 pod。
 
 ```
-$ kubectl get pod 
+$ kubectl get pod
 pi-gdrwr                            0/1     Completed   0          10m
 pi-rjphf                            0/1     Completed   0          10m
 
@@ -84,7 +82,7 @@ $ kubectl delete job pi
 
 在上节介绍了 job 的基本操作后，本节会继续深入源码了解其背后的设计与实现。
 
-#### startJobController 
+#### startJobController
 
 首先还是直接看 jobController 的启动方法 `startJobController`，该方法中调用 `NewJobController` 初始化 jobController 然后调用 `Run` 方法启动 jobController。从初始化流程中可以看到 JobController 监听 pod 和 job 两种资源，其中 `ConcurrentJobSyncs` 默认值为 5。
 
@@ -134,7 +132,7 @@ func (jm *JobController) Run(workers int, stopCh <-chan struct{}) {
 
 
 
-#### syncJob 
+#### syncJob
 
 `syncJob` 是 jobController 的核心方法，其主要逻辑为：
 - 1、从 lister 中获取 job 对象；
@@ -161,7 +159,7 @@ func (jm *JobController) Run(workers int, stopCh <-chan struct{}) {
 - 6、分别计算 `active`、`succeeded`、`failed` 状态的 pod 数；
 - 7、判断 job 是否为首次启动，若首次启动其 `job.Status.StartTime` 为空，此时首先设置 startTime，然后检查是否有 `job.Spec.ActiveDeadlineSeconds` 是否为空，若不为空则将其再加入到延迟队列中，等待 `ActiveDeadlineSeconds` 时间后会再次触发 sync 操作；
 - 8、判断 job 的重试次数是否超过了 `job.Spec.BackoffLimit`(默认是6次)，有两个判断方法一是 job 的重试次数以及 job 的状态，二是当 job 的 `restartPolicy` 为 `OnFailure` 时 container 的重启次数，两者任一个符合都说明 job 处于 failed 状态且原因为 `BackoffLimitExceeded`；
-- 9、判断 job 的运行时间是否达到 `job.Spec.ActiveDeadlineSeconds` 中设定的值，若以达到则说明 job 此时处于 failed 状态且原因为 `DeadlineExceeded`；
+- 9、判断 job 的运行时间是否达到 `job.Spec.ActiveDeadlineSeconds` 中设定的值，若已达到则说明 job 此时处于 failed 状态且原因为 `DeadlineExceeded`；
 - 10、根据以上判断如果 job 处于 failed 状态，则调用 `jm.deleteJobPods` 并发删除所有 active pods ；
 - 11、若非 failed 状态，根据 ` jobNeedsSync` 判断是否要进行同步，若需要同步则调用 `jm.manageJob` 进行同步；
 - 12、通过检查 `job.Spec.Completions` 判断 job 是否已经运行完成，若 `job.Spec.Completions` 字段没有设置值则只要有一个 pod 运行完成该 job 就为 `Completed` 状态，若设置了 `job.Spec.Completions` 会通过判断已经运行完成状态的 pod 即 `succeeded` pod 数是否大于等于该值；
@@ -191,7 +189,7 @@ func (jm *JobController) syncJob(key string) (bool, error) {
     if len(ns) == 0 || len(name) == 0 {
         return false, fmt.Errorf("invalid job key %q: either namespace or name is missing", key)
     }
-    
+
     // 2、从 lister 中获取 job 对象
     sharedJob, err := jm.jobLister.Jobs(ns).Get(name)
     if err != nil {
@@ -208,7 +206,7 @@ func (jm *JobController) syncJob(key string) (bool, error) {
     if IsJobFinished(&job) {
         return true, nil
     }
-    
+
     // 4、获取 job 重试的次数
     previousRetry := jm.queue.NumRequeues(key)
 
@@ -220,13 +218,13 @@ func (jm *JobController) syncJob(key string) (bool, error) {
     if err != nil {
         return false, err
     }
-    
+
     // 7、分别计算 active、succeeded、failed 状态的 pod 数
     activePods := controller.FilterActivePods(pods)
     active := int32(len(activePods))
     succeeded, failed := getStatus(pods)
     conditions := len(job.Status.Conditions)
-    
+
     // 8、判断 job 是否为首次启动
     if job.Status.StartTime == nil {
         now := metav1.Now()
@@ -238,7 +236,7 @@ func (jm *JobController) syncJob(key string) (bool, error) {
             jm.queue.AddAfter(key, time.Duration(*job.Spec.ActiveDeadlineSeconds)*time.Second)
         }
     }
-    
+
     var manageJobErr error
     jobFailed := false
     var failureReason string
@@ -258,7 +256,7 @@ func (jm *JobController) syncJob(key string) (bool, error) {
         failureReason = "DeadlineExceeded"
         failureMessage = "Job was active longer than specified deadline"
     }
-    
+
     // 11、如果处于 failed 状态，则调用 jm.deleteJobPods 并发删除所有 active pods
     if jobFailed {
         errCh := make(chan error, active)
@@ -276,12 +274,12 @@ func (jm *JobController) syncJob(key string) (bool, error) {
         job.Status.Conditions = append(job.Status.Conditions, newCondition(batch.JobFailed, failureReason, failureMessage))
         jm.recorder.Event(&job, v1.EventTypeWarning, failureReason, failureMessage)
     } else {
-    
+
         // 12、若非 failed 状态，根据 jobNeedsSync 判断是否要进行同步
         if jobNeedsSync && job.DeletionTimestamp == nil {
             active, manageJobErr = jm.manageJob(activePods, succeeded, &job)
         }
-        
+
         // 13、检查 job.Spec.Completions 判断 job 是否已经运行完成
         completions := succeeded
         complete := false
@@ -300,7 +298,7 @@ func (jm *JobController) syncJob(key string) (bool, error) {
                 }
             }
         }
-        
+
         // 14、若 job 运行完成了，则更新 job.Status.Conditions 和 job.Status.CompletionTime 字段
         if complete {
             job.Status.Conditions = append(job.Status.Conditions, newCondition(batch.JobComplete, "", ""))
@@ -313,7 +311,7 @@ func (jm *JobController) syncJob(key string) (bool, error) {
     if job.Status.Succeeded < succeeded {
         forget = true
     }
-    
+
     // 15、如果 job 的 status 有变化，将 job 的 status 更新到 apiserver
     if job.Status.Active != active || job.Status.Succeeded != succeeded || job.Status.Failed != failed || len(job.Status.Conditions) != conditions {
         job.Status.Active = active
@@ -343,7 +341,7 @@ func (jm *JobController) syncJob(key string) (bool, error) {
 
 - 1、首先获取 job 的 active pods 数与可运行的 pod 数即 `job.Spec.Parallelism`；
 - 2、判断如果处于 active 状态的 pods 数大于 job 设置的并发数 `job.Spec.Parallelism`，则并发删除多余的 active pods，需要删除的 active pods 是有一定的优先级的，删除的优先级为：
-  - 1、判断是够绑定了 node：Unassigned < assigned；
+  - 1、判断是否绑定了 node：Unassigned < assigned；
   - 2、判断 pod phase：PodPending < PodUnknown < PodRunning；
   - 3、判断 pod 状态：Not ready < ready；
   - 4、若 pod 都为 ready，则按运行时间排序，运行时间最短会被删除：empty time < less time < more time；
@@ -375,8 +373,8 @@ func (jm *JobController) manageJob(activePods []*v1.Pod, succeeded int32, job *b
         errCh = make(chan error, diff)
         jm.expectations.ExpectDeletions(jobKey, int(diff))
         klog.V(4).Infof("Too many pods running job %q, need %d, deleting %d", jobKey, parallelism, diff)
-        
-        // 3、对 activePods 按以上 6 中策略进行排序
+
+        // 3、对 activePods 按以上 6 种策略进行排序
         sort.Sort(controller.ActivePods(activePods))
 
         // 4、并发删除多余的 active pods
@@ -399,7 +397,7 @@ func (jm *JobController) manageJob(activePods []*v1.Pod, succeeded int32, job *b
             }(i)
         }
         wait.Wait()
-        
+
     // 5、若处于 active 状态的 pods 数小于 job 设置的并发数，则需要创建出新的 pod
     } else if active < parallelism {
     		// 6、首先计算出 diff 数
@@ -488,6 +486,3 @@ func (jm *JobController) manageJob(activePods []*v1.Pod, succeeded int32, job *b
 ### 总结
 
 以上就是 jobController 源码中主要的逻辑，从上文分析可以看到 jobController 的代码比较清晰，若看过前面写的几个 controller 分析会发现每个 controller 在功能实现上有很多类似的地方。
-
-
-

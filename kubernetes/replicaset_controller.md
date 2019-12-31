@@ -603,7 +603,7 @@ func slowStartBatch(count int, initialBatchSize int, fn func() error) (int, erro
 
 
 若 diff > 0 时再删除 pod 阶段会调用`getPodsToDelete` 对 pod 进行筛选操作，此阶段会选出最劣质的 pod，下面是用到的 6 种筛选方法：
-- 1、判断是够绑定了 node：Unassigned < assigned；
+- 1、判断是否绑定了 node：Unassigned < assigned；
 - 2、判断 pod phase：PodPending < PodUnknown < PodRunning；
 - 3、判断 pod 状态：Not ready < ready；
 - 4、若 pod 都为 ready，则按运行时间排序，运行时间最短会被删除：empty time < less time < more time；
