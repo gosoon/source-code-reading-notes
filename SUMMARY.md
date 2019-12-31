@@ -3,6 +3,7 @@
 * [Introduction](README.md)
 
 * [kubernetes](kubernetes/README.md)
+    * [job controller 源码分析](kubernetes/job_controller.md)
     * [garbage collector controller 源码分析](kubernetes/garbagecollector_controller.md)
     * [daemonset controller 源码分析](kubernetes/daemonset_controller.md)
     * [statefulset controller 源码分析](kubernetes/statefulset_controller.md)

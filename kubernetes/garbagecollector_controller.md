@@ -30,7 +30,7 @@
 
 kubernetes 中有三种删除策略：`Orphan`、`Foreground` 和 `Background`，三种删除策略的意义分别为：
 
-- `Orphan` 策略：非级联删除，删除对象时，不会自动删除它的依赖或者是子对象，这些依赖被称作是原对象的孤儿对象，例如当执行以下命令时会使用 `Orphan` 策略进行删除，此时 ds 的依赖对象 `ontrollerrevision` 不会被删除；
+- `Orphan` 策略：非级联删除，删除对象时，不会自动删除它的依赖或者是子对象，这些依赖被称作是原对象的孤儿对象，例如当执行以下命令时会使用 `Orphan` 策略进行删除，此时 ds 的依赖对象 `controllerrevision` 不会被删除；
 
 ```
 $ kubectl delete ds/nginx-ds --cascade=false
