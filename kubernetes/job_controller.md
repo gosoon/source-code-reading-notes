@@ -80,6 +80,8 @@ $ kubectl delete job pi
 
 ### job controller 源码分析
 
+> kubernetes 版本：v1.16
+
 在上节介绍了 job 的基本操作后，本节会继续深入源码了解其背后的设计与实现。
 
 #### startJobController

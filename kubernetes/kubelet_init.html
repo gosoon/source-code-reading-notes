@@ -572,313 +572,573 @@
                                 <section class="normal markdown-section">
                                 
                                 <ul>
-<li><a href="#kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;">kubelet &#x542F;&#x52A8;&#x6D41;&#x7A0B;</a><ul>
-<li><a href="#1kubelet-&#x5165;&#x53E3;&#x51FD;&#x6570;-maincmdkubeletkubeletgo">1&#x3001;kubelet &#x5165;&#x53E3;&#x51FD;&#x6570; main&#xFF08;cmd/kubelet/kubelet.go&#xFF09;</a></li>
-<li><a href="#2&#x521D;&#x59CB;&#x5316;-kubelet-&#x914D;&#x7F6E;cmdkubeletappservergo">2&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x914D;&#x7F6E;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</a></li>
-<li><a href="#3&#x521B;&#x5EFA;&#x548C;-apiserver-&#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;cmdkubeletappservergo">3&#x3001;&#x521B;&#x5EFA;&#x548C; apiserver &#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</a></li>
-<li><a href="#4&#x521D;&#x59CB;&#x5316;-kubelet-&#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;cmdkubeletappservergo">4&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</a></li>
-<li><a href="#5&#x542F;&#x52A8;-kubelet-&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;cmdkubeletappservergo">5&#x3001;&#x542F;&#x52A8; kubelet &#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</a></li>
+<li><a href="#kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;">Kubelet &#x542F;&#x52A8;&#x6D41;&#x7A0B;</a><ul>
+<li><a href="#newkubeletcommand">NewKubeletCommand</a></li>
+<li><a href="#run">Run</a></li>
+<li><a href="#run-1">run</a></li>
+<li><a href="#runkubelet">RunKubelet</a></li>
+<li><a href="#createandinitkubelet">createAndInitKubelet</a><ul>
+<li><a href="#kubeletnewmainkubelet">kubelet.NewMainKubelet</a></li>
+</ul>
+</li>
+<li><a href="#startkubelet">startKubelet</a></li>
+</ul>
+</li>
+<li><a href="#run-2">Run</a><ul>
+<li><a href="#initializemodules">initializeModules</a></li>
+<li><a href="#faststatusupdateonce">fastStatusUpdateOnce</a><ul>
+<li><a href="#updateruntimeup">updateRuntimeUp</a><ul>
+<li><a href="#initializeruntimedependentmodules">initializeRuntimeDependentModules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#&#x5C0F;&#x7ED3;">&#x5C0F;&#x7ED3;</a></li>
+<li><a href="#syncloop">syncLoop</a><ul>
+<li><a href="#syncloopiteration">syncLoopIteration</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#&#x603B;&#x7ED3;">&#x603B;&#x7ED3;</a></li>
 </ul>
-<p>&#x4E0A;&#x7BC7;&#x6587;&#x7AE0;&#xFF08;<a href="https://blog.tianfeiyu.com/2018/12/16/kubelet-modules/" target="_blank">kubelet &#x67B6;&#x6784;&#x6D45;&#x6790;</a> &#xFF09;&#x5DF2;&#x7ECF;&#x4ECB;&#x7ECD;&#x8FC7; kubelet &#x5728;&#x6574;&#x4E2A;&#x96C6;&#x7FA4;&#x67B6;&#x6784;&#x4E2D;&#x7684;&#x529F;&#x80FD;&#x4EE5;&#x53CA;&#x81EA;&#x8EAB;&#x5404;&#x6A21;&#x5757;&#x7684;&#x7528;&#x9014;&#xFF0C;&#x672C;&#x7BC7;&#x6587;&#x7AE0;&#x4E3B;&#x8981;&#x4ECB;&#x7ECD; kubelet &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x3002;</p>
+<p>&#x672C;&#x6765;&#x8FD9;&#x7BC7;&#x6587;&#x7AE0;&#x4F1A;&#x7EE7;&#x7EED;&#x8BB2;&#x8FF0; kubelet &#x4E2D;&#x7684;&#x4E3B;&#x8981;&#x6A21;&#x5757;&#xFF0C;&#x4F46;&#x7531;&#x4E8E;&#x7F51;&#x53CB;&#x53CD;&#x9988;&#x80FD;&#x4E0D;&#x80FD;&#x5148;&#x4ECE; kubelet &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5F00;&#x59CB;&#xFF0C;kubelet &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5728;&#x5F88;&#x4E45;&#x4E4B;&#x524D;&#x57FA;&#x4E8E; v1.12 &#x5199;&#x8FC7;&#x4E00;&#x7BC7;&#x6587;&#x7AE0;&#xFF0C;&#x5BF9;&#x6BD4;&#x4E86; v1.16 &#x4E2D;&#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x53D8;&#x5316;&#x4E0D;&#x5927;&#xFF0C;&#x4F46;&#x4E4B;&#x524D;&#x7684;&#x6587;&#x7AE0;&#x5199;&#x7684;&#x6BD4;&#x8F83;&#x7B80;&#x6D01;&#xFF0C;&#x672C;&#x6587;&#x4F1A;&#x91CD;&#x65B0;&#x5206;&#x6790; kubelet &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x3002;</p>
+<h3 id="kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><a name="kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;" class="anchor-navigation-ex-anchor" href="#kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><i class="fa fa-link" aria-hidden="true"></i></a>Kubelet &#x542F;&#x52A8;&#x6D41;&#x7A0B;</h3>
 <blockquote>
-<p>kubernetes &#x7248;&#x672C;&#xFF1A; v1.12 </p>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
 </blockquote>
-<h2 id="kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><a name="kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;" class="anchor-navigation-ex-anchor" href="#kubelet-&#x542F;&#x52A8;&#x6D41;&#x7A0B;"><i class="fa fa-link" aria-hidden="true"></i></a>kubelet &#x542F;&#x52A8;&#x6D41;&#x7A0B;</h2>
-<p>kubelet &#x4EE3;&#x7801;&#x7ED3;&#x6784;:</p>
-<pre class="language-"><code>&#x279C;  kubernetes git:(release-1.12) &#x2717; tree cmd/kubelet
-cmd/kubelet
-&#x251C;&#x2500;&#x2500; BUILD
-&#x251C;&#x2500;&#x2500; OWNERS
-&#x251C;&#x2500;&#x2500; app
-&#x2502;   &#x251C;&#x2500;&#x2500; BUILD
-&#x2502;   &#x251C;&#x2500;&#x2500; OWNERS
-&#x2502;   &#x251C;&#x2500;&#x2500; auth.go
-&#x2502;   &#x251C;&#x2500;&#x2500; init_others.go
-&#x2502;   &#x251C;&#x2500;&#x2500; init_windows.go
-&#x2502;   &#x251C;&#x2500;&#x2500; options
-&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; BUILD
-&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; container_runtime.go
-&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; globalflags.go
-&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; globalflags_linux.go
-&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; globalflags_other.go
-&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; options.go
-&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; options_test.go
-&#x2502;   &#x2502;   &#x251C;&#x2500;&#x2500; osflags_others.go
-&#x2502;   &#x2502;   &#x2514;&#x2500;&#x2500; osflags_windows.go
-&#x2502;   &#x251C;&#x2500;&#x2500; plugins.go
-&#x2502;   &#x251C;&#x2500;&#x2500; server.go
-&#x2502;   &#x251C;&#x2500;&#x2500; server_linux.go
-&#x2502;   &#x251C;&#x2500;&#x2500; server_test.go
-&#x2502;   &#x2514;&#x2500;&#x2500; server_unsupported.go
-&#x2514;&#x2500;&#x2500; kubelet.go
-
-2 directories, 22 files
-</code></pre><p><img src="http://cdn.tianfeiyu.com/kubelet-3.png" alt="kubelet &#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x65F6;&#x5E8F;&#x56FE;"></p>
-<h4 id="1&#x3001;kubelet-&#x5165;&#x53E3;&#x51FD;&#x6570;-main&#xFF08;cmdkubeletkubeletgo&#xFF09;"><a name="1&#x3001;kubelet-&#x5165;&#x53E3;&#x51FD;&#x6570;-main&#xFF08;cmdkubeletkubeletgo&#xFF09;" class="anchor-navigation-ex-anchor" href="#1&#x3001;kubelet-&#x5165;&#x53E3;&#x51FD;&#x6570;-main&#xFF08;cmdkubeletkubeletgo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>1&#x3001;kubelet &#x5165;&#x53E3;&#x51FD;&#x6570; main&#xFF08;cmd/kubelet/kubelet.go&#xFF09;</h4>
-<pre class="language-"><code>func main() {
-    rand.Seed(time.Now().UTC().UnixNano())
-
-    command := app.NewKubeletCommand(server.SetupSignalHandler())
-    logs.InitLogs()
-    defer logs.FlushLogs()
-
-    if err := command.Execute(); err != nil {
-        fmt.Fprintf(os.Stderr, &quot;%v\n&quot;, err)
-        os.Exit(1)
-    }
-}
-</code></pre><h4 id="2&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x914D;&#x7F6E;&#xFF08;cmdkubeletappservergo&#xFF09;"><a name="2&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x914D;&#x7F6E;&#xFF08;cmdkubeletappservergo&#xFF09;" class="anchor-navigation-ex-anchor" href="#2&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x914D;&#x7F6E;&#xFF08;cmdkubeletappservergo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>2&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x914D;&#x7F6E;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</h4>
-<p>NewKubeletCommand() &#x51FD;&#x6570;&#x4E3B;&#x8981;&#x8D1F;&#x8D23;&#x83B7;&#x53D6;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x4E2D;&#x7684;&#x53C2;&#x6570;&#xFF0C;&#x6821;&#x9A8C;&#x53C2;&#x6570;&#x4EE5;&#x53CA;&#x4E3A;&#x53C2;&#x6570;&#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;&#x3002;  </p>
-<pre class="language-"><code>// NewKubeletCommand creates a *cobra.Command object with default parameters
-func NewKubeletCommand(stopCh &lt;-chan struct{}) *cobra.Command {
+<p>kubelet &#x7684;&#x542F;&#x52A8;&#x6BD4;&#x8F83;&#x590D;&#x6742;&#xFF0C;&#x9996;&#x5148;&#x8FD8;&#x662F;&#x628A; kubelet &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x56FE;&#x653E;&#x5728;&#x6B64;&#x5904;&#xFF0C;&#x4FBF;&#x4E8E;&#x5728;&#x540E;&#x6587;&#x4E2D;&#x6E05;&#x695A;&#x5404;&#x79CD;&#x8C03;&#x7528;&#x7684;&#x6D41;&#x7A0B;&#xFF1A;</p>
+<p><img src="http://cdn.tianfeiyu.com/kubelet-3.png" alt=""></p>
+<h4 id="newkubeletcommand"><a name="newkubeletcommand" class="anchor-navigation-ex-anchor" href="#newkubeletcommand"><i class="fa fa-link" aria-hidden="true"></i></a>NewKubeletCommand</h4>
+<p>&#x9996;&#x5148;&#x4ECE; kubelet &#x7684; <code>main</code> &#x51FD;&#x6570;&#x5F00;&#x59CB;&#xFF0C;&#x5176;&#x4E2D;&#x8C03;&#x7528;&#x7684; <code>NewKubeletCommand</code> &#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x8D1F;&#x8D23;&#x83B7;&#x53D6;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x4E2D;&#x7684;&#x53C2;&#x6570;&#xFF0C;&#x6821;&#x9A8C;&#x53C2;&#x6570;&#x4EE5;&#x53CA;&#x4E3A;&#x53C2;&#x6570;&#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;&#x3002;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x89E3;&#x6790;&#x547D;&#x4EE4;&#x884C;&#x53C2;&#x6570;&#xFF1B;</li>
+<li>2&#x3001;&#x4E3A; kubelet &#x521D;&#x59CB;&#x5316; feature gates &#x53C2;&#x6570;&#xFF1B;</li>
+<li>3&#x3001;&#x52A0;&#x8F7D; kubelet &#x914D;&#x7F6E;&#x6587;&#x4EF6;&#xFF1B;</li>
+<li>4&#x3001;&#x6821;&#x9A8C;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x4E2D;&#x7684;&#x53C2;&#x6570;&#xFF1B;</li>
+<li>5&#x3001;&#x68C0;&#x67E5; kubelet &#x662F;&#x5426;&#x542F;&#x7528;&#x52A8;&#x6001;&#x914D;&#x7F6E;&#x529F;&#x80FD;&#xFF1B;</li>
+<li>6&#x3001;&#x521D;&#x59CB;&#x5316; kubeletDeps&#xFF0C;kubeletDeps &#x5305;&#x542B; kubelet &#x8FD0;&#x884C;&#x6240;&#x5FC5;&#x987B;&#x7684;&#x914D;&#x7F6E;&#xFF0C;&#x662F;&#x4E3A;&#x4E86;&#x5B9E;&#x73B0; dependency injection&#xFF0C;&#x5176;&#x76EE;&#x7684;&#x662F;&#x4E3A;&#x4E86;&#x628A; kubelet &#x4F9D;&#x8D56;&#x7684;&#x7EC4;&#x4EF6;&#x5BF9;&#x8C61;&#x4F5C;&#x4E3A;&#x53C2;&#x6570;&#x4F20;&#x8FDB;&#x6765;&#xFF0C;&#x8FD9;&#x6837;&#x53EF;&#x4EE5;&#x63A7;&#x5236; kubelet &#x7684;&#x884C;&#x4E3A;&#xFF1B;</li>
+<li>7&#x3001;&#x8C03;&#x7528; <code>Run</code> &#x65B9;&#x6CD5;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kubelet/app/server.go:111</code></p>
+<pre class="language-"><code>func NewKubeletCommand() *cobra.Command {
     cleanFlagSet := pflag.NewFlagSet(componentKubelet, pflag.ContinueOnError)
-    cleanFlagSet.SetNormalizeFunc(flag.WordSepNormalizeFunc)
-    // Kubelet&#x914D;&#x7F6E;&#x5206;&#x4E24;&#x90E8;&#x5206;:
+    cleanFlagSet.SetNormalizeFunc(cliflag.WordSepNormalizeFunc)
+
+    // 1&#x3001;kubelet&#x914D;&#x7F6E;&#x5206;&#x4E24;&#x90E8;&#x5206;:
     // KubeletFlag: &#x6307;&#x90A3;&#x4E9B;&#x4E0D;&#x5141;&#x8BB8;&#x5728; kubelet &#x8FD0;&#x884C;&#x65F6;&#x8FDB;&#x884C;&#x4FEE;&#x6539;&#x7684;&#x914D;&#x7F6E;&#x96C6;&#xFF0C;&#x6216;&#x8005;&#x4E0D;&#x80FD;&#x5728;&#x96C6;&#x7FA4;&#x4E2D;&#x5404;&#x4E2A; Nodes &#x4E4B;&#x95F4;&#x5171;&#x4EAB;&#x7684;&#x914D;&#x7F6E;&#x96C6;&#x3002;
     // KubeletConfiguration: &#x6307;&#x53EF;&#x4EE5;&#x5728;&#x96C6;&#x7FA4;&#x4E2D;&#x5404;&#x4E2A;Nodes&#x4E4B;&#x95F4;&#x5171;&#x4EAB;&#x7684;&#x914D;&#x7F6E;&#x96C6;&#xFF0C;&#x53EF;&#x4EE5;&#x8FDB;&#x884C;&#x52A8;&#x6001;&#x914D;&#x7F6E;&#x3002;
     kubeletFlags := options.NewKubeletFlags()
     kubeletConfig, err := options.NewKubeletConfiguration()
-    ...
+    if err != nil {
+        klog.Fatal(err)
+    }
+
     cmd := &amp;cobra.Command{
-        ...
+        Use: componentKubelet,
+        DisableFlagParsing: true,
+        ......
         Run: func(cmd *cobra.Command, args []string) {
-            // &#x8BFB;&#x53D6; kubelet &#x914D;&#x7F6E;&#x6587;&#x4EF6;
+            // 2&#x3001;&#x89E3;&#x6790;&#x547D;&#x4EE4;&#x884C;&#x53C2;&#x6570;
+            if err := cleanFlagSet.Parse(args); err != nil {
+                cmd.Usage()
+                klog.Fatal(err)
+            }
+            ......
+
+            verflag.PrintAndExitIfRequested()
+            utilflag.PrintFlags(cleanFlagSet)
+
+            // 3&#x3001;&#x521D;&#x59CB;&#x5316; feature gates &#x914D;&#x7F6E;
+            if err := utilfeature.DefaultMutableFeatureGate.SetFromMap(kubeletConfig.FeatureGates); err != nil {
+                klog.Fatal(err)
+            }
+
+            if err := options.ValidateKubeletFlags(kubeletFlags); err != nil {
+                klog.Fatal(err)
+            }
+
+            if kubeletFlags.ContainerRuntime == &quot;remote&quot; &amp;&amp; cleanFlagSet.Changed(&quot;pod-infra-container-image&quot;) {
+                klog.Warning(&quot;Warning: For remote container runtime, --pod-infra-container-image is ignored in kubelet, which should be set in that      remote runtime instead&quot;)
+            }
+
+            // 4&#x3001;&#x52A0;&#x8F7D; kubelet &#x914D;&#x7F6E;&#x6587;&#x4EF6;
             if configFile := kubeletFlags.KubeletConfigFile; len(configFile) &gt; 0 {
                 kubeletConfig, err = loadConfigFile(configFile)
-                if err != nil {
-                    glog.Fatal(err)
-                }
-                ...
+                ......
             }
-            // &#x6821;&#x9A8C; kubelet &#x53C2;&#x6570;
+            // 5&#x3001;&#x6821;&#x9A8C;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x4E2D;&#x7684;&#x53C2;&#x6570;
             if err := kubeletconfigvalidation.ValidateKubeletConfiguration(kubeletConfig); err != nil {
-                glog.Fatal(err)
+                klog.Fatal(err)
             }
-            ...
-            // &#x6B64;&#x5904;&#x521D;&#x59CB;&#x5316;&#x4E86; kubeletDeps
+
+            // 6&#x3001;&#x68C0;&#x67E5; kubelet &#x662F;&#x5426;&#x542F;&#x7528;&#x52A8;&#x6001;&#x914D;&#x7F6E;&#x529F;&#x80FD;
+            var kubeletConfigController *dynamickubeletconfig.Controller
+            if dynamicConfigDir := kubeletFlags.DynamicConfigDir.Value(); len(dynamicConfigDir) &gt; 0 {
+                var dynamicKubeletConfig *kubeletconfiginternal.KubeletConfiguration
+                dynamicKubeletConfig, kubeletConfigController, err = BootstrapKubeletConfigController(dynamicConfigDir,
+                    func(kc *kubeletconfiginternal.KubeletConfiguration) error {
+                        return kubeletConfigFlagPrecedence(kc, args)
+                    })
+                if err != nil {
+                    klog.Fatal(err)
+                }
+                if dynamicKubeletConfig != nil {
+                    kubeletConfig = dynamicKubeletConfig
+                    if err := utilfeature.DefaultMutableFeatureGate.SetFromMap(kubeletConfig.FeatureGates); err != nil {
+                        klog.Fatal(err)
+                    }
+                }
+            }
+            kubeletServer := &amp;options.KubeletServer{
+                KubeletFlags:         *kubeletFlags,
+                KubeletConfiguration: *kubeletConfig,
+            }
+            // 7&#x3001;&#x521D;&#x59CB;&#x5316; kubeletDeps
             kubeletDeps, err := UnsecuredDependencies(kubeletServer)
             if err != nil {
-                glog.Fatal(err)
+                klog.Fatal(err)
             }
-            ...
-            // &#x542F;&#x52A8;&#x7A0B;&#x5E8F;
+
+            kubeletDeps.KubeletConfigController = kubeletConfigController
+            stopCh := genericapiserver.SetupSignalHandler()
+            if kubeletServer.KubeletFlags.ExperimentalDockershim {
+                if err := RunDockershim(&amp;kubeletServer.KubeletFlags, kubeletConfig, stopCh); err != nil {
+                    klog.Fatal(err)
+                }
+                return
+            }
+
+            // 8&#x3001;&#x8C03;&#x7528; Run &#x65B9;&#x6CD5;
             if err := Run(kubeletServer, kubeletDeps, stopCh); err != nil {
-                glog.Fatal(err)
+                klog.Fatal(err)
             }
         },
     }
-    ...
+    kubeletFlags.AddFlags(cleanFlagSet)
+    options.AddKubeletConfigFlags(cleanFlagSet, kubeletConfig)
+    options.AddGlobalFlags(cleanFlagSet)
+    ......
+
     return cmd
 }
-</code></pre><p>kubeletDeps &#x5305;&#x542B; kubelet &#x8FD0;&#x884C;&#x6240;&#x5FC5;&#x987B;&#x7684;&#x914D;&#x7F6E;&#xFF0C;&#x662F;&#x4E3A;&#x4E86;&#x5B9E;&#x73B0; dependency injection&#xFF0C;&#x5176;&#x76EE;&#x7684;&#x662F;&#x4E3A;&#x4E86;&#x628A; kubelet &#x4F9D;&#x8D56;&#x7684;&#x7EC4;&#x4EF6;&#x5BF9;&#x8C61;&#x4F5C;&#x4E3A;&#x53C2;&#x6570;&#x4F20;&#x8FDB;&#x6765;&#xFF0C;&#x8FD9;&#x6837;&#x53EF;&#x4EE5;&#x63A7;&#x5236; kubelet &#x7684;&#x884C;&#x4E3A;&#x3002;&#x4E3B;&#x8981;&#x5305;&#x62EC;&#x76D1;&#x63A7;&#x529F;&#x80FD;&#xFF08;cadvisor&#xFF09;&#xFF0C;cgroup &#x7BA1;&#x7406;&#x529F;&#x80FD;&#xFF08;containerManager&#xFF09;&#x7B49;&#x3002;</p>
-<p>NewKubeletCommand() &#x4F1A;&#x8C03;&#x7528; Run() &#x51FD;&#x6570;&#xFF0C;Run() &#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528; run() &#x51FD;&#x6570;&#x8FDB;&#x884C;&#x4E00;&#x4E9B;&#x51C6;&#x5907;&#x4E8B;&#x9879;&#x3002;</p>
-<h4 id="3&#x3001;&#x521B;&#x5EFA;&#x548C;-apiserver-&#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmdkubeletappservergo&#xFF09;"><a name="3&#x3001;&#x521B;&#x5EFA;&#x548C;-apiserver-&#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmdkubeletappservergo&#xFF09;" class="anchor-navigation-ex-anchor" href="#3&#x3001;&#x521B;&#x5EFA;&#x548C;-apiserver-&#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmdkubeletappservergo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>3&#x3001;&#x521B;&#x5EFA;&#x548C; apiserver &#x901A;&#x4FE1;&#x7684;&#x5BF9;&#x8C61;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</h4>
-<p>run() &#x51FD;&#x6570;&#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#xFF1A;</p>
+</code></pre><h4 id="run"><a name="run" class="anchor-navigation-ex-anchor" href="#run"><i class="fa fa-link" aria-hidden="true"></i></a>Run</h4>
+<p>&#x8BE5;&#x65B9;&#x6CD5;&#x4E2D;&#x4EC5;&#x4EC5;&#x8C03;&#x7528; <code>run</code> &#x65B9;&#x6CD5;&#x6267;&#x884C;&#x540E;&#x9762;&#x7684;&#x542F;&#x52A8;&#x903B;&#x8F91;&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kubelet/app/server.go:408</code></p>
+<pre class="language-"><code>func Run(s *options.KubeletServer, kubeDeps *kubelet.Dependencies, stopCh &lt;-chan struct{}) error {
+    if err := initForOS(s.KubeletFlags.WindowsService); err != nil {
+        return fmt.Errorf(&quot;failed OS init: %v&quot;, err)
+    }
+    if err := run(s, kubeDeps, stopCh); err != nil {
+        return fmt.Errorf(&quot;failed to run Kubelet: %v&quot;, err)
+    }
+    return nil
+}
+</code></pre><h4 id="run"><a name="run" class="anchor-navigation-ex-anchor" href="#run"><i class="fa fa-link" aria-hidden="true"></i></a>run</h4>
+<p><code>run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4E3B;&#x8981;&#x662F;&#x4E3A; kubelet &#x7684;&#x542F;&#x52A8;&#x505A;&#x4E00;&#x4E9B;&#x57FA;&#x672C;&#x7684;&#x914D;&#x7F6E;&#x53CA;&#x68C0;&#x67E5;&#x5DE5;&#x4F5C;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
 <ul>
-<li>1&#x3001;&#x521B;&#x5EFA; kubeClient&#xFF0C;evnetClient &#x7528;&#x6765;&#x548C; apiserver &#x901A;&#x4FE1;&#x3002;&#x521B;&#x5EFA; heartbeatClient &#x5411; apiserver &#x4E0A;&#x62A5;&#x5FC3;&#x8DF3;&#x72B6;&#x6001;&#x3002;</li>
-<li>2&#x3001;&#x4E3A; kubeDeps &#x8BBE;&#x5B9A;&#x4E00;&#x4E9B;&#x9ED8;&#x8BA4;&#x503C;&#x3002;</li>
-<li>3&#x3001;&#x542F;&#x52A8;&#x76D1;&#x542C; Healthz &#x7AEF;&#x53E3;&#x7684; http server&#xFF0C;&#x9ED8;&#x8BA4;&#x7AEF;&#x53E3;&#x662F; 10248&#x3002;</li>
+<li>1&#x3001;&#x4E3A; kubelet &#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x7684; FeatureGates&#xFF0C;kubelet &#x6240;&#x6709;&#x7684; FeatureGates &#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x547D;&#x4EE4;&#x53C2;&#x6570;&#x67E5;&#x770B;&#xFF0C;k8s &#x4E2D;&#x5904;&#x4E8E; <code>Alpha</code> &#x72B6;&#x6001;&#x7684; FeatureGates &#x5728;&#x7EC4;&#x4EF6;&#x542F;&#x52A8;&#x65F6;&#x9ED8;&#x8BA4;&#x5173;&#x95ED;&#xFF0C;&#x5904;&#x4E8E; <code>Beta</code> &#x548C; GA &#x72B6;&#x6001;&#x7684;&#x9ED8;&#x8BA4;&#x5F00;&#x542F;&#xFF1B;</li>
+<li>2&#x3001;&#x6821;&#x9A8C; kubelet &#x7684;&#x53C2;&#x6570;&#xFF1B;</li>
+<li>3&#x3001;&#x5C1D;&#x8BD5;&#x83B7;&#x53D6; kubelet &#x7684; <code>lock file</code>&#xFF0C;&#x9700;&#x8981;&#x5728; kubelet &#x542F;&#x52A8;&#x65F6;&#x6307;&#x5B9A; <code>--exit-on-lock-contention</code> &#x548C; <code>--lock-file</code>&#xFF0C;&#x8BE5;&#x529F;&#x80FD;&#x5904;&#x4E8E; <code>Alpha</code> &#x7248;&#x672C;&#x9ED8;&#x8BA4;&#x4E3A;&#x5173;&#x95ED;&#x72B6;&#x6001;&#xFF1B;</li>
+<li>4&#x3001;&#x5C06;&#x5F53;&#x524D;&#x7684;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x6CE8;&#x518C;&#x5230; http server <code>/configz</code> URL &#x4E2D;&#xFF1B;</li>
+<li>5&#x3001;&#x68C0;&#x67E5; kubelet &#x542F;&#x52A8;&#x6A21;&#x5F0F;&#x662F;&#x5426;&#x4E3A; standalone &#x6A21;&#x5F0F;&#xFF0C;&#x6B64;&#x6A21;&#x5F0F;&#x4E0B;&#x4E0D;&#x4F1A;&#x548C; apiserver &#x4EA4;&#x4E92;&#xFF0C;&#x4E3B;&#x8981;&#x7528;&#x4E8E; kubelet &#x7684;&#x8C03;&#x8BD5;&#xFF1B;</li>
+<li>6&#x3001;&#x521D;&#x59CB;&#x5316; kubeDeps&#xFF0C;kubeDeps &#x4E2D;&#x5305;&#x542B; kubelet &#x7684;&#x4E00;&#x4E9B;&#x4F9D;&#x8D56;&#xFF0C;&#x4E3B;&#x8981;&#x6709; <code>KubeClient</code>&#x3001;<code>EventClient</code>&#x3001;<code>HeartbeatClient</code>&#x3001;<code>Auth</code>&#x3001;<code>cadvisor</code>&#x3001;<code>ContainerManager</code>&#xFF1B;</li>
+<li>7&#x3001;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x4EE5; root &#x7528;&#x6237;&#x542F;&#x52A8;&#xFF1B;</li>
+<li>8&#x3001;&#x4E3A;&#x8FDB;&#x7A0B;&#x8BBE;&#x7F6E; oom &#x5206;&#x6570;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; -999&#xFF0C;&#x5206;&#x6570;&#x8303;&#x56F4;&#x4E3A;  [-1000, 1000]&#xFF0C;&#x8D8A;&#x5C0F;&#x8D8A;&#x4E0D;&#x5BB9;&#x6613;&#x88AB; kill &#x6389;&#xFF1B;</li>
+<li>9&#x3001;&#x8C03;&#x7528; <code>RunKubelet</code> &#x65B9;&#x6CD5;&#xFF1B;</li>
+<li>10&#x3001;&#x68C0;&#x67E5; kubelet &#x662F;&#x5426;&#x542F;&#x52A8;&#x4E86;&#x52A8;&#x6001;&#x914D;&#x7F6E;&#x529F;&#x80FD;&#xFF1B;</li>
+<li>11&#x3001;&#x542F;&#x52A8; Healthz http server&#xFF1B;</li>
+<li>12&#x3001;&#x5982;&#x679C;&#x4F7F;&#x7528; systemd &#x542F;&#x52A8;&#xFF0C;&#x901A;&#x77E5; systemd kubelet &#x5DF2;&#x7ECF;&#x542F;&#x52A8;&#xFF1B;</li>
 </ul>
+<p> <code>k8s.io/kubernetes/cmd/kubelet/app/server.go:472</code></p>
 <pre class="language-"><code>func run(s *options.KubeletServer, kubeDeps *kubelet.Dependencies, stopCh &lt;-chan struct{}) (err error) {
-    ...
-    // &#x5224;&#x65AD; kubelet &#x7684;&#x542F;&#x52A8;&#x6A21;&#x5F0F;
-    if standaloneMode {
-    ...
-    } else if kubeDeps.KubeClient == nil || kubeDeps.EventClient == nil || kubeDeps.HeartbeatClient == nil || kubeDeps.DynamicKubeClient == nil {
-        ...
-        // &#x521B;&#x5EFA;&#x5BF9;&#x8C61; kubeClient
-        kubeClient, err = clientset.NewForConfig(clientConfig)
-
-        ...
-        // &#x521B;&#x5EFA;&#x5BF9;&#x8C61; evnetClient
-        eventClient, err = v1core.NewForConfig(&amp;eventClientConfig)
-        ...
-        // heartbeatClient &#x4E0A;&#x62A5;&#x72B6;&#x6001;
-        heartbeatClient, err = clientset.NewForConfig(&amp;heartbeatClientConfig)
-        ...
+    // 1&#x3001;&#x4E3A; kubelet &#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x7684; FeatureGates
+    err = utilfeature.DefaultMutableFeatureGate.SetFromMap(s.KubeletConfiguration.FeatureGates)
+    if err != nil {
+        return err
+    }
+    // 2&#x3001;&#x6821;&#x9A8C; kubelet &#x7684;&#x53C2;&#x6570;
+    if err := options.ValidateKubeletServer(s); err != nil {
+        return err
     }
 
-    // &#x4E3A; kubeDeps &#x8BBE;&#x5B9A;&#x4E00;&#x4E9B;&#x9ED8;&#x8BA4;&#x503C;
-    if kubeDeps.Auth == nil {
-            auth, err := BuildAuth(nodeName, kubeDeps.KubeClient, s.KubeletConfiguration)
-            if err != nil {
-                return err
-            }
-            kubeDeps.Auth = auth
+    // 3&#x3001;&#x5C1D;&#x8BD5;&#x83B7;&#x53D6; kubelet &#x7684; lock file
+    if s.ExitOnLockContention &amp;&amp; s.LockFilePath == &quot;&quot; {
+        return errors.New(&quot;cannot exit on lock file contention: no lock file specified&quot;)
+    }
+    done := make(chan struct{})
+    if s.LockFilePath != &quot;&quot; {
+        klog.Infof(&quot;acquiring file lock on %q&quot;, s.LockFilePath)
+        if err := flock.Acquire(s.LockFilePath); err != nil {
+            return fmt.Errorf(&quot;unable to acquire file lock on %q: %v&quot;, s.LockFilePath, err)
         }
-
-        if kubeDeps.CAdvisorInterface == nil {
-            imageFsInfoProvider := cadvisor.NewImageFsInfoProvider(s.ContainerRuntime, s.RemoteRuntimeEndpoint)
-            kubeDeps.CAdvisorInterface, err = cadvisor.New(imageFsInfoProvider, s.RootDirectory, cadvisor.UsingLegacyCadvisorStats(s.ContainerRuntime, s.RemoteRuntimeEndpoint))
-            if err != nil {
+        if s.ExitOnLockContention {
+            klog.Infof(&quot;watching for inotify events for: %v&quot;, s.LockFilePath)
+            if err := watchForLockfileContention(s.LockFilePath, done); err != nil {
                 return err
             }
         }
     }
+    // 4&#x3001;&#x5C06;&#x5F53;&#x524D;&#x7684;&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x6CE8;&#x518C;&#x5230; http server /configz URL &#x4E2D;&#xFF1B;
+    err = initConfigz(&amp;s.KubeletConfiguration)
+    if err != nil {
+        klog.Errorf(&quot;unable to register KubeletConfiguration with configz, error: %v&quot;, err)
+    }
 
-    // 
-    if err := RunKubelet(s, kubeDeps, s.RunOnce); err != nil {
+    // 5&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x4E3A; standalone &#x6A21;&#x5F0F;
+    standaloneMode := true
+    if len(s.KubeConfig) &gt; 0 {
+        standaloneMode = false
+    }
+
+    // 6&#x3001;&#x521D;&#x59CB;&#x5316; kubeDeps
+    if kubeDeps == nil {
+        kubeDeps, err = UnsecuredDependencies(s)
+        if err != nil {
             return err
+        }
     }
-    ...
-    // &#x542F;&#x52A8;&#x76D1;&#x542C; Healthz &#x7AEF;&#x53E3;&#x7684; http server  
-    if s.HealthzPort &gt; 0 {
-        healthz.DefaultHealthz()
-        go wait.Until(func() {
-            err := http.ListenAndServe(net.JoinHostPort(s.HealthzBindAddress, strconv.Itoa(int(s.HealthzPort))), nil)
+    if kubeDeps.Cloud == nil {
+        if !cloudprovider.IsExternal(s.CloudProvider) {
+            cloud, err := cloudprovider.InitCloudProvider(s.CloudProvider, s.CloudConfigFile)
             if err != nil {
-                glog.Errorf(&quot;Starting health server failed: %v&quot;, err)
+                return err
+            }
+            ......
+            kubeDeps.Cloud = cloud
+        }
+    }
+
+    hostName, err := nodeutil.GetHostname(s.HostnameOverride)
+    if err != nil {
+        return err
+    }
+    nodeName, err := getNodeName(kubeDeps.Cloud, hostName)
+    if err != nil {
+        return err
+    }
+    // 7&#x3001;&#x5982;&#x679C;&#x662F; standalone &#x6A21;&#x5F0F;&#x5C06;&#x6240;&#x6709; client &#x8BBE;&#x7F6E;&#x4E3A; nil
+    switch {
+    case standaloneMode:
+        kubeDeps.KubeClient = nil
+        kubeDeps.EventClient = nil
+        kubeDeps.HeartbeatClient = nil
+
+    // 8&#x3001;&#x4E3A; kubeDeps &#x521D;&#x59CB;&#x5316; KubeClient&#x3001;EventClient&#x3001;HeartbeatClient &#x6A21;&#x5757;
+    case kubeDeps.KubeClient == nil, kubeDeps.EventClient == nil, kubeDeps.HeartbeatClient == nil:
+        clientConfig, closeAllConns, err := buildKubeletClientConfig(s, nodeName)
+        if err != nil {
+            return err
+        }
+        if closeAllConns == nil {
+            return errors.New(&quot;closeAllConns must be a valid function other than nil&quot;)
+        }
+        kubeDeps.OnHeartbeatFailure = closeAllConns
+
+        kubeDeps.KubeClient, err = clientset.NewForConfig(clientConfig)
+        if err != nil {
+            return fmt.Errorf(&quot;failed to initialize kubelet client: %v&quot;, err)
+        }
+
+        eventClientConfig := *clientConfig
+        eventClientConfig.QPS = float32(s.EventRecordQPS)
+        eventClientConfig.Burst = int(s.EventBurst)
+        kubeDeps.EventClient, err = v1core.NewForConfig(&amp;eventClientConfig)
+        if err != nil {
+            return fmt.Errorf(&quot;failed to initialize kubelet event client: %v&quot;, err)
+        }
+
+        heartbeatClientConfig := *clientConfig
+        heartbeatClientConfig.Timeout = s.KubeletConfiguration.NodeStatusUpdateFrequency.Duration
+
+        if utilfeature.DefaultFeatureGate.Enabled(features.NodeLease) {
+            leaseTimeout := time.Duration(s.KubeletConfiguration.NodeLeaseDurationSeconds) * time.Second
+            if heartbeatClientConfig.Timeout &gt; leaseTimeout {
+                heartbeatClientConfig.Timeout = leaseTimeout
+            }
+        }
+        heartbeatClientConfig.QPS = float32(-1)
+        kubeDeps.HeartbeatClient, err = clientset.NewForConfig(&amp;heartbeatClientConfig)
+        if err != nil {
+            return fmt.Errorf(&quot;failed to initialize kubelet heartbeat client: %v&quot;, err)
+        }
+    }
+    // 9&#x3001;&#x521D;&#x59CB;&#x5316; auth &#x6A21;&#x5757;
+    if kubeDeps.Auth == nil {
+        auth, err := BuildAuth(nodeName, kubeDeps.KubeClient, s.KubeletConfiguration)
+        if err != nil {
+            return err
+        }
+        kubeDeps.Auth = auth
+    }
+
+    var cgroupRoots []string
+
+    // 10&#x3001;&#x8BBE;&#x7F6E; cgroupRoot
+    cgroupRoots = append(cgroupRoots, cm.NodeAllocatableRoot(s.CgroupRoot, s.CgroupDriver))
+    kubeletCgroup, err := cm.GetKubeletContainer(s.KubeletCgroups)
+    if err != nil {
+    } else if kubeletCgroup != &quot;&quot; {
+        cgroupRoots = append(cgroupRoots, kubeletCgroup)
+    }
+
+    runtimeCgroup, err := cm.GetRuntimeContainer(s.ContainerRuntime, s.RuntimeCgroups)
+    if err != nil {
+    } else if runtimeCgroup != &quot;&quot; {
+        cgroupRoots = append(cgroupRoots, runtimeCgroup)
+    }
+    if s.SystemCgroups != &quot;&quot; {
+        cgroupRoots = append(cgroupRoots, s.SystemCgroups)
+    }
+
+    // 11&#x3001;&#x521D;&#x59CB;&#x5316; cadvisor
+    if kubeDeps.CAdvisorInterface == nil {
+        imageFsInfoProvider := cadvisor.NewImageFsInfoProvider(s.ContainerRuntime, s.RemoteRuntimeEndpoint)
+        kubeDeps.CAdvisorInterface, err = cadvisor.New(imageFsInfoProvider, s.RootDirectory, cgroupRoots, cadvisor.UsingLegacyCadvisorStats(s.           ContainerRuntime, s.RemoteRuntimeEndpoint))
+        if err != nil {
+            return err
+        }
+    }
+
+    makeEventRecorder(kubeDeps, nodeName)
+
+    // 12&#x3001;&#x521D;&#x59CB;&#x5316; ContainerManager
+    if kubeDeps.ContainerManager == nil {
+        if s.CgroupsPerQOS &amp;&amp; s.CgroupRoot == &quot;&quot; {
+            s.CgroupRoot = &quot;/&quot;
+        }
+        kubeReserved, err := parseResourceList(s.KubeReserved)
+        if err != nil {
+            return err
+        }
+        systemReserved, err := parseResourceList(s.SystemReserved)
+        if err != nil {
+            return err
+        }
+        var hardEvictionThresholds []evictionapi.Threshold
+        if !s.ExperimentalNodeAllocatableIgnoreEvictionThreshold {
+            hardEvictionThresholds, err = eviction.ParseThresholdConfig([]string{}, s.EvictionHard, nil, nil, nil)
+            if err != nil {
+                return err
+            }
+        }
+        experimentalQOSReserved, err := cm.ParseQOSReserved(s.QOSReserved)
+        if err != nil {
+            return err
+        }
+
+        devicePluginEnabled := utilfeature.DefaultFeatureGate.Enabled(features.DevicePlugins)
+        kubeDeps.ContainerManager, err = cm.NewContainerManager(
+            kubeDeps.Mounter,
+            kubeDeps.CAdvisorInterface,
+            cm.NodeConfig{
+                ......
+            },
+            s.FailSwapOn,
+            devicePluginEnabled,
+            kubeDeps.Recorder)
+        if err != nil {
+            return err
+        }
+    }
+
+    // 13&#x3001;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x4EE5; root &#x6743;&#x9650;&#x542F;&#x52A8;
+    if err := checkPermissions(); err != nil {
+        klog.Error(err)
+    }
+
+    utilruntime.ReallyCrash = s.ReallyCrashForTesting
+
+    // 14&#x3001;&#x4E3A; kubelet &#x8FDB;&#x7A0B;&#x8BBE;&#x7F6E; oom &#x5206;&#x6570;
+    oomAdjuster := kubeDeps.OOMAdjuster
+    if err := oomAdjuster.ApplyOOMScoreAdj(0, int(s.OOMScoreAdj)); err != nil {
+        klog.Warning(err)
+    }
+
+    // 15&#x3001;&#x8C03;&#x7528; RunKubelet &#x65B9;&#x6CD5;&#x6267;&#x884C;&#x540E;&#x7EED;&#x7684;&#x542F;&#x52A8;&#x64CD;&#x4F5C;
+    if err := RunKubelet(s, kubeDeps, s.RunOnce); err != nil {
+        return err
+    }
+
+    if utilfeature.DefaultFeatureGate.Enabled(features.DynamicKubeletConfig) &amp;&amp; len(s.DynamicConfigDir.Value()) &gt; 0 &amp;&amp;
+        kubeDeps.KubeletConfigController != nil &amp;&amp; !standaloneMode &amp;&amp; !s.RunOnce {
+        if err := kubeDeps.KubeletConfigController.StartSync(kubeDeps.KubeClient, kubeDeps.EventClient, string(nodeName)); err != nil {
+            return err
+        }
+    }
+
+    // 16&#x3001;&#x542F;&#x52A8; Healthz http server
+    if s.HealthzPort &gt; 0 {
+        mux := http.NewServeMux()
+        healthz.InstallHandler(mux)
+        go wait.Until(func() {
+            err := http.ListenAndServe(net.JoinHostPort(s.HealthzBindAddress, strconv.Itoa(int(s.HealthzPort))), mux)
+            if err != nil {
+                klog.Errorf(&quot;Starting healthz server failed: %v&quot;, err)
             }
         }, 5*time.Second, wait.NeverStop)
     }
-    ...
-}
-</code></pre><p>kubelet &#x5BF9; pod &#x8D44;&#x6E90;&#x7684;&#x83B7;&#x53D6;&#x65B9;&#x5F0F;&#x6709;&#x4E09;&#x79CD;&#xFF1A;&#x7B2C;&#x4E00;&#x79CD;&#x662F;&#x901A;&#x8FC7;&#x6587;&#x4EF6;&#x83B7;&#x5F97;&#xFF0C;&#x6587;&#x4EF6;&#x4E00;&#x822C;&#x653E;&#x5728; /etc/kubernetes/manifests &#x76EE;&#x5F55;&#x4E0B;&#x9762;&#xFF1B;&#x7B2C;&#x4E8C;&#x79CD;&#x4E5F;&#x662F;&#x901A;&#x8FC7;&#x6587;&#x4EF6;&#x8FC7;&#x5F97;&#xFF0C;&#x53EA;&#x4E0D;&#x8FC7;&#x6587;&#x4EF6;&#x662F;&#x901A;&#x8FC7; URL &#x83B7;&#x53D6;&#x7684;&#xFF1B;&#x7B2C;&#x4E09;&#x79CD;&#x662F;&#x901A;&#x8FC7; watch kube-apiserver &#x83B7;&#x53D6;&#x3002;&#x5176;&#x4E2D;&#x524D;&#x4E24;&#x79CD;&#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;&#x6211;&#x4EEC;&#x79F0; kubelet &#x8FD0;&#x884C;&#x5728; standalone &#x6A21;&#x5F0F;&#x4E0B;&#xFF0C;&#x8FD0;&#x884C;&#x5728; standalone &#x6A21;&#x5F0F;&#x4E0B;&#x7684; kubelet &#x4E00;&#x822C;&#x7528;&#x4E8E;&#x8C03;&#x8BD5;&#x67D0;&#x4E9B;&#x529F;&#x80FD;&#x3002;</p>
-<p>run() &#x4E2D;&#x8C03;&#x7528; RunKubelet() &#x51FD;&#x6570;&#x8FDB;&#x884C;&#x540E;&#x7EED;&#x64CD;&#x4F5C;&#x3002;</p>
-<h4 id="4&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmdkubeletappservergo&#xFF09;"><a name="4&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmdkubeletappservergo&#xFF09;" class="anchor-navigation-ex-anchor" href="#4&#x3001;&#x521D;&#x59CB;&#x5316;-kubelet-&#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmdkubeletappservergo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>4&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x7EC4;&#x4EF6;&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</h4>
-<p>RunKubelet()  &#x4E3B;&#x8981;&#x529F;&#x80FD;&#xFF1A;</p>
-<ul>
-<li>1&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x7EC4;&#x4EF6;&#x4E2D;&#x7684;&#x5404;&#x4E2A;&#x6A21;&#x5757;&#xFF0C;&#x521B;&#x5EFA;&#x51FA; kubelet &#x5BF9;&#x8C61;&#x3002;</li>
-<li>2&#x3001;&#x542F;&#x52A8;&#x5783;&#x573E;&#x56DE;&#x6536;&#x670D;&#x52A1;&#x3002;</li>
-</ul>
-<pre class="language-"><code>func RunKubelet(kubeServer *options.KubeletServer, kubeDeps *kubelet.Dependencies, runOnce bool) error {
-    ...
 
-     // &#x521D;&#x59CB;&#x5316; kubelet &#x5185;&#x90E8;&#x6A21;&#x5757;
-    k, err := CreateAndInitKubelet(&amp;kubeServer.KubeletConfiguration,
-        kubeDeps,
-        &amp;kubeServer.ContainerRuntimeOptions,
-        kubeServer.ContainerRuntime,
-        kubeServer.RuntimeCgroups,
-        kubeServer.HostnameOverride,
-        kubeServer.NodeIP,
-        kubeServer.ProviderID,
-        kubeServer.CloudProvider,
-        kubeServer.CertDirectory,
-        kubeServer.RootDirectory,
-        kubeServer.RegisterNode,
-        kubeServer.RegisterWithTaints,
-        kubeServer.AllowedUnsafeSysctls,
-        kubeServer.RemoteRuntimeEndpoint,
-        kubeServer.RemoteImageEndpoint,
-        kubeServer.ExperimentalMounterPath,
-        kubeServer.ExperimentalKernelMemcgNotification,
-        kubeServer.ExperimentalCheckNodeCapabilitiesBeforeMount,
-        kubeServer.ExperimentalNodeAllocatableIgnoreEvictionThreshold,
-        kubeServer.MinimumGCAge,
-        kubeServer.MaxPerPodContainerCount,
-        kubeServer.MaxContainerCount,
-        kubeServer.MasterServiceNamespace,
-        kubeServer.RegisterSchedulable,
-        kubeServer.NonMasqueradeCIDR,
-        kubeServer.KeepTerminatedPodVolumes,
-        kubeServer.NodeLabels,
-        kubeServer.SeccompProfileRoot,
-        kubeServer.BootstrapCheckpointPath,
+    if s.RunOnce {
+        return nil
+    }
+
+    // 17&#x3001;&#x5411; systemd &#x53D1;&#x9001;&#x542F;&#x52A8;&#x4FE1;&#x53F7;
+    go daemon.SdNotify(false, &quot;READY=1&quot;)
+
+    select {
+    case &lt;-done:
+        break
+    case &lt;-stopCh:
+        break
+    }
+    return nil
+}
+</code></pre><h4 id="runkubelet"><a name="runkubelet" class="anchor-navigation-ex-anchor" href="#runkubelet"><i class="fa fa-link" aria-hidden="true"></i></a>RunKubelet</h4>
+<p><code>RunKubelet</code> &#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528;&#x4E86; <code>createAndInitKubelet</code> &#x65B9;&#x6CD5;&#x6267;&#x884C; kubelet &#x7EC4;&#x4EF6;&#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>startKubelet</code> &#x542F;&#x52A8; kubelet &#x4E2D;&#x7684;&#x7EC4;&#x4EF6;&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kubelet/app/server.go:989</code></p>
+<pre class="language-"><code>func RunKubelet(kubeServer *options.KubeletServer, kubeDeps *kubelet.Dependencies, runOnce bool) error {
+    hostname, err := nodeutil.GetHostname(kubeServer.HostnameOverride)
+    if err != nil {
+        return err
+    }
+    nodeName, err := getNodeName(kubeDeps.Cloud, hostname)
+    if err != nil {
+        return err
+    }
+    makeEventRecorder(kubeDeps, nodeName)
+
+    // 1&#x3001;&#x9ED8;&#x8BA4;&#x542F;&#x52A8;&#x7279;&#x6743;&#x6A21;&#x5F0F;
+    capabilities.Initialize(capabilities.Capabilities{
+        AllowPrivileged: true,
+    })
+
+    credentialprovider.SetPreferredDockercfgPath(kubeServer.RootDirectory)
+
+    if kubeDeps.OSInterface == nil {
+        kubeDeps.OSInterface = kubecontainer.RealOS{}
+    }
+
+    // 2&#x3001;&#x8C03;&#x7528; createAndInitKubelet
+    k, err := createAndInitKubelet(&amp;kubeServer.KubeletConfiguration,
+        ......
         kubeServer.NodeStatusMaxImages)
     if err != nil {
         return fmt.Errorf(&quot;failed to create kubelet: %v&quot;, err)
     }
 
-    ...
+    if kubeDeps.PodConfig == nil {
+        return fmt.Errorf(&quot;failed to create kubelet, pod source config was nil&quot;)
+    }
+    podCfg := kubeDeps.PodConfig
+
+    rlimit.RlimitNumFiles(uint64(kubeServer.MaxOpenFiles))
+
     if runOnce {
         if _, err := k.RunOnce(podCfg.Updates()); err != nil {
             return fmt.Errorf(&quot;runonce failed: %v&quot;, err)
         }
-        glog.Infof(&quot;Started kubelet as runonce&quot;)
+        klog.Info(&quot;Started kubelet as runonce&quot;)
     } else {
-        // 
-        startKubelet(k, podCfg, &amp;kubeServer.KubeletConfiguration, kubeDeps, kubeServer.EnableServer)
-        glog.Infof(&quot;Started kubelet&quot;)
+        // 3&#x3001;&#x8C03;&#x7528; startKubelet
+        startKubelet(k, podCfg, &amp;kubeServer.KubeletConfiguration, kubeDeps, kubeServer.EnableCAdvisorJSONEndpoints, kubeServer.EnableServer)
+        klog.Info(&quot;Started kubelet&quot;)
     }
-
+    return nil
 }
-</code></pre><pre class="language-"><code>func CreateAndInitKubelet(...){
-    // NewMainKubelet &#x5B9E;&#x4F8B;&#x5316;&#x4E00;&#x4E2A; kubelet &#x5BF9;&#x8C61;&#xFF0C;&#x5E76;&#x5BF9; kubelet &#x5185;&#x90E8;&#x5404;&#x4E2A;&#x6A21;&#x5757;&#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;
-    k, err = kubelet.NewMainKubelet(kubeCfg,
-        kubeDeps,
-        crOptions,
-        containerRuntime,
-        runtimeCgroups,
-        hostnameOverride,
-        nodeIP,
-        providerID,
-        cloudProvider,
-        certDirectory,
-        rootDirectory,
-        registerNode,
-        registerWithTaints,
-        allowedUnsafeSysctls,
-        remoteRuntimeEndpoint,
-        remoteImageEndpoint,
-        experimentalMounterPath,
-        experimentalKernelMemcgNotification,
-        experimentalCheckNodeCapabilitiesBeforeMount,
-        experimentalNodeAllocatableIgnoreEvictionThreshold,
-        minimumGCAge,
-        maxPerPodContainerCount,
-        maxContainerCount,
-        masterServiceNamespace,
-        registerSchedulable,
-        nonMasqueradeCIDR,
-        keepTerminatedPodVolumes,
-        nodeLabels,
-        seccompProfileRoot,
-        bootstrapCheckpointPath,
-        nodeStatusMaxImages)
+</code></pre><h4 id="createandinitkubelet"><a name="createandinitkubelet" class="anchor-navigation-ex-anchor" href="#createandinitkubelet"><i class="fa fa-link" aria-hidden="true"></i></a>createAndInitKubelet</h4>
+<p><code>createAndInitKubelet</code> &#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528;&#x4E86;&#x4E09;&#x4E2A;&#x65B9;&#x6CD5;&#x6765;&#x5B8C;&#x6210; kubelet &#x7684;&#x521D;&#x59CB;&#x5316;&#xFF1A;</p>
+<ul>
+<li><code>kubelet.NewMainKubelet</code>&#xFF1A;&#x5B9E;&#x4F8B;&#x5316; kubelet &#x5BF9;&#x8C61;&#xFF0C;&#x5E76;&#x5BF9; kubelet &#x4F9D;&#x8D56;&#x7684;&#x6240;&#x6709;&#x6A21;&#x5757;&#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;&#xFF1B;</li>
+<li><code>k.BirthCry</code>&#xFF1A;&#x5411; apiserver &#x53D1;&#x9001;&#x4E00;&#x6761; kubelet &#x542F;&#x52A8;&#x4E86;&#x7684; event&#xFF1B;</li>
+<li><code>k.StartGarbageCollection</code>&#xFF1A;&#x542F;&#x52A8;&#x5783;&#x573E;&#x56DE;&#x6536;&#x670D;&#x52A1;&#xFF0C;&#x56DE;&#x6536; container &#x548C; images&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kubelet/app/server.go:1089</code></p>
+<pre class="language-"><code>func createAndInitKubelet(......) {
+    k, err = kubelet.NewMainKubelet(
+            ......
+    )
     if err != nil {
         return nil, err
     }
 
-    // &#x901A;&#x77E5; apiserver kubelet &#x542F;&#x52A8;&#x4E86;
     k.BirthCry()
-    // &#x542F;&#x52A8;&#x5783;&#x573E;&#x56DE;&#x6536;&#x670D;&#x52A1;
+
     k.StartGarbageCollection()
 
     return k, nil
-
 }
-</code></pre><pre class="language-"><code>func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,...){
-    ...
+</code></pre><h5 id="kubeletnewmainkubelet"><a name="kubeletnewmainkubelet" class="anchor-navigation-ex-anchor" href="#kubeletnewmainkubelet"><i class="fa fa-link" aria-hidden="true"></i></a>kubelet.NewMainKubelet</h5>
+<p><code>NewMainKubelet</code> &#x662F;&#x521D;&#x59CB;&#x5316; kubelet &#x7684;&#x4E00;&#x4E2A;&#x65B9;&#x6CD5;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x521D;&#x59CB;&#x5316; PodConfig &#x5373;&#x76D1;&#x542C; pod &#x5143;&#x6570;&#x636E;&#x7684;&#x6765;&#x6E90;(file&#xFF0C;http&#xFF0C;apiserver)&#xFF0C;&#x5C06;&#x4E0D;&#x540C; source &#x7684; pod configuration &#x5408;&#x5E76;&#x5230;&#x4E00;&#x4E2A;&#x7ED3;&#x6784;&#x4E2D;&#xFF1B;</li>
+<li>2&#x3001;&#x521D;&#x59CB;&#x5316; containerGCPolicy&#x3001;imageGCPolicy&#x3001;evictionConfig &#x914D;&#x7F6E;&#xFF1B;</li>
+<li>3&#x3001;&#x542F;&#x52A8; serviceInformer &#x548C; nodeInformer&#xFF1B;</li>
+<li>4&#x3001;&#x521D;&#x59CB;&#x5316; <code>containerRefManager</code>&#x3001;<code>oomWatcher</code>&#xFF1B;</li>
+<li>5&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>6&#x3001;&#x521D;&#x59CB;&#x5316; <code>secretManager</code>&#x3001;<code>configMapManager</code>&#xFF1B;</li>
+<li>7&#x3001;&#x521D;&#x59CB;&#x5316; <code>livenessManager</code>&#x3001;<code>podManager</code>&#x3001;<code>statusManager</code>&#x3001;<code>resourceAnalyzer</code>&#xFF1B;</li>
+<li>8&#x3001;&#x8C03;&#x7528; <code>kuberuntime.NewKubeGenericRuntimeManager</code> &#x521D;&#x59CB;&#x5316; <code>containerRuntime</code>&#xFF1B;</li>
+<li>9&#x3001;&#x521D;&#x59CB;&#x5316; <code>pleg</code>&#xFF1B;</li>
+<li>10&#x3001;&#x521D;&#x59CB;&#x5316; <code>containerGC</code>&#x3001;<code>containerDeletor</code>&#x3001;<code>imageManager</code>&#x3001;<code>containerLogManager</code>&#xFF1B;</li>
+<li>11&#x3001;&#x521D;&#x59CB;&#x5316; <code>serverCertificateManager</code>&#x3001;<code>probeManager</code>&#x3001;<code>tokenManager</code>&#x3001;<code>volumePluginMgr</code>&#x3001;<code>pluginManager</code>&#x3001;<code>volumeManager</code>&#xFF1B;</li>
+<li>12&#x3001;&#x521D;&#x59CB;&#x5316; <code>workQueue</code>&#x3001;<code>podWorkers</code>&#x3001;<code>evictionManager</code>&#xFF1B;</li>
+<li>13&#x3001;&#x6700;&#x540E;&#x6CE8;&#x518C;&#x76F8;&#x5173;&#x6A21;&#x5757;&#x7684; handler&#xFF1B;</li>
+</ul>
+<p><code>NewMainKubelet</code> &#x4E2D;&#x5BF9; kubelet &#x4F9D;&#x8D56;&#x7684;&#x6240;&#x6709;&#x6A21;&#x5757;&#x8FDB;&#x884C;&#x4E86;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x6BCF;&#x4E2A;&#x6A21;&#x5757;&#x5BF9;&#x5E94;&#x7684;&#x529F;&#x80FD;&#x5728;&#x4E0A;&#x7BC7;&#x6587;&#x7AE0;&#x201C;kubelet &#x67B6;&#x6784;&#x6D45;&#x6790;&#x201D;&#x6709;&#x4ECB;&#x7ECD;&#xFF0C;&#x81F3;&#x4E8E;&#x6BCF;&#x4E2A;&#x6A21;&#x5757;&#x521D;&#x59CB;&#x5316;&#x7684;&#x6D41;&#x7A0B;&#x4EE5;&#x53CA;&#x529F;&#x80FD;&#x4F1A;&#x5728;&#x540E;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x8FDB;&#x884C;&#x8BE6;&#x7EC6;&#x5206;&#x6790;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:335</code></p>
+<pre class="language-"><code>func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,) {
+    if rootDirectory == &quot;&quot; {
+        return nil, fmt.Errorf(&quot;invalid root directory %q&quot;, rootDirectory)
+    }
+    if kubeCfg.SyncFrequency.Duration &lt;= 0 {
+        return nil, fmt.Errorf(&quot;invalid sync frequency %d&quot;, kubeCfg.SyncFrequency.Duration)
+    }
+
+    if kubeCfg.MakeIPTablesUtilChains {
+        ......
+    }
+
+    hostname, err := nodeutil.GetHostname(hostnameOverride)
+    if err != nil {
+        return nil, err
+    }
+
+    nodeName := types.NodeName(hostname)
+    if kubeDeps.Cloud != nil {
+        ......
+    }
+
+    // 1&#x3001;&#x521D;&#x59CB;&#x5316; PodConfig
     if kubeDeps.PodConfig == nil {
         var err error
-        // &#x521D;&#x59CB;&#x5316; makePodSourceConfig&#xFF0C;&#x76D1;&#x542C; pod &#x5143;&#x6570;&#x636E;&#x7684;&#x6765;&#x6E90;(FILE, URL, api-server)&#xFF0C;&#x5C06;&#x4E0D;&#x540C; source &#x7684; pod configuration &#x5408;&#x5E76;&#x5230;&#x4E00;&#x4E2A;&#x7ED3;&#x6784;&#x4E2D;
         kubeDeps.PodConfig, err = makePodSourceConfig(kubeCfg, kubeDeps, nodeName, bootstrapCheckpointPath)
         if err != nil {
             return nil, err
         }
     }
 
-    // kubelet &#x670D;&#x52A1;&#x7AEF;&#x53E3;&#xFF0C;&#x9ED8;&#x8BA4; 10250
+    // 2&#x3001;&#x521D;&#x59CB;&#x5316; containerGCPolicy&#x3001;imageGCPolicy&#x3001;evictionConfig
+    containerGCPolicy := kubecontainer.ContainerGCPolicy{
+        MinAge:             minimumGCAge.Duration,
+        MaxPerPodContainer: int(maxPerPodContainerCount),
+        MaxContainers:      int(maxContainerCount),
+    }
     daemonEndpoints := &amp;v1.NodeDaemonEndpoints{
         KubeletEndpoint: v1.DaemonEndpoint{Port: kubeCfg.Port},
     }
 
-    // &#x4F7F;&#x7528; reflector &#x628A; ListWatch &#x5F97;&#x5230;&#x7684;&#x670D;&#x52A1;&#x4FE1;&#x606F;&#x5B9E;&#x65F6;&#x540C;&#x6B65;&#x5230; serviceStore &#x5BF9;&#x8C61;&#x4E2D;
-    serviceIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-    if kubeDeps.KubeClient != nil {
-        serviceLW := cache.NewListWatchFromClient(kubeDeps.KubeClient.CoreV1().RESTClient(), &quot;services&quot;, metav1.NamespaceAll, fields.Everything())
-        r := cache.NewReflector(serviceLW, &amp;v1.Service{}, serviceIndexer, 0)
-        go r.Run(wait.NeverStop)
+    imageGCPolicy := images.ImageGCPolicy{
+        MinAge:               kubeCfg.ImageMinimumGCAge.Duration,
+        HighThresholdPercent: int(kubeCfg.ImageGCHighThresholdPercent),
+        LowThresholdPercent:  int(kubeCfg.ImageGCLowThresholdPercent),
     }
-    serviceLister := corelisters.NewServiceLister(serviceIndexer)
 
-    // &#x4F7F;&#x7528; reflector &#x628A; ListWatch &#x5F97;&#x5230;&#x7684;&#x8282;&#x70B9;&#x4FE1;&#x606F;&#x5B9E;&#x65F6;&#x540C;&#x6B65;&#x5230;  nodeStore &#x5BF9;&#x8C61;&#x4E2D;
-    nodeIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
-    if kubeDeps.KubeClient != nil {
-        fieldSelector := fields.Set{api.ObjectNameField: string(nodeName)}.AsSelector()
-        nodeLW := cache.NewListWatchFromClient(kubeDeps.KubeClient.CoreV1().RESTClient(), &quot;nodes&quot;, metav1.NamespaceAll, fieldSelector)
-        r := cache.NewReflector(nodeLW, &amp;v1.Node{}, nodeIndexer, 0)
-        go r.Run(wait.NeverStop)
+    enforceNodeAllocatable := kubeCfg.EnforceNodeAllocatable
+    if experimentalNodeAllocatableIgnoreEvictionThreshold {
+        enforceNodeAllocatable = []string{}
     }
-    nodeInfo := &amp;predicates.CachedNodeInfo{NodeLister: corelisters.NewNodeLister(nodeIndexer)}
-
-    ...
-    // node &#x8D44;&#x6E90;&#x4E0D;&#x8DB3;&#x65F6;&#x7684;&#x9A71;&#x9010;&#x7B56;&#x7565;&#x7684;&#x8BBE;&#x5B9A;
-    thresholds, err := eviction.ParseThresholdConfig(enforceNodeAllocatable, kubeCfg.EvictionHard, kubeCfg.EvictionSoft, kubeCfg.EvictionSoftGracePeriod, kubeCfg.EvictionMinimumReclaim)
+    thresholds, err := eviction.ParseThresholdConfig(enforceNodeAllocatable, kubeCfg.EvictionHard, kubeCfg.EvictionSoft, kubeCfg.                        EvictionSoftGracePeriod, kubeCfg.EvictionMinimumReclaim)
     if err != nil {
         return nil, err
     }
@@ -889,141 +1149,570 @@ func NewKubeletCommand(stopCh &lt;-chan struct{}) *cobra.Command {
         KernelMemcgNotification:  experimentalKernelMemcgNotification,
         PodCgroupRoot:            kubeDeps.ContainerManager.GetPodCgroupRoot(),
     }
-    ...
-    // &#x5BB9;&#x5668;&#x5F15;&#x7528;&#x7684;&#x7BA1;&#x7406;
-    containerRefManager := kubecontainer.NewRefManager()
-    // oom &#x76D1;&#x63A7;
-    oomWatcher := NewOOMWatcher(kubeDeps.CAdvisorInterface, kubeDeps.Recorder)
+    // 3&#x3001;&#x542F;&#x52A8; serviceInformer &#x548C; nodeInformer
+    serviceIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+    if kubeDeps.KubeClient != nil {
+        serviceLW := cache.NewListWatchFromClient(kubeDeps.KubeClient.CoreV1().RESTClient(), &quot;services&quot;, metav1.NamespaceAll, fields.Everything())
+        r := cache.NewReflector(serviceLW, &amp;v1.Service{}, serviceIndexer, 0)
+        go r.Run(wait.NeverStop)
+    }
+    serviceLister := corelisters.NewServiceLister(serviceIndexer)
 
-    // &#x6839;&#x636E;&#x914D;&#x7F6E;&#x4FE1;&#x606F;&#x548C;&#x5404;&#x79CD;&#x5BF9;&#x8C61;&#x521B;&#x5EFA; Kubelet &#x5B9E;&#x4F8B;
-    klet := &amp;Kubelet{
-        hostname:                       hostname,
-        hostnameOverridden:             len(hostnameOverride) &gt; 0,
-        nodeName:                       nodeName,
-        ...
+    nodeIndexer := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{})
+    if kubeDeps.KubeClient != nil {
+        fieldSelector := fields.Set{api.ObjectNameField: string(nodeName)}.AsSelector()
+        nodeLW := cache.NewListWatchFromClient(kubeDeps.KubeClient.CoreV1().RESTClient(), &quot;nodes&quot;, metav1.NamespaceAll, fieldSelector)
+        r := cache.NewReflector(nodeLW, &amp;v1.Node{}, nodeIndexer, 0)
+        go r.Run(wait.NeverStop)
+    }
+    nodeInfo := &amp;CachedNodeInfo{NodeLister: corelisters.NewNodeLister(nodeIndexer)}
+
+    ......
+
+    // 4&#x3001;&#x521D;&#x59CB;&#x5316; containerRefManager&#x3001;oomWatcher
+    containerRefManager := kubecontainer.NewRefManager()
+
+    oomWatcher := oomwatcher.NewWatcher(kubeDeps.Recorder)
+    clusterDNS := make([]net.IP, 0, len(kubeCfg.ClusterDNS))
+    for _, ipEntry := range kubeCfg.ClusterDNS {
+        ip := net.ParseIP(ipEntry)
+        if ip == nil {
+            klog.Warningf(&quot;Invalid clusterDNS ip &apos;%q&apos;&quot;, ipEntry)
+        } else {
+            clusterDNS = append(clusterDNS, ip)
+        }
+    }
+    httpClient := &amp;http.Client{}
+    parsedNodeIP := net.ParseIP(nodeIP)
+    protocol := utilipt.ProtocolIpv4
+    if parsedNodeIP != nil &amp;&amp; parsedNodeIP.To4() == nil {
+        protocol = utilipt.ProtocolIpv6
     }
 
-    // &#x4ECE; cAdvisor &#x83B7;&#x53D6;&#x5F53;&#x524D;&#x673A;&#x5668;&#x7684;&#x4FE1;&#x606F;
-    machineInfo, err := klet.cadvisor.MachineInfo()
+    // 5&#x3001;&#x521D;&#x59CB;&#x5316; kubelet &#x5BF9;&#x8C61;
+    klet := &amp;Kubelet{......}
 
-    // &#x5BF9; pod &#x7684;&#x7BA1;&#x7406;&#xFF08;&#x5982;: &#x589E;&#x5220;&#x6539;&#x7B49;&#xFF09;
+    if klet.cloud != nil {
+        klet.cloudResourceSyncManager = cloudresource.NewSyncManager(klet.cloud, nodeName, klet.nodeStatusUpdateFrequency)
+    }
+
+    // 6&#x3001;&#x521D;&#x59CB;&#x5316; secretManager&#x3001;configMapManager
+    var secretManager secret.Manager
+    var configMapManager configmap.Manager
+    switch kubeCfg.ConfigMapAndSecretChangeDetectionStrategy {
+    case kubeletconfiginternal.WatchChangeDetectionStrategy:
+        secretManager = secret.NewWatchingSecretManager(kubeDeps.KubeClient)
+        configMapManager = configmap.NewWatchingConfigMapManager(kubeDeps.KubeClient)
+    case kubeletconfiginternal.TTLCacheChangeDetectionStrategy:
+        secretManager = secret.NewCachingSecretManager(
+            kubeDeps.KubeClient, manager.GetObjectTTLFromNodeFunc(klet.GetNode))
+        configMapManager = configmap.NewCachingConfigMapManager(
+            kubeDeps.KubeClient, manager.GetObjectTTLFromNodeFunc(klet.GetNode))
+    case kubeletconfiginternal.GetChangeDetectionStrategy:
+        secretManager = secret.NewSimpleSecretManager(kubeDeps.KubeClient)
+        configMapManager = configmap.NewSimpleConfigMapManager(kubeDeps.KubeClient)
+    default:
+        return nil, fmt.Errorf(&quot;unknown configmap and secret manager mode: %v&quot;, kubeCfg.ConfigMapAndSecretChangeDetectionStrategy)
+    }
+
+    klet.secretManager = secretManager
+    klet.configMapManager = configMapManager
+    if klet.experimentalHostUserNamespaceDefaulting {
+        klog.Infof(&quot;Experimental host user namespace defaulting is enabled.&quot;)
+    }
+
+    machineInfo, err := klet.cadvisor.MachineInfo()
+    if err != nil {
+        return nil, err
+    }
+    klet.machineInfo = machineInfo
+
+    imageBackOff := flowcontrol.NewBackOff(backOffPeriod, MaxContainerBackOff)
+
+    // 7&#x3001;&#x521D;&#x59CB;&#x5316; livenessManager&#x3001;podManager&#x3001;statusManager&#x3001;resourceAnalyzer
+    klet.livenessManager = proberesults.NewManager()
+
+    klet.podCache = kubecontainer.NewCache()
+    var checkpointManager checkpointmanager.CheckpointManager
+    if bootstrapCheckpointPath != &quot;&quot; {
+        checkpointManager, err = checkpointmanager.NewCheckpointManager(bootstrapCheckpointPath)
+        if err != nil {
+            return nil, fmt.Errorf(&quot;failed to initialize checkpoint manager: %+v&quot;, err)
+        }
+    }
+
     klet.podManager = kubepod.NewBasicPodManager(kubepod.NewBasicMirrorClient(klet.kubeClient), secretManager, configMapManager, checkpointManager)
 
-    // &#x5BB9;&#x5668;&#x8FD0;&#x884C;&#x65F6;&#x7BA1;&#x7406;
-    runtime, err := kuberuntime.NewKubeGenericRuntimeManager(...)
-
-    // pleg
-    klet.pleg = pleg.NewGenericPLEG(klet.containerRuntime, plegChannelCapacity, plegRelistPeriod, klet.podCache, clock.RealClock{})
-
-    // &#x521B;&#x5EFA; containerGC &#x5BF9;&#x8C61;&#xFF0C;&#x8FDB;&#x884C;&#x5468;&#x671F;&#x6027;&#x7684;&#x5BB9;&#x5668;&#x6E05;&#x7406;&#x5DE5;&#x4F5C;
-    containerGC, err := kubecontainer.NewContainerGC(klet.containerRuntime, containerGCPolicy, klet.sourcesReady)
-
-    // &#x521B;&#x5EFA; imageManager &#x7BA1;&#x7406;&#x955C;&#x50CF;
-    imageManager, err := images.NewImageGCManager(klet.containerRuntime, klet.StatsProvider, kubeDeps.Recorder, nodeRef, imageGCPolicy, crOptions.PodSandboxImage)
-
-    // statusManager &#x5B9E;&#x65F6;&#x68C0;&#x6D4B;&#x8282;&#x70B9;&#x4E0A; pod &#x7684;&#x72B6;&#x6001;&#xFF0C;&#x5E76;&#x66F4;&#x65B0;&#x5230; apiserver &#x5BF9;&#x5E94;&#x7684; pod
     klet.statusManager = status.NewManager(klet.kubeClient, klet.podManager, klet)
 
-    // &#x63A2;&#x9488;&#x7BA1;&#x7406;
-    klet.probeManager = prober.NewManager(...)
+    if remoteRuntimeEndpoint != &quot;&quot; {
+        if remoteImageEndpoint == &quot;&quot; {
+            remoteImageEndpoint = remoteRuntimeEndpoint
+        }
+    }
 
-    // token &#x7BA1;&#x7406;
+    pluginSettings := dockershim.NetworkPluginSettings{......}
+
+    klet.resourceAnalyzer = serverstats.NewResourceAnalyzer(klet, kubeCfg.VolumeStatsAggPeriod.Duration)
+
+    var legacyLogProvider kuberuntime.LegacyLogProvider
+
+    // 8&#x3001;&#x8C03;&#x7528; kuberuntime.NewKubeGenericRuntimeManager &#x521D;&#x59CB;&#x5316; containerRuntime
+    switch containerRuntime {
+    case kubetypes.DockerContainerRuntime:
+        streamingConfig := getStreamingConfig(kubeCfg, kubeDeps, crOptions)
+        ds, err := dockershim.NewDockerService(kubeDeps.DockerClientConfig, crOptions.PodSandboxImage, streamingConfig,
+            &amp;pluginSettings, runtimeCgroups, kubeCfg.CgroupDriver, crOptions.DockershimRootDirectory, !crOptions.RedirectContainerStreaming)
+        if err != nil {
+            return nil, err
+        }
+        if crOptions.RedirectContainerStreaming {
+            klet.criHandler = ds
+        }
+
+        server := dockerremote.NewDockerServer(remoteRuntimeEndpoint, ds)
+        if err := server.Start(); err != nil {
+            return nil, err
+        }
+
+        supported, err := ds.IsCRISupportedLogDriver()
+        if err != nil {
+            return nil, err
+        }
+        if !supported {
+            klet.dockerLegacyService = ds
+            legacyLogProvider = ds
+        }
+    case kubetypes.RemoteContainerRuntime:
+        break
+    default:
+        return nil, fmt.Errorf(&quot;unsupported CRI runtime: %q&quot;, containerRuntime)
+    }
+    runtimeService, imageService, err := getRuntimeAndImageServices(remoteRuntimeEndpoint, remoteImageEndpoint, kubeCfg.RuntimeRequestTimeout)
+    if err != nil {
+        return nil, err
+    }
+    klet.runtimeService = runtimeService
+    if utilfeature.DefaultFeatureGate.Enabled(features.RuntimeClass) &amp;&amp; kubeDeps.KubeClient != nil {
+        klet.runtimeClassManager = runtimeclass.NewManager(kubeDeps.KubeClient)
+    }
+
+    runtime, err := kuberuntime.NewKubeGenericRuntimeManager(......)
+    if err != nil {
+        return nil, err
+    }
+    klet.containerRuntime = runtime
+    klet.streamingRuntime = runtime
+    klet.runner = runtime
+
+    runtimeCache, err := kubecontainer.NewRuntimeCache(klet.containerRuntime)
+    if err != nil {
+        return nil, err
+    }
+    klet.runtimeCache = runtimeCache
+
+    if cadvisor.UsingLegacyCadvisorStats(containerRuntime, remoteRuntimeEndpoint) {
+        klet.StatsProvider = stats.NewCadvisorStatsProvider(......)
+    } else {
+        klet.StatsProvider = stats.NewCRIStatsProvider(......)
+    }
+    // 9&#x3001;&#x521D;&#x59CB;&#x5316; pleg
+    klet.pleg = pleg.NewGenericPLEG(klet.containerRuntime, plegChannelCapacity, plegRelistPeriod, klet.podCache, clock.RealClock{})
+    klet.runtimeState = newRuntimeState(maxWaitForContainerRuntime)
+    klet.runtimeState.addHealthCheck(&quot;PLEG&quot;, klet.pleg.Healthy)
+    if _, err := klet.updatePodCIDR(kubeCfg.PodCIDR); err != nil {
+        klog.Errorf(&quot;Pod CIDR update failed %v&quot;, err)
+    }
+
+    // 10&#x3001;&#x521D;&#x59CB;&#x5316; containerGC&#x3001;containerDeletor&#x3001;imageManager&#x3001;containerLogManager
+    containerGC, err := kubecontainer.NewContainerGC(klet.containerRuntime, containerGCPolicy, klet.sourcesReady)
+    if err != nil {
+        return nil, err
+    }
+    klet.containerGC = containerGC
+    klet.containerDeletor = newPodContainerDeletor(klet.containerRuntime, integer.IntMax(containerGCPolicy.MaxPerPodContainer, minDeadContainerInPod))
+
+    imageManager, err := images.NewImageGCManager(klet.containerRuntime, klet.StatsProvider, kubeDeps.Recorder, nodeRef, imageGCPolicy, crOptions.       PodSandboxImage)
+    if err != nil {
+        return nil, fmt.Errorf(&quot;failed to initialize image manager: %v&quot;, err)
+    }
+    klet.imageManager = imageManager
+
+    if containerRuntime == kubetypes.RemoteContainerRuntime &amp;&amp; utilfeature.DefaultFeatureGate.Enabled(features.CRIContainerLogRotation) {
+        containerLogManager, err := logs.NewContainerLogManager(
+            klet.runtimeService,
+            kubeCfg.ContainerLogMaxSize,
+            int(kubeCfg.ContainerLogMaxFiles),
+        )
+        if err != nil {
+            return nil, fmt.Errorf(&quot;failed to initialize container log manager: %v&quot;, err)
+        }
+        klet.containerLogManager = containerLogManager
+    } else {
+        klet.containerLogManager = logs.NewStubContainerLogManager()
+    }
+    // 11&#x3001;&#x521D;&#x59CB;&#x5316; serverCertificateManager&#x3001;probeManager&#x3001;tokenManager&#x3001;volumePluginMgr&#x3001;pluginManager&#x3001;volumeManager
+    if kubeCfg.ServerTLSBootstrap &amp;&amp; kubeDeps.TLSOptions != nil &amp;&amp; utilfeature.DefaultFeatureGate.Enabled(features.RotateKubeletServerCertificate) {
+        klet.serverCertificateManager, err = kubeletcertificate.NewKubeletServerCertificateManager(klet.kubeClient, kubeCfg, klet.nodeName, klet.        getLastObservedNodeAddresses, certDirectory)
+        if err != nil {
+            return nil, fmt.Errorf(&quot;failed to initialize certificate manager: %v&quot;, err)
+        }
+        kubeDeps.TLSOptions.Config.GetCertificate = func(*tls.ClientHelloInfo) (*tls.Certificate, error) {
+            cert := klet.serverCertificateManager.Current()
+            if cert == nil {
+                return nil, fmt.Errorf(&quot;no serving certificate available for the kubelet&quot;)
+            }
+            return cert, nil
+        }
+    }
+
+    klet.probeManager = prober.NewManager(......)
     tokenManager := token.NewManager(kubeDeps.KubeClient)
 
-    // &#x78C1;&#x76D8;&#x7BA1;&#x7406;
-    klet.volumeManager = volumemanager.NewVolumeManager()
+    klet.volumePluginMgr, err =
+        NewInitializedVolumePluginMgr(klet, secretManager, configMapManager, tokenManager, kubeDeps.VolumePlugins, kubeDeps.DynamicPluginProber)
+    if err != nil {
+        return nil, err
+    }
+    klet.pluginManager = pluginmanager.NewPluginManager(
+        klet.getPluginsRegistrationDir(), /* sockDir */
+        klet.getPluginsDir(),             /* deprecatedSockDir */
+        kubeDeps.Recorder,
+    )
 
-    // &#x5C06; syncPod() &#x6CE8;&#x5165;&#x5230; podWorkers &#x4E2D;
+    if len(experimentalMounterPath) != 0 {
+        experimentalCheckNodeCapabilitiesBeforeMount = false
+        klet.dnsConfigurer.SetupDNSinContainerizedMounter(experimentalMounterPath)
+    }
+    klet.volumeManager = volumemanager.NewVolumeManager(......)
+
+    // 12&#x3001;&#x521D;&#x59CB;&#x5316; workQueue&#x3001;podWorkers&#x3001;evictionManager
+    klet.reasonCache = NewReasonCache()
+    klet.workQueue = queue.NewBasicWorkQueue(klet.clock)
     klet.podWorkers = newPodWorkers(klet.syncPod, kubeDeps.Recorder, klet.workQueue, klet.resyncInterval, backOffPeriod, klet.podCache)
 
-    // &#x5BB9;&#x5668;&#x9A71;&#x9010;&#x7B56;&#x7565;&#x7BA1;&#x7406;
-    evictionManager, evictionAdmitHandler := eviction.NewManager(klet.resourceAnalyzer, evictionConfig, killPodNow(klet.podWorkers, kubeDeps.Recorder), klet.imageManager, klet.containerGC, kubeDeps.Recorder, nodeRef, klet.clock)
-    ...
+    klet.backOff = flowcontrol.NewBackOff(backOffPeriod, MaxContainerBackOff)
+    klet.podKillingCh = make(chan *kubecontainer.PodPair, podKillingChannelCapacity)
+
+    evictionManager, evictionAdmitHandler := eviction.NewManager(klet.resourceAnalyzer, evictionConfig, killPodNow(klet.podWorkers, kubeDeps.Recorder),  klet.podManager.GetMirrorPodByPod, klet.imageManager, klet.containerGC, kubeDeps.Recorder, nodeRef, klet.clock)
+
+    klet.evictionManager = evictionManager
+    klet.admitHandlers.AddPodAdmitHandler(evictionAdmitHandler)
+    if utilfeature.DefaultFeatureGate.Enabled(features.Sysctls) {
+        runtimeSupport, err := sysctl.NewRuntimeAdmitHandler(klet.containerRuntime)
+        if err != nil {
+            return nil, err
+        }
+
+        safeAndUnsafeSysctls := append(sysctlwhitelist.SafeSysctlWhitelist(), allowedUnsafeSysctls...)
+        sysctlsWhitelist, err := sysctl.NewWhitelist(safeAndUnsafeSysctls)
+        if err != nil {
+            return nil, err
+        }
+        klet.admitHandlers.AddPodAdmitHandler(runtimeSupport)
+        klet.admitHandlers.AddPodAdmitHandler(sysctlsWhitelist)
+    }
+
+    // 13&#x3001;&#x4E3A; pod &#x6CE8;&#x518C;&#x76F8;&#x5173;&#x6A21;&#x5757;&#x7684; handler
+    activeDeadlineHandler, err := newActiveDeadlineHandler(klet.statusManager, kubeDeps.Recorder, klet.clock)
+    if err != nil {
+        return nil, err
+    }
+    klet.AddPodSyncLoopHandler(activeDeadlineHandler)
+    klet.AddPodSyncHandler(activeDeadlineHandler)
+    if utilfeature.DefaultFeatureGate.Enabled(features.TopologyManager) {
+        klet.admitHandlers.AddPodAdmitHandler(klet.containerManager.GetTopologyPodAdmitHandler())
+    }
+    criticalPodAdmissionHandler := preemption.NewCriticalPodAdmissionHandler(klet.GetActivePods, killPodNow(klet.podWorkers, kubeDeps.Recorder),kubeDeps.Recorder)
+    klet.admitHandlers.AddPodAdmitHandler(lifecycle.NewPredicateAdmitHandler(klet.getNodeAnyWay, criticalPodAdmissionHandler, klet.containerManager.UpdatePluginResources))
+    for _, opt := range kubeDeps.Options {
+        opt(klet)
+    }
+
+    klet.appArmorValidator = apparmor.NewValidator(containerRuntime)
+    klet.softAdmitHandlers.AddPodAdmitHandler(lifecycle.NewAppArmorAdmitHandler(klet.appArmorValidator))
+    klet.softAdmitHandlers.AddPodAdmitHandler(lifecycle.NewNoNewPrivsAdmitHandler(klet.containerRuntime))
+
+    if utilfeature.DefaultFeatureGate.Enabled(features.NodeLease) {
+        klet.nodeLeaseController = nodelease.NewController(klet.clock, klet.heartbeatClient, string(klet.nodeName), kubeCfg.NodeLeaseDurationSeconds,    klet.onRepeatedHeartbeatFailure)
+    }
+
+    klet.softAdmitHandlers.AddPodAdmitHandler(lifecycle.NewProcMountAdmitHandler(klet.containerRuntime))
+
+    klet.kubeletConfiguration = *kubeCfg
+
+    klet.setNodeStatusFuncs = klet.defaultNodeStatusFuncs()
+
+    return klet, nil
 }
-</code></pre><p>RunKubelet &#x6700;&#x540E;&#x4F1A;&#x8C03;&#x7528; startKubelet() &#x8FDB;&#x884C;&#x540E;&#x7EED;&#x7684;&#x64CD;&#x4F5C;&#x3002;</p>
-<h4 id="5&#x3001;&#x542F;&#x52A8;-kubelet-&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmdkubeletappservergo&#xFF09;"><a name="5&#x3001;&#x542F;&#x52A8;-kubelet-&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmdkubeletappservergo&#xFF09;" class="anchor-navigation-ex-anchor" href="#5&#x3001;&#x542F;&#x52A8;-kubelet-&#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmdkubeletappservergo&#xFF09;"><i class="fa fa-link" aria-hidden="true"></i></a>5&#x3001;&#x542F;&#x52A8; kubelet &#x5185;&#x90E8;&#x7684;&#x6A21;&#x5757;&#x53CA;&#x670D;&#x52A1;&#xFF08;cmd/kubelet/app/server.go&#xFF09;</h4>
-<p>startKubelet()  &#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#xFF1A;</p>
-<ul>
-<li>1&#x3001;&#x4EE5; goroutine &#x65B9;&#x5F0F;&#x542F;&#x52A8; kubelet &#x4E2D;&#x7684;&#x5404;&#x4E2A;&#x6A21;&#x5757;&#x3002;</li>
-<li>2&#x3001;&#x542F;&#x52A8; kubelet http server&#x3002;</li>
-</ul>
-<pre class="language-"><code>func startKubelet(k kubelet.Bootstrap, podCfg *config.PodConfig, kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *kubelet.Dependencies, enableServer bool) {
+</code></pre><h4 id="startkubelet"><a name="startkubelet" class="anchor-navigation-ex-anchor" href="#startkubelet"><i class="fa fa-link" aria-hidden="true"></i></a>startKubelet</h4>
+<p>&#x5728;<code>startKubelet</code> &#x4E2D;&#x901A;&#x8FC7;&#x8C03;&#x7528; <code>k.Run</code> &#x6765;&#x542F;&#x52A8; kubelet &#x4E2D;&#x7684;&#x6240;&#x6709;&#x6A21;&#x5757;&#x4EE5;&#x53CA;&#x4E3B;&#x6D41;&#x7A0B;&#xFF0C;&#x7136;&#x540E;&#x542F;&#x52A8; kubelet &#x6240;&#x9700;&#x8981;&#x7684; http server&#xFF0C;&#x5728; v1.16 &#x4E2D;&#xFF0C;kubelet &#x9ED8;&#x8BA4;&#x4EC5;&#x542F;&#x52A8;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x7AEF;&#x53E3; 10248 &#x548C; kubelet server &#x7684;&#x7AEF;&#x53E3; 10250&#x3002; </p>
+<p><code>k8s.io/kubernetes/cmd/kubelet/app/server.go:1070</code></p>
+<pre class="language-"><code>func startKubelet(k kubelet.Bootstrap, podCfg *config.PodConfig, kubeCfg *kubeletconfiginternal.KubeletConfiguration, kubeDeps *kubelet.Dependencies,    enableCAdvisorJSONEndpoints, enableServer bool) {
+    // start the kubelet
     go wait.Until(func() {
-        // &#x4EE5; goroutine &#x65B9;&#x5F0F;&#x542F;&#x52A8; kubelet &#x4E2D;&#x7684;&#x5404;&#x4E2A;&#x6A21;&#x5757;
         k.Run(podCfg.Updates())
     }, 0, wait.NeverStop)
 
-    // &#x542F;&#x52A8; kubelet http server    
+    // start the kubelet server
     if enableServer {
-        go k.ListenAndServe(net.ParseIP(kubeCfg.Address), uint(kubeCfg.Port), kubeDeps.TLSOptions, kubeDeps.Auth, kubeCfg.EnableDebuggingHandlers, kubeCfg.EnableContentionProfiling)
+        go k.ListenAndServe(net.ParseIP(kubeCfg.Address), uint(kubeCfg.Port), kubeDeps.TLSOptions, kubeDeps.Auth, enableCAdvisorJSONEndpoints, kubeCfg.  EnableDebuggingHandlers, kubeCfg.EnableContentionProfiling)
 
     }
     if kubeCfg.ReadOnlyPort &gt; 0 {
-        go k.ListenAndServeReadOnly(net.ParseIP(kubeCfg.Address), uint(kubeCfg.ReadOnlyPort))
+        go k.ListenAndServeReadOnly(net.ParseIP(kubeCfg.Address), uint(kubeCfg.ReadOnlyPort), enableCAdvisorJSONEndpoints)
+    }
+    if utilfeature.DefaultFeatureGate.Enabled(features.KubeletPodResources) {
+        go k.ListenAndServePodResources()
     }
 }
-</code></pre><pre class="language-"><code>// Run starts the kubelet reacting to config updates
-func (kl *Kubelet) Run(updates &lt;-chan kubetypes.PodUpdate) {
+</code></pre><p>&#x81F3;&#x6B64;&#xFF0C;kubelet &#x5BF9;&#x8C61;&#x4EE5;&#x53CA;&#x5176;&#x4F9D;&#x8D56;&#x6A21;&#x5757;&#x5728;&#x4E0A;&#x9762;&#x7684;&#x51E0;&#x4E2A;&#x65B9;&#x6CD5;&#x4E2D;&#x5DF2;&#x7ECF;&#x521D;&#x59CB;&#x5316;&#x5B8C;&#x6210;&#x4E86;&#xFF0C;&#x9664;&#x4E86;&#x5355;&#x72EC;&#x542F;&#x52A8;&#x4E86; gc &#x6A21;&#x5757;&#x5916;&#x5176;&#x4F59;&#x7684;&#x6A21;&#x5757;&#x4EE5;&#x53CA;&#x4E3B;&#x903B;&#x8F91;&#x6700;&#x540E;&#x90FD;&#x4F1A;&#x5728; <code>Run</code> &#x65B9;&#x6CD5;&#x542F;&#x52A8;&#xFF0C;<code>Run</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x5728;&#x4E0B;&#x6587;&#x4E2D;&#x4F1A;&#x8FDB;&#x884C;&#x89E3;&#x91CA;&#xFF0C;&#x6B64;&#x5904;&#x603B;&#x7ED3;&#x4E00;&#x4E0B; kubelet &#x542F;&#x52A8;&#x903B;&#x8F91;&#x4E2D;&#x7684;&#x8C03;&#x7528;&#x5173;&#x7CFB;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>                                                                                  |--&gt; NewMainKubelet
+                                                                                  |
+                                                      |--&gt; createAndInitKubelet --|--&gt; BirthCry
+                                                      |                           |
+                                    |--&gt; RunKubelet --|                           |--&gt; StartGarbageCollection
+                                    |                 |
+                                    |                  |--&gt; startKubelet --&gt; k.Run
+                                    |
+NewKubeletCommand --&gt; Run --&gt; run --|--&gt; http.ListenAndServe
+                                    |
+                                    |--&gt; daemon.SdNotify
+</code></pre><h3 id="run"><a name="run" class="anchor-navigation-ex-anchor" href="#run"><i class="fa fa-link" aria-hidden="true"></i></a>Run</h3>
+<p><code>Run</code> &#x65B9;&#x6CD5;&#x662F;&#x542F;&#x52A8; kubelet &#x7684;&#x6838;&#x5FC3;&#x65B9;&#x6CD5;&#xFF0C;&#x5176;&#x4E2D;&#x4F1A;&#x542F;&#x52A8; kubelet &#x7684;&#x4F9D;&#x8D56;&#x6A21;&#x5757;&#x4EE5;&#x53CA;&#x4E3B;&#x5FAA;&#x73AF;&#x903B;&#x8F91;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x6CE8;&#x518C; logServer&#xFF1B;</li>
+<li>2&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981;&#x542F;&#x52A8; cloud provider sync manager&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>kl.initializeModules</code> &#x9996;&#x5148;&#x542F;&#x52A8;&#x4E0D;&#x4F9D;&#x8D56; container runtime &#x7684;&#x4E00;&#x4E9B;&#x6A21;&#x5757;&#xFF1B;</li>
+<li>4&#x3001;&#x542F;&#x52A8; <code>volume manager</code>&#xFF1B;</li>
+<li>5&#x3001;&#x6267;&#x884C; <code>kl.syncNodeStatus</code> &#x5B9A;&#x65F6;&#x540C;&#x6B65; Node &#x72B6;&#x6001;&#xFF1B;</li>
+<li>6&#x3001;&#x8C03;&#x7528; <code>kl.fastStatusUpdateOnce</code> &#x66F4;&#x65B0;&#x5BB9;&#x5668;&#x8FD0;&#x884C;&#x65F6;&#x542F;&#x52A8;&#x65F6;&#x95F4;&#x4EE5;&#x53CA;&#x6267;&#x884C;&#x9996;&#x6B21;&#x72B6;&#x6001;&#x540C;&#x6B65;&#xFF1B;</li>
+<li>7&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x7528; <code>NodeLease</code> &#x673A;&#x5236;&#xFF1B;</li>
+<li>8&#x3001;&#x6267;&#x884C; <code>kl.updateRuntimeUp</code> &#x5B9A;&#x65F6;&#x66F4;&#x65B0; Runtime &#x72B6;&#x6001;&#xFF1B;</li>
+<li>9&#x3001;&#x6267;&#x884C; <code>kl.syncNetworkUtil</code> &#x5B9A;&#x65F6;&#x540C;&#x6B65; iptables &#x89C4;&#x5219;&#xFF1B;</li>
+<li>10&#x3001;&#x6267;&#x884C; <code>kl.podKiller</code> &#x5B9A;&#x65F6;&#x6E05;&#x7406;&#x5F02;&#x5E38; pod&#xFF0C;&#x5F53; pod &#x6CA1;&#x6709;&#x88AB; podworker &#x6B63;&#x786E;&#x5904;&#x7406;&#x7684;&#x65F6;&#x5019;&#xFF0C;&#x542F;&#x52A8;&#x4E00;&#x4E2A;goroutine &#x8D1F;&#x8D23; kill &#x6389; pod&#xFF1B;</li>
+<li>11&#x3001;&#x542F;&#x52A8; <code>statusManager</code>&#xFF1B;</li>
+<li>12&#x3001;&#x542F;&#x52A8; <code>probeManager</code>&#xFF1B;</li>
+<li>13&#x3001;&#x542F;&#x52A8; <code>runtimeClassManager</code>&#xFF1B;</li>
+<li>14&#x3001;&#x542F;&#x52A8; <code>pleg</code>&#xFF1B;</li>
+<li>15&#x3001;&#x8C03;&#x7528; <code>kl.syncLoop</code> &#x76D1;&#x542C; pod &#x53D8;&#x5316;&#xFF1B;</li>
+</ul>
+<p>&#x5728; <code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528;&#x4E86;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5; <code>kl.initializeModules</code> &#x548C; <code>kl.fastStatusUpdateOnce</code> &#x6765;&#x5B8C;&#x6210;&#x542F;&#x52A8;&#x524D;&#x7684;&#x4E00;&#x4E9B;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x5728;&#x521D;&#x59CB;&#x5316;&#x5B8C;&#x6240;&#x6709;&#x7684;&#x6A21;&#x5757;&#x540E;&#x4F1A;&#x542F;&#x52A8;&#x4E3B;&#x5FAA;&#x73AF;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:1398</code></p>
+<pre class="language-"><code>func (kl *Kubelet) Run(updates &lt;-chan kubetypes.PodUpdate) {
+    // 1&#x3001;&#x6CE8;&#x518C; logServer
     if kl.logServer == nil {
         kl.logServer = http.StripPrefix(&quot;/logs/&quot;, http.FileServer(http.Dir(&quot;/var/log/&quot;)))
     }
     if kl.kubeClient == nil {
-        glog.Warning(&quot;No api server defined - no node status update will be sent.&quot;)
+        klog.Warning(&quot;No api server defined - no node status update will be sent.&quot;)
     }
 
-    // Start the cloud provider sync manager
+    // 2&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x9700;&#x8981;&#x542F;&#x52A8; cloud provider sync manager
     if kl.cloudResourceSyncManager != nil {
-        go kl.cloudResourceSyncManager.Run(wait.NeverStop)
+       go kl.cloudResourceSyncManager.Run(wait.NeverStop)
     }
 
+    // 3&#x3001;&#x8C03;&#x7528; kl.initializeModules &#x9996;&#x5148;&#x542F;&#x52A8;&#x4E0D;&#x4F9D;&#x8D56; container runtime &#x7684;&#x4E00;&#x4E9B;&#x6A21;&#x5757;
     if err := kl.initializeModules(); err != nil {
         kl.recorder.Eventf(kl.nodeRef, v1.EventTypeWarning, events.KubeletSetupFailed, err.Error())
-        glog.Fatal(err)
+        klog.Fatal(err)
     }
 
-    // Start volume manager
+    // 4&#x3001;&#x542F;&#x52A8; volume manager
     go kl.volumeManager.Run(kl.sourcesReady, wait.NeverStop)
 
     if kl.kubeClient != nil {
-        // Start syncing node status immediately, this may set up things the runtime needs to run.
+        // 5&#x3001;&#x6267;&#x884C; kl.syncNodeStatus &#x5B9A;&#x65F6;&#x540C;&#x6B65; Node &#x72B6;&#x6001;
         go wait.Until(kl.syncNodeStatus, kl.nodeStatusUpdateFrequency, wait.NeverStop)
+
+        // 6&#x3001;&#x8C03;&#x7528; kl.fastStatusUpdateOnce &#x66F4;&#x65B0;&#x5BB9;&#x5668;&#x8FD0;&#x884C;&#x65F6;&#x542F;&#x52A8;&#x65F6;&#x95F4;&#x4EE5;&#x53CA;&#x6267;&#x884C;&#x9996;&#x6B21;&#x72B6;&#x6001;&#x540C;&#x6B65;
         go kl.fastStatusUpdateOnce()
 
-        // start syncing lease
+        // 7&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x7528; NodeLease &#x673A;&#x5236;
         if utilfeature.DefaultFeatureGate.Enabled(features.NodeLease) {
             go kl.nodeLeaseController.Run(wait.NeverStop)
         }
     }
+
+    // 8&#x3001;&#x6267;&#x884C; kl.updateRuntimeUp &#x5B9A;&#x65F6;&#x66F4;&#x65B0; Runtime &#x72B6;&#x6001;
     go wait.Until(kl.updateRuntimeUp, 5*time.Second, wait.NeverStop)
 
-    // Start loop to sync iptables util rules
+    // 9&#x3001;&#x6267;&#x884C; kl.syncNetworkUtil &#x5B9A;&#x65F6;&#x540C;&#x6B65; iptables &#x89C4;&#x5219;
     if kl.makeIPTablesUtilChains {
         go wait.Until(kl.syncNetworkUtil, 1*time.Minute, wait.NeverStop)
     }
 
-    // Start a goroutine responsible for killing pods (that are not properly
-    // handled by pod workers).
+    // 10&#x3001;&#x6267;&#x884C; kl.podKiller &#x5B9A;&#x65F6;&#x6E05;&#x7406;&#x5F02;&#x5E38; pod
     go wait.Until(kl.podKiller, 1*time.Second, wait.NeverStop)
 
-    // Start component sync loops.
+    // 11&#x3001;&#x542F;&#x52A8; statusManager&#x3001;probeManager&#x3001;runtimeClassManager
     kl.statusManager.Start()
     kl.probeManager.Start()
 
-    // Start syncing RuntimeClasses if enabled.
     if kl.runtimeClassManager != nil {
-        go kl.runtimeClassManager.Run(wait.NeverStop)
+        kl.runtimeClassManager.Start(wait.NeverStop)
     }
 
-    // Start the pod lifecycle event generator.
+    // 12&#x3001;&#x542F;&#x52A8; pleg
     kl.pleg.Start()
 
+    // 13&#x3001;&#x8C03;&#x7528; kl.syncLoop &#x76D1;&#x542C; pod &#x53D8;&#x5316;
     kl.syncLoop(updates, kl)
 }
-</code></pre><p>syncLoop &#x662F; kubelet &#x7684;&#x4E3B;&#x5FAA;&#x73AF;&#x65B9;&#x6CD5;&#xFF0C;&#x5B83;&#x4ECE;&#x4E0D;&#x540C;&#x7684;&#x7BA1;&#x9053;(FILE,URL, API-SERVER)&#x76D1;&#x542C; pod &#x7684;&#x53D8;&#x5316;&#xFF0C;&#x5E76;&#x628A;&#x5B83;&#x4EEC;&#x6C47;&#x805A;&#x8D77;&#x6765;&#x3002;&#x5F53;&#x6709;&#x65B0;&#x7684;&#x53D8;&#x5316;&#x53D1;&#x751F;&#x65F6;&#xFF0C;&#x5B83;&#x4F1A;&#x8C03;&#x7528;&#x5BF9;&#x5E94;&#x7684;&#x51FD;&#x6570;&#xFF0C;&#x4FDD;&#x8BC1; Pod &#x5904;&#x4E8E;&#x671F;&#x671B;&#x7684;&#x72B6;&#x6001;&#x3002;</p>
-<pre class="language-"><code>func (kl *Kubelet) syncLoop(updates &lt;-chan kubetypes.PodUpdate, handler SyncHandler) {
-    glog.Info(&quot;Starting kubelet main sync loop.&quot;)
+</code></pre><h4 id="initializemodules"><a name="initializemodules" class="anchor-navigation-ex-anchor" href="#initializemodules"><i class="fa fa-link" aria-hidden="true"></i></a>initializeModules</h4>
+<p><code>initializeModules</code> &#x4E2D;&#x542F;&#x52A8;&#x7684;&#x6A21;&#x5757;&#x662F;&#x4E0D;&#x4F9D;&#x8D56;&#x4E8E; container runtime &#x7684;&#xFF0C;&#x5E76;&#x4E14;&#x4E0D;&#x4F9D;&#x8D56;&#x4E8E;&#x5C1A;&#x672A;&#x521D;&#x59CB;&#x5316;&#x7684;&#x6A21;&#x5757;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>kl.setupDataDirs</code> &#x521B;&#x5EFA; kubelet &#x6240;&#x9700;&#x8981;&#x7684;&#x6587;&#x4EF6;&#x76EE;&#x5F55;&#xFF1B;</li>
+<li>2&#x3001;&#x521B;&#x5EFA; ContainerLogsDir <code>/var/log/containers</code>&#xFF1B;</li>
+<li>3&#x3001;&#x542F;&#x52A8; <code>imageManager</code>&#xFF0C;image gc &#x7684;&#x529F;&#x80FD;&#x5DF2;&#x7ECF;&#x5728; RunKubelet &#x4E2D;&#x542F;&#x52A8;&#x4E86;&#xFF0C;&#x6B64;&#x5904;&#x4E3B;&#x8981;&#x662F;&#x76D1;&#x63A7; image &#x7684;&#x53D8;&#x5316;&#xFF1B;</li>
+<li>4&#x3001;&#x542F;&#x52A8; <code>certificateManager</code>&#xFF0C;&#x8D1F;&#x8D23;&#x8BC1;&#x4E66;&#x66F4;&#x65B0;&#xFF1B;</li>
+<li>5&#x3001;&#x542F;&#x52A8; <code>oomWatcher</code>&#xFF0C;&#x76D1;&#x542C; oom &#x5E76;&#x8BB0;&#x5F55;&#x4E8B;&#x4EF6;&#xFF1B;</li>
+<li>6&#x3001;&#x542F;&#x52A8; <code>resourceAnalyzer</code>&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:1319</code></p>
+<pre class="language-"><code>func (kl *Kubelet) initializeModules() error {
+    metrics.Register(
+        kl.runtimeCache,
+        collectors.NewVolumeStatsCollector(kl),
+        collectors.NewLogMetricsCollector(kl.StatsProvider.ListPodStats),
+    )
+    metrics.SetNodeName(kl.nodeName)
+    servermetrics.Register()
 
-    // syncTicker &#x6BCF;&#x79D2;&#x68C0;&#x6D4B;&#x4E00;&#x6B21;&#x662F;&#x5426;&#x6709;&#x9700;&#x8981;&#x540C;&#x6B65;&#x7684; pod workers
+    // 1&#x3001;&#x521B;&#x5EFA;&#x6587;&#x4EF6;&#x76EE;&#x5F55;
+    if err := kl.setupDataDirs(); err != nil {
+        return err
+    }
+
+    // 2&#x3001;&#x521B;&#x5EFA; ContainerLogsDir
+    if _, err := os.Stat(ContainerLogsDir); err != nil {
+        if err := kl.os.MkdirAll(ContainerLogsDir, 0755); err != nil {
+            klog.Errorf(&quot;Failed to create directory %q: %v&quot;, ContainerLogsDir, err)
+        }
+    }
+
+    // 3&#x3001;&#x542F;&#x52A8; imageManager
+    kl.imageManager.Start()
+
+    // 4&#x3001;&#x542F;&#x52A8; certificate manager 
+    if kl.serverCertificateManager != nil {
+        kl.serverCertificateManager.Start()
+    }
+    // 5&#x3001;&#x542F;&#x52A8; oomWatcher.
+    if err := kl.oomWatcher.Start(kl.nodeRef); err != nil {
+        return fmt.Errorf(&quot;failed to start OOM watcher %v&quot;, err)
+    }
+
+    // 6&#x3001;&#x542F;&#x52A8; resource analyzer
+    kl.resourceAnalyzer.Start()
+
+    return nil
+}
+</code></pre><h4 id="faststatusupdateonce"><a name="faststatusupdateonce" class="anchor-navigation-ex-anchor" href="#faststatusupdateonce"><i class="fa fa-link" aria-hidden="true"></i></a>fastStatusUpdateOnce</h4>
+<p><code>fastStatusUpdateOnce</code> &#x4F1A;&#x4E0D;&#x65AD;&#x5C1D;&#x8BD5;&#x66F4;&#x65B0; pod CIDR&#xFF0C;&#x4E00;&#x65E6;&#x66F4;&#x65B0;&#x6210;&#x529F;&#x4F1A;&#x7ACB;&#x5373;&#x6267;&#x884C;<code>updateRuntimeUp</code>&#x548C;<code>syncNodeStatus</code>&#x6765;&#x8FDB;&#x884C;&#x8FD0;&#x884C;&#x65F6;&#x7684;&#x66F4;&#x65B0;&#x548C;&#x8282;&#x70B9;&#x72B6;&#x6001;&#x66F4;&#x65B0;&#x3002;&#x6B64;&#x65B9;&#x6CD5;&#x53EA;&#x5728; kubelet &#x542F;&#x52A8;&#x65F6;&#x6267;&#x884C;&#x4E00;&#x6B21;&#xFF0C;&#x76EE;&#x7684;&#x662F;&#x4E3A;&#x4E86;&#x901A;&#x8FC7;&#x66F4;&#x65B0; pod CIDR&#xFF0C;&#x51CF;&#x5C11;&#x8282;&#x70B9;&#x8FBE;&#x5230; ready &#x72B6;&#x6001;&#x7684;&#x65F6;&#x5EF6;&#xFF0C;&#x5C3D;&#x53EF;&#x80FD;&#x5FEB;&#x7684;&#x8FDB;&#x884C; runtime update &#x548C; node status update&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:2262</code></p>
+<pre class="language-"><code>func (kl *Kubelet) fastStatusUpdateOnce() {
+    for {
+        time.Sleep(100 * time.Millisecond)
+        node, err := kl.GetNode()
+        if err != nil {
+            klog.Errorf(err.Error())
+            continue
+        }
+        if len(node.Spec.PodCIDRs) != 0 {
+            podCIDRs := strings.Join(node.Spec.PodCIDRs, &quot;,&quot;)
+            if _, err := kl.updatePodCIDR(podCIDRs); err != nil {
+                klog.Errorf(&quot;Pod CIDR update to %v failed %v&quot;, podCIDRs, err)
+                continue
+            }
+            kl.updateRuntimeUp()
+            kl.syncNodeStatus()
+            return
+        }
+    }
+}
+</code></pre><h5 id="updateruntimeup"><a name="updateruntimeup" class="anchor-navigation-ex-anchor" href="#updateruntimeup"><i class="fa fa-link" aria-hidden="true"></i></a>updateRuntimeUp</h5>
+<p><code>updateRuntimeUp</code> &#x65B9;&#x6CD5;&#x5728;&#x5BB9;&#x5668;&#x8FD0;&#x884C;&#x65F6;&#x9996;&#x6B21;&#x542F;&#x52A8;&#x8FC7;&#x7A0B;&#x4E2D;&#x521D;&#x59CB;&#x5316;&#x8FD0;&#x884C;&#x65F6;&#x4F9D;&#x8D56;&#x7684;&#x6A21;&#x5757;&#xFF0C;&#x5E76;&#x5728; kubelet &#x7684;<code>runtimeState</code>&#x4E2D;&#x66F4;&#x65B0;&#x5BB9;&#x5668;&#x8FD0;&#x884C;&#x65F6;&#x7684;&#x542F;&#x52A8;&#x65F6;&#x95F4;&#x3002;<code>updateRuntimeUp</code> &#x65B9;&#x6CD5;&#x9996;&#x5148;&#x68C0;&#x67E5; network &#x4EE5;&#x53CA; runtime &#x662F;&#x5426;&#x5904;&#x4E8E;  ready &#x72B6;&#x6001;&#xFF0C;&#x5982;&#x679C; network &#x4EE5;&#x53CA; runtime &#x90FD;&#x5904;&#x4E8E; ready &#x72B6;&#x6001;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>initializeRuntimeDependentModules</code> &#x521D;&#x59CB;&#x5316; runtime &#x7684;&#x4F9D;&#x8D56;&#x6A21;&#x5757;&#xFF0C;&#x5305;&#x62EC; <code>cadvisor</code>&#x3001;<code>containerManager</code>&#x3001;<code>evictionManager</code>&#x3001;<code>containerLogManager</code>&#x3001;<code>pluginManage</code>&#x7B49;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:2168</code></p>
+<pre class="language-"><code>func (kl *Kubelet) updateRuntimeUp() {
+    kl.updateRuntimeMux.Lock()
+    defer kl.updateRuntimeMux.Unlock()
+
+    // 1&#x3001;&#x83B7;&#x53D6; containerRuntime Status
+    s, err := kl.containerRuntime.Status()
+    if err != nil {
+        klog.Errorf(&quot;Container runtime sanity check failed: %v&quot;, err)
+        return
+    }
+    if s == nil {
+        klog.Errorf(&quot;Container runtime status is nil&quot;)
+        return
+    }
+
+    // 2&#x3001;&#x68C0;&#x67E5; network &#x548C; runtime &#x662F;&#x5426;&#x5904;&#x4E8E; ready &#x72B6;&#x6001;
+    networkReady := s.GetRuntimeCondition(kubecontainer.NetworkReady)
+    if networkReady == nil || !networkReady.Status {
+        kl.runtimeState.setNetworkState(fmt.Errorf(&quot;runtime network not ready: %v&quot;, networkReady))
+    } else {
+        kl.runtimeState.setNetworkState(nil)
+    }
+
+    runtimeReady := s.GetRuntimeCondition(kubecontainer.RuntimeReady)
+    if runtimeReady == nil || !runtimeReady.Status {
+        kl.runtimeState.setRuntimeState(err)
+        return
+    }
+    kl.runtimeState.setRuntimeState(nil)
+    // 3&#x3001;&#x8C03;&#x7528; kl.initializeRuntimeDependentModules &#x542F;&#x52A8;&#x4F9D;&#x8D56;&#x6A21;&#x5757;
+    kl.oneTimeInitializer.Do(kl.initializeRuntimeDependentModules)
+    kl.runtimeState.setRuntimeSync(kl.clock.Now())
+}
+</code></pre><h6 id="initializeruntimedependentmodules"><a name="initializeruntimedependentmodules" class="anchor-navigation-ex-anchor" href="#initializeruntimedependentmodules"><i class="fa fa-link" aria-hidden="true"></i></a>initializeRuntimeDependentModules</h6>
+<p>&#x8BE5;&#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x542F;&#x52A8; <code>cadvisor</code>&#xFF1B;</li>
+<li>2&#x3001;&#x83B7;&#x53D6; CgroupStats&#xFF1B;</li>
+<li>3&#x3001;&#x542F;&#x52A8; <code>containerManager</code>&#x3001;<code>evictionManager</code>&#x3001;<code>containerLogManager</code>&#xFF1B;</li>
+<li>4&#x3001;&#x5C06; CSI Driver &#x548C; Device Manager &#x6CE8;&#x518C;&#x5230; <code>pluginManager</code>&#xFF0C;&#x7136;&#x540E;&#x542F;&#x52A8; <code>pluginManager</code>&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:1361</code></p>
+<pre class="language-"><code>func (kl *Kubelet) initializeRuntimeDependentModules() {
+    // 1&#x3001;&#x542F;&#x52A8; cadvisor
+    if err := kl.cadvisor.Start(); err != nil {
+        ......
+    }
+
+    // 2&#x3001;&#x83B7;&#x53D6; CgroupStats
+    kl.StatsProvider.GetCgroupStats(&quot;/&quot;, true)
+
+    node, err := kl.getNodeAnyWay()
+    if err != nil {
+        klog.Fatalf(&quot;Kubelet failed to get node info: %v&quot;, err)
+    }
+
+    // 3&#x3001;&#x542F;&#x52A8; containerManager&#x3001;evictionManager&#x3001;containerLogManager
+    if err := kl.containerManager.Start(node, kl.GetActivePods, kl.sourcesReady, kl.statusManager, kl.runtimeService); err != nil {
+        klog.Fatalf(&quot;Failed to start ContainerManager %v&quot;, err)
+    }
+
+    kl.evictionManager.Start(kl.StatsProvider, kl.GetActivePods, kl.podResourcesAreReclaimed, evictionMonitoringPeriod)
+
+    kl.containerLogManager.Start()
+
+    kl.pluginManager.AddHandler(pluginwatcherapi.CSIPlugin, plugincache.PluginHandler(csi.PluginHandler))
+
+    kl.pluginManager.AddHandler(pluginwatcherapi.DevicePlugin, kl.containerManager.GetPluginRegistrationHandler())
+    // 4&#x3001;&#x542F;&#x52A8; pluginManager
+    go kl.pluginManager.Run(kl.sourcesReady, wait.NeverStop)
+}
+</code></pre><h4 id="&#x5C0F;&#x7ED3;"><a name="&#x5C0F;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x5C0F;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x5C0F;&#x7ED3;</h4>
+<p>&#x5728; <code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;&#x4F1A;&#x76F4;&#x63A5;&#x8C03;&#x7528; <code>kl.syncNodeStatus</code>&#x548C; <code>kl.updateRuntimeUp</code>&#xFF0C;&#x4F46;&#x5728; <code>kl.fastStatusUpdateOnce</code> &#x4E2D;&#x4E5F;&#x8C03;&#x7528;&#x4E86;&#x8FD9;&#x4E24;&#x4E2A;&#x65B9;&#x6CD5;&#xFF0C;&#x800C;&#x5728; <code>kl.fastStatusUpdateOnce</code> &#x4E2D;&#x4EC5;&#x6267;&#x884C;&#x4E00;&#x6B21;&#xFF0C;&#x5728; <code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x5B9A;&#x671F;&#x6267;&#x884C;&#x3002;&#x5728;<code>kl.fastStatusUpdateOnce</code> &#x4E2D;&#x8C03;&#x7528;&#x7684;&#x76EE;&#x7684;&#x5C31;&#x662F;&#x5F53; kubelet &#x9996;&#x6B21;&#x542F;&#x52A8;&#x65F6;&#x5C3D;&#x53EF;&#x80FD;&#x5FEB;&#x7684;&#x8FDB;&#x884C; runtime update &#x548C; node status update&#xFF0C;&#x51CF;&#x5C11;&#x8282;&#x70B9;&#x8FBE;&#x5230; ready &#x72B6;&#x6001;&#x7684;&#x65F6;&#x5EF6;&#x3002;&#x800C;&#x5728; <code>kl.updateRuntimeUp</code> &#x4E2D;&#x8C03;&#x7528;&#x7684;&#x521D;&#x59CB;&#x5316; runtime &#x4F9D;&#x8D56;&#x6A21;&#x5757;&#x7684;&#x65B9;&#x6CD5; <code>kl.initializeRuntimeDependentModules</code> &#x901A;&#x8FC7; sync.Once &#x8C03;&#x7528;&#x4EC5;&#x4EC5;&#x4F1A;&#x88AB;&#x6267;&#x884C;&#x4E00;&#x6B21;&#x3002; </p>
+<h4 id="syncloop"><a name="syncloop" class="anchor-navigation-ex-anchor" href="#syncloop"><i class="fa fa-link" aria-hidden="true"></i></a>syncLoop</h4>
+<p><code>syncLoop</code> &#x662F; kubelet &#x7684;&#x4E3B;&#x5FAA;&#x73AF;&#x65B9;&#x6CD5;&#xFF0C;&#x5B83;&#x4ECE;&#x4E0D;&#x540C;&#x7684;&#x7BA1;&#x9053;(file&#xFF0C;http&#xFF0C;apiserver)&#x76D1;&#x542C; pod &#x7684;&#x53D8;&#x5316;&#xFF0C;&#x5E76;&#x628A;&#x5B83;&#x4EEC;&#x6C47;&#x805A;&#x8D77;&#x6765;&#x3002;&#x5F53;&#x6709;&#x65B0;&#x7684;&#x53D8;&#x5316;&#x53D1;&#x751F;&#x65F6;&#xFF0C;&#x5B83;&#x4F1A;&#x8C03;&#x7528;&#x5BF9;&#x5E94;&#x7684;&#x51FD;&#x6570;&#xFF0C;&#x4FDD;&#x8BC1; pod &#x5904;&#x4E8E;&#x671F;&#x671B;&#x7684;&#x72B6;&#x6001;&#x3002;</p>
+<p><code>syncLoop</code> &#x4E2D;&#x9996;&#x5148;&#x5B9A;&#x4E49;&#x4E86;&#x4E00;&#x4E2A; <code>syncTicker</code> &#x548C; <code>housekeepingTicker</code>&#xFF0C;&#x5373;&#x4F7F;&#x6CA1;&#x6709;&#x9700;&#x8981;&#x66F4;&#x65B0;&#x7684; pod &#x914D;&#x7F6E;&#xFF0C;kubelet &#x4E5F;&#x4F1A;&#x5B9A;&#x65F6;&#x53BB;&#x505A;&#x540C;&#x6B65;&#x548C;&#x6E05;&#x7406; pod &#x7684;&#x5DE5;&#x4F5C;&#x3002;&#x7136;&#x540E;&#x5728; for &#x5FAA;&#x73AF;&#x4E2D;&#x4E00;&#x76F4;&#x8C03;&#x7528; <code>syncLoopIteration</code>&#xFF0C;&#x5982;&#x679C;&#x5728;&#x6BCF;&#x6B21;&#x5FAA;&#x73AF;&#x8FC7;&#x7A0B;&#x4E2D;&#x51FA;&#x73B0;&#x9519;&#x8BEF;&#x65F6;&#xFF0C;kubelet &#x4F1A;&#x8BB0;&#x5F55;&#x5230; <code>runtimeState</code> &#x4E2D;&#xFF0C;&#x9047;&#x5230;&#x9519;&#x8BEF;&#x5C31;&#x7B49;&#x5F85; 5 &#x79D2;&#x4E2D;&#x7EE7;&#x7EED;&#x5FAA;&#x73AF;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:1821</code></p>
+<pre class="language-"><code>func (kl *Kubelet) syncLoop(updates &lt;-chan kubetypes.PodUpdate, handler SyncHandler) {
     syncTicker := time.NewTicker(time.Second)
     defer syncTicker.Stop()
     housekeepingTicker := time.NewTicker(housekeepingPeriod)
@@ -1036,35 +1725,132 @@ func (kl *Kubelet) Run(updates &lt;-chan kubetypes.PodUpdate) {
     )
     duration := base
     for {
-        if rs := kl.runtimeState.runtimeErrors(); len(rs) != 0 {
-            glog.Infof(&quot;skipping pod synchronization - %v&quot;, rs)
-            // exponential backoff
+        if err := kl.runtimeState.runtimeErrors(); err != nil {
             time.Sleep(duration)
             duration = time.Duration(math.Min(float64(max), factor*float64(duration)))
             continue
         }
-        // reset backoff if we have a success
         duration = base
-
         kl.syncLoopMonitor.Store(kl.clock.Now())
-        // 
         if !kl.syncLoopIteration(updates, handler, syncTicker.C, housekeepingTicker.C, plegCh) {
             break
         }
         kl.syncLoopMonitor.Store(kl.clock.Now())
     }
 }
-</code></pre><p>syncLoopIteration()  &#x65B9;&#x6CD5;&#x5BF9;&#x591A;&#x4E2A;&#x7BA1;&#x9053;&#x8FDB;&#x884C;&#x904D;&#x5386;&#xFF0C;&#x5982;&#x679C; pod &#x53D1;&#x751F;&#x53D8;&#x5316;&#xFF0C;&#x5219;&#x4F1A;&#x8C03;&#x7528;&#x76F8;&#x5E94;&#x7684; Handler&#xFF0C;&#x5728; Handler &#x4E2D;&#x901A;&#x8FC7;&#x8C03;&#x7528; dispatchWork &#x5206;&#x53D1;&#x4EFB;&#x52A1;&#x3002;</p>
-<h2 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h2>
-<p>&#x672C;&#x7BC7;&#x6587;&#x7AE0;&#x4E3B;&#x8981;&#x8BB2;&#x8FF0;&#x4E86; kubelet &#x7EC4;&#x4EF6;&#x4ECE;&#x52A0;&#x8F7D;&#x914D;&#x7F6E;&#x5230;&#x521D;&#x59CB;&#x5316;&#x5185;&#x90E8;&#x7684;&#x5404;&#x4E2A;&#x6A21;&#x5757;&#x518D;&#x5230;&#x542F;&#x52A8; kubelet &#x670D;&#x52A1;&#x7684;&#x6574;&#x4E2A;&#x6D41;&#x7A0B;&#xFF0C;&#x4E0A;&#x9762;&#x7684;&#x65F6;&#x5E8F;&#x56FE;&#x80FD;&#x6E05;&#x695A;&#x7684;&#x770B;&#x5230;&#x51FD;&#x6570;&#x4E4B;&#x95F4;&#x7684;&#x8C03;&#x7528;&#x5173;&#x7CFB;&#xFF0C;&#x4F46;&#x662F;&#x5176;&#x4E2D;&#x6BCF;&#x4E2A;&#x7EC4;&#x4EF6;&#x5177;&#x4F53;&#x7684;&#x5DE5;&#x4F5C;&#x65B9;&#x5F0F;&#x4EE5;&#x53CA;&#x7EC4;&#x4EF6;&#x4E4B;&#x95F4;&#x7684;&#x4EA4;&#x4E92;&#x65B9;&#x5F0F;&#x8FD8;&#x4E0D;&#x5F97;&#x800C;&#x77E5;&#xFF0C;&#x540E;&#x9762;&#x4F1A;&#x4E00;&#x63A2;&#x7A76;&#x7ADF;&#x3002;</p>
-<p>&#x53C2;&#x8003;&#xFF1A;</p>
-<p><a href="http://www.sel.zju.edu.cn/?p=595" target="_blank">kubernetes node components &#x2013; kubelet</a></p>
-<p><a href="https://segmentfault.com/a/1190000008267351" target="_blank">Kubelet &#x6E90;&#x7801;&#x5206;&#x6790;(&#x4E00;):&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5206;&#x6790;</a></p>
-<p><a href="https://cizixs.com/2017/06/06/kubelet-source-code-analysis-part-1/" target="_blank">kubelet &#x6E90;&#x7801;&#x5206;&#x6790;&#xFF1A;&#x542F;&#x52A8;&#x6D41;&#x7A0B;</a></p>
-<p><a href="https://www.lijiaocn.com/%E9%A1%B9%E7%9B%AE/2017/05/02/Kubernetes-kubelet.html" target="_blank">kubernetes &#x7684; kubelet &#x7684;&#x5DE5;&#x4F5C;&#x8FC7;&#x7A0B;</a></p>
-<p><a href="https://fatsheep9146.github.io/2018/07/08/kubelet%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0%E8%A7%A3%E6%9E%90/" target="_blank">kubelet &#x5185;&#x90E8;&#x5B9E;&#x73B0;&#x89E3;&#x6790;</a></p>
+</code></pre><h5 id="syncloopiteration"><a name="syncloopiteration" class="anchor-navigation-ex-anchor" href="#syncloopiteration"><i class="fa fa-link" aria-hidden="true"></i></a>syncLoopIteration</h5>
+<p><code>syncLoopIteration</code> &#x65B9;&#x6CD5;&#x4F1A;&#x76D1;&#x542C;&#x591A;&#x4E2A; channel&#xFF0C;&#x5F53;&#x53D1;&#x73B0;&#x4EFB;&#x4F55;&#x4E00;&#x4E2A; channel &#x6709;&#x6570;&#x636E;&#x5C31;&#x4EA4;&#x7ED9; handler &#x53BB;&#x5904;&#x7406;&#xFF0C;&#x5728; handler &#x4E2D;&#x901A;&#x8FC7;&#x8C03;&#x7528; <code>dispatchWork</code> &#x5206;&#x53D1;&#x4EFB;&#x52A1;&#x3002;&#x5B83;&#x4F1A;&#x4ECE;&#x4EE5;&#x4E0B;&#x51E0;&#x4E2A; channel &#x4E2D;&#x83B7;&#x53D6;&#x6D88;&#x606F;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;configCh&#xFF1A;&#x8BE5;&#x4FE1;&#x606F;&#x6E90;&#x7531; kubeDeps &#x5BF9;&#x8C61;&#x4E2D;&#x7684; PodConfig &#x5B50;&#x6A21;&#x5757;&#x63D0;&#x4F9B;&#xFF0C;&#x8BE5;&#x6A21;&#x5757;&#x5C06;&#x540C;&#x65F6; watch 3 &#x4E2A;&#x4E0D;&#x540C;&#x6765;&#x6E90;&#x7684; pod &#x4FE1;&#x606F;&#x7684;&#x53D8;&#x5316;&#xFF08;file&#xFF0C;http&#xFF0C;apiserver&#xFF09;&#xFF0C;&#x4E00;&#x65E6;&#x67D0;&#x4E2A;&#x6765;&#x6E90;&#x7684; pod &#x4FE1;&#x606F;&#x53D1;&#x751F;&#x4E86;&#x66F4;&#x65B0;&#xFF08;&#x521B;&#x5EFA;/&#x66F4;&#x65B0;/&#x5220;&#x9664;&#xFF09;&#xFF0C;&#x8FD9;&#x4E2A; channel &#x4E2D;&#x5C31;&#x4F1A;&#x51FA;&#x73B0;&#x88AB;&#x66F4;&#x65B0;&#x7684; pod &#x4FE1;&#x606F;&#x548C;&#x66F4;&#x65B0;&#x7684;&#x5177;&#x4F53;&#x64CD;&#x4F5C;&#xFF1B;</li>
+<li>2&#x3001;syncCh&#xFF1A;&#x5B9A;&#x65F6;&#x5668;&#xFF0C;&#x6BCF;&#x9694;&#x4E00;&#x79D2;&#x53BB;&#x540C;&#x6B65;&#x6700;&#x65B0;&#x4FDD;&#x5B58;&#x7684; pod &#x72B6;&#x6001;&#xFF1B;</li>
+<li>3&#x3001;houseKeepingCh&#xFF1A;housekeeping &#x4E8B;&#x4EF6;&#x7684;&#x901A;&#x9053;&#xFF0C;&#x505A; pod &#x6E05;&#x7406;&#x5DE5;&#x4F5C;&#xFF1B;</li>
+<li>4&#x3001;plegCh&#xFF1A;&#x8BE5;&#x4FE1;&#x606F;&#x6E90;&#x7531; kubelet &#x5BF9;&#x8C61;&#x4E2D;&#x7684; pleg &#x5B50;&#x6A21;&#x5757;&#x63D0;&#x4F9B;&#xFF0C;&#x8BE5;&#x6A21;&#x5757;&#x4E3B;&#x8981;&#x7528;&#x4E8E;&#x5468;&#x671F;&#x6027;&#x5730;&#x5411; container runtime &#x67E5;&#x8BE2;&#x5F53;&#x524D;&#x6240;&#x6709;&#x5BB9;&#x5668;&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x5982;&#x679C;&#x72B6;&#x6001;&#x53D1;&#x751F;&#x53D8;&#x5316;&#xFF0C;&#x5219;&#x8FD9;&#x4E2A; channel &#x4EA7;&#x751F;&#x4E8B;&#x4EF6;&#xFF1B;</li>
+<li>5&#x3001;liveness Manager&#xFF1A;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x6A21;&#x5757;&#x53D1;&#x73B0;&#x67D0;&#x4E2A; pod &#x5F02;&#x5E38;&#x65F6;&#xFF0C;kubelet &#x5C06;&#x6839;&#x636E; pod &#x7684; restartPolicy &#x81EA;&#x52A8;&#x6267;&#x884C;&#x6B63;&#x786E;&#x7684;&#x64CD;&#x4F5C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:1888</code></p>
+<pre class="language-"><code>func (kl *Kubelet) syncLoopIteration(......) bool {
+    select {
+    case u, open := &lt;-configCh:
+        if !open {
+            return false
+        }
+
+        switch u.Op {
+        case kubetypes.ADD:
+            handler.HandlePodAdditions(u.Pods)
+        case kubetypes.UPDATE:
+            handler.HandlePodUpdates(u.Pods)
+        case kubetypes.REMOVE:
+            handler.HandlePodRemoves(u.Pods)
+        case kubetypes.RECONCILE:
+            handler.HandlePodReconcile(u.Pods)
+        case kubetypes.DELETE:
+            handler.HandlePodUpdates(u.Pods)
+        case kubetypes.RESTORE:
+            handler.HandlePodAdditions(u.Pods)
+        case kubetypes.SET:
+        }
+
+        if u.Op != kubetypes.RESTORE {
+            kl.sourcesReady.AddSource(u.Source)
+        }
+    case e := &lt;-plegCh:
+        if isSyncPodWorthy(e) {
+            if pod, ok := kl.podManager.GetPodByUID(e.ID); ok {
+                klog.V(2).Infof(&quot;SyncLoop (PLEG): %q, event: %#v&quot;, format.Pod(pod), e)
+                handler.HandlePodSyncs([]*v1.Pod{pod})
+            } else {
+                klog.V(4).Infof(&quot;SyncLoop (PLEG): ignore irrelevant event: %#v&quot;, e)
+            }
+        }
+
+        if e.Type == pleg.ContainerDied {
+            if containerID, ok := e.Data.(string); ok {
+                kl.cleanUpContainersInPod(e.ID, containerID)
+            }
+        }
+    case &lt;-syncCh:
+        podsToSync := kl.getPodsToSync()
+        if len(podsToSync) == 0 {
+            break
+        }
+        handler.HandlePodSyncs(podsToSync)
+    case update := &lt;-kl.livenessManager.Updates():
+        if update.Result == proberesults.Failure {
+            pod, ok := kl.podManager.GetPodByUID(update.PodUID)
+            if !ok {
+                break
+            }
+            handler.HandlePodSyncs([]*v1.Pod{pod})
+        }
+    case &lt;-housekeepingCh:
+        if !kl.sourcesReady.AllReady() {
+            klog.V(4).Infof(&quot;SyncLoop (housekeeping, skipped): sources aren&apos;t ready yet.&quot;)
+        } else {
+            if err := handler.HandlePodCleanups(); err != nil {
+                klog.Errorf(&quot;Failed cleaning pods: %v&quot;, err)
+            }
+        }
+    }
+    return true
+}
+</code></pre><p>&#x6700;&#x540E;&#x518D;&#x603B;&#x7ED3;&#x4E00;&#x4E0B;&#x542F;&#x52A8; kubelet &#x4EE5;&#x53CA;&#x5176;&#x4F9D;&#x8D56;&#x6A21;&#x5757; <code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x7684;&#x8C03;&#x7528;&#x6D41;&#x7A0B;&#xFF1A;</p>
+<pre class="language-"><code>      |--&gt; kl.cloudResourceSyncManager.Run
+      |
+      |                            |--&gt; kl.setupDataDirs
+      |                            |--&gt; kl.imageManager.Start
+Run --|--&gt; kl.initializeModules ---|--&gt; kl.serverCertificateManager.Start
+      |                            |--&gt; kl.oomWatcher.Start
+      |                            |--&gt; kl.resourceAnalyzer.Start
+      |
+      |--&gt; kl.volumeManager.Run
+      |                                                        |--&gt; kl.containerRuntime.Status
+      |--&gt; kl.syncNodeStatus                                   |
+      |                              |--&gt; kl.updateRuntimeUp --|                                           |--&gt; kl.cadvisor.Start
+      |                              |                         |                                           |
+      |--&gt; kl.fastStatusUpdateOnce --|                         |--&gt; kl.initializeRuntimeDependentModules --|--&gt; kl.containerManager.Start
+      |                              |                                                                     |
+      |                              |--&gt; kl.syncNodeStatus                                                |--&gt; kl.evictionManager.Start
+      |                                                                                                    |
+      |--&gt; kl.updateRuntimeUp                                                                              |--&gt; kl.containerLogManager.Start
+      |                                                                                                    |
+      |--&gt; kl.syncNetworkUtil                                                                              |--&gt; kl.pluginManager.Run
+      |
+      |--&gt; kl.podKiller
+      |
+      |--&gt; kl.statusManager.Start
+      |
+      |--&gt; kl.probeManager.Start
+      |
+      |--&gt; kl.runtimeClassManager.Start
+      |
+      |--&gt; kl.pleg.Start
+      |
+      |--&gt; kl.syncLoop --&gt; kl.syncLoopIteration
+</code></pre><h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x4ECB;&#x7ECD;&#x4E86; kubelet &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#xFF0C;&#x53EF;&#x4EE5;&#x770B;&#x5230; kubelet &#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x4E2D;&#x7684;&#x73AF;&#x8282;&#x975E;&#x5E38;&#x591A;&#xFF0C;kubelet &#x4E2D;&#x4E5F;&#x5305;&#x542B;&#x4E86;&#x975E;&#x5E38;&#x591A;&#x7684;&#x6A21;&#x5757;&#xFF0C;&#x540E;&#x7EED;&#x5728;&#x5206;&#x4EAB; kubelet &#x6E90;&#x7801;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x4F1A;&#x5148;&#x4EE5; <code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x542F;&#x52A8;&#x7684;&#x6240;&#x6709;&#x6A21;&#x5757;&#x4E3A;&#x4E3B;&#xFF0C;&#x5404;&#x4E2A;&#x51FB;&#x7834;&#x3002;</p>
 <footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
-2019-12-29 15:13:21
+2020-01-03 21:31:48
 </span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
                                 
                                 </section>
@@ -1108,7 +1894,7 @@ func (kl *Kubelet) Run(updates &lt;-chan kubetypes.PodUpdate) {
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"kubelet 启动流程分析","date":"2018-12-23T21:22:30.000Z","tags":"kubelet","type":"kubelet","level":"1.2.15","depth":2,"next":{"title":"kubelet 创建 pod 的流程","level":"1.2.16","depth":2,"path":"kubernetes/kubelet_create_pod.md","ref":"kubernetes/kubelet_create_pod.md","articles":[]},"previous":{"title":"kubelet 架构浅析","level":"1.2.14","depth":2,"path":"kubernetes/kubelet-modules.md","ref":"kubernetes/kubelet-modules.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/kubelet_init.md","mtime":"2019-12-29T07:13:21.252Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2019-12-31T08:05:34.646Z"},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"kubelet 启动流程分析","date":"2020-01-03T20:22:30.000Z","tags":"kubelet","type":"kubelet","level":"1.2.15","depth":2,"next":{"title":"kubelet 创建 pod 的流程","level":"1.2.16","depth":2,"path":"kubernetes/kubelet_create_pod.md","ref":"kubernetes/kubelet_create_pod.md","articles":[]},"previous":{"title":"kubelet 架构浅析","level":"1.2.14","depth":2,"path":"kubernetes/kubelet-modules.md","ref":"kubernetes/kubelet-modules.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/kubelet_init.md","mtime":"2020-01-03T13:31:48.153Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-01-03T13:35:29.236Z"},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

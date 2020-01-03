@@ -86,7 +86,7 @@ func NewManager(kubeClient clientset.Interface, podManager kubepod.Manager, podD
 
 在初始化完成后，kubelet 会在 Run 方法中会以 goroutine 的方式启动 statusManager。
 
-`k8s.io/kubernetes/pkg/kubelet/kubelet.go:1397`
+`k8s.io/kubernetes/pkg/kubelet/kubelet.go:1398`
 
 ```
 func (kl *Kubelet) Run(updates <-chan kubetypes.PodUpdate) {
