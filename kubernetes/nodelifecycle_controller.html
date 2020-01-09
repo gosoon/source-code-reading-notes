@@ -1,0 +1,2017 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>node controller 源码分析 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="job_controller.html" />
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.2.1" data-path="nodelifecycle_controller.html">
+            
+                <a href="nodelifecycle_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    node controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="job_controller.html">
+            
+                <a href="job_controller.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    job controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="garbagecollector_controller.html">
+            
+                <a href="garbagecollector_controller.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    garbage collector controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="daemonset_controller.html">
+            
+                <a href="daemonset_controller.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    daemonset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="statefulset_controller.html">
+            
+                <a href="statefulset_controller.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    statefulset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="replicaset_controller.html">
+            
+                <a href="replicaset_controller.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    replicaset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.12" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.12.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.13" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.13.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.14" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.14.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.15" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.15.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.16" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.16.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.17" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.17.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.18" data-path="node_status.html">
+            
+                <a href="node_status.html">
+            
+                    
+                        <b>1.2.18.</b>
+                    
+                    kubelet 状态上报的方式
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.19" data-path="k8s_events.html">
+            
+                <a href="k8s_events.html">
+            
+                    
+                        <b>1.2.19.</b>
+                    
+                    kubelet 中事件处理机制
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.20" data-path="kubelet_status_manager.html">
+            
+                <a href="kubelet_status_manager.html">
+            
+                    
+                        <b>1.2.20.</b>
+                    
+                    kubelet statusManager 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >node controller 源码分析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <ul>
+<li><a href="#nodelifecyclecontroller-&#x7684;&#x529F;&#x80FD;">NodeLifecycleController &#x7684;&#x529F;&#x80FD;</a><ul>
+<li><a href="#taint-&#x7684;&#x4F5C;&#x7528;">taint &#x7684;&#x4F5C;&#x7528;</a></li>
+<li><a href="#nodelifecyclecontroller-&#x4E2D;&#x7684;-feature-gates">NodeLifecycleController &#x4E2D;&#x7684; feature-gates</a></li>
+</ul>
+</li>
+<li><a href="#nodelifecyclecontroller-&#x6E90;&#x7801;&#x5206;&#x6790;">NodeLifecycleController &#x6E90;&#x7801;&#x5206;&#x6790;</a><ul>
+<li><a href="#startnodelifecyclecontroller">startNodeLifecycleController</a></li>
+<li><a href="#newnodelifecyclecontroller">NewNodeLifecycleController</a></li>
+<li><a href="#run">Run</a></li>
+<li><a href="#nctaintmanagerrun">nc.taintManager.Run</a><ul>
+<li><a href="#tcworker">tc.worker</a><ul>
+<li><a href="#tchandlenodeupdate">tc.handleNodeUpdate</a></li>
+<li><a href="#tchandlepodupdate">tc.handlePodUpdate</a></li>
+<li><a href="#tcprocesspodonnode">tc.processPodOnNode</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#ncdonodeprocessingpassworker">nc.doNodeProcessingPassWorker</a></li>
+<li><a href="#ncdonoexecutetaintingpass">nc.doNoExecuteTaintingPass</a></li>
+<li><a href="#ncdoevictionpass">nc.doEvictionPass</a></li>
+<li><a href="#ncmonitornodehealth">nc.monitorNodeHealth</a><ul>
+<li><a href="#nctryupdatenodehealth">nc.tryUpdateNodeHealth</a></li>
+<li><a href="#nchandledisruption">nc.handleDisruption</a><ul>
+<li><a href="#nccomputezonestatefunc">nc.computeZoneStateFunc</a></li>
+<li><a href="#ncsetlimiterinzone">nc.setLimiterInZone</a></li>
+</ul>
+</li>
+<li><a href="#&#x5C0F;&#x7ED3;">&#x5C0F;&#x7ED3;</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#&#x603B;&#x7ED3;">&#x603B;&#x7ED3;</a></li>
+</ul>
+<p>&#x5728;&#x65E9;&#x671F;&#x7684;&#x7248;&#x672C;&#x4E2D; NodeController &#x53EA;&#x6709;&#x4E00;&#x79CD;&#xFF0C;v1.16 &#x7248;&#x672C;&#x4E2D; NodeController &#x5DF2;&#x7ECF;&#x5206;&#x4E3A;&#x4E86; NodeIpamController &#x4E0E; NodeLifecycleController&#xFF0C;&#x672C;&#x6587;&#x4E3B;&#x8981;&#x4ECB;&#x7ECD; NodeLifecycleController&#x3002;</p>
+<h3 id="nodelifecyclecontroller-&#x7684;&#x529F;&#x80FD;"><a name="nodelifecyclecontroller-&#x7684;&#x529F;&#x80FD;" class="anchor-navigation-ex-anchor" href="#nodelifecyclecontroller-&#x7684;&#x529F;&#x80FD;"><i class="fa fa-link" aria-hidden="true"></i></a>NodeLifecycleController &#x7684;&#x529F;&#x80FD;</h3>
+<p>NodeLifecycleController &#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x5B9A;&#x671F;&#x76D1;&#x63A7; node &#x7684;&#x72B6;&#x6001;&#x5E76;&#x6839;&#x636E; node &#x7684; condition &#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; taint &#x6807;&#x7B7E;&#x6216;&#x8005;&#x76F4;&#x63A5;&#x9A71;&#x9010; node &#x4E0A;&#x7684; pod&#x3002;</p>
+<h4 id="taint-&#x7684;&#x4F5C;&#x7528;"><a name="taint-&#x7684;&#x4F5C;&#x7528;" class="anchor-navigation-ex-anchor" href="#taint-&#x7684;&#x4F5C;&#x7528;"><i class="fa fa-link" aria-hidden="true"></i></a>taint &#x7684;&#x4F5C;&#x7528;</h4>
+<p>&#x5728;&#x4ECB;&#x7ECD; NodeLifecycleController &#x7684;&#x6E90;&#x7801;&#x524D;&#x6709;&#x5FC5;&#x8981;&#x5148;&#x4ECB;&#x7ECD;&#x4E00;&#x4E0B; taint &#x7684;&#x4F5C;&#x7528;&#xFF0C;&#x56E0;&#x4E3A; NodeLifecycleController &#x529F;&#x80FD;&#x6700;&#x7EC8;&#x7684;&#x7ED3;&#x679C;&#x6709;&#x5F88;&#x5927;&#x4E00;&#x90E8;&#x5206;&#x90FD;&#x4F53;&#x73B0;&#x5728; node taint &#x4E0A;&#x3002; </p>
+<p>taint &#x4F7F;&#x7528;&#x6548;&#x679C;(Effect):</p>
+<ul>
+<li><code>PreferNoSchedule</code>&#xFF1A;&#x8C03;&#x5EA6;&#x5668;&#x5C3D;&#x91CF;&#x907F;&#x514D;&#x628A; pod &#x8C03;&#x5EA6;&#x5230;&#x5177;&#x6709;&#x8BE5;&#x6C61;&#x70B9;&#x7684;&#x8282;&#x70B9;&#x4E0A;&#xFF0C;&#x5982;&#x679C;&#x4E0D;&#x80FD;&#x907F;&#x514D;(&#x5982;&#x5176;&#x4ED6;&#x8282;&#x70B9;&#x8D44;&#x6E90;&#x4E0D;&#x8DB3;)&#xFF0C;pod &#x4E5F;&#x80FD;&#x8C03;&#x5EA6;&#x5230;&#x8FD9;&#x4E2A;&#x6C61;&#x70B9;&#x8282;&#x70B9;&#x4E0A;&#xFF0C;&#x5DF2;&#x5B58;&#x5728;&#x4E8E;&#x6B64;&#x8282;&#x70B9;&#x4E0A;&#x7684; pod &#x4E0D;&#x4F1A;&#x88AB;&#x9A71;&#x9010;&#xFF1B;</li>
+<li><code>NoSchedule</code>&#xFF1A;&#x4E0D;&#x5BB9;&#x5FCD;&#x8BE5;&#x6C61;&#x70B9;&#x7684; pod &#x4E0D;&#x4F1A;&#x88AB;&#x8C03;&#x5EA6;&#x5230;&#x8BE5;&#x8282;&#x70B9;&#x4E0A;&#xFF0C;&#x901A;&#x8FC7; kubelet &#x7BA1;&#x7406;&#x7684; pod(static pod)&#x4E0D;&#x53D7;&#x9650;&#x5236;&#xFF0C;&#x4E4B;&#x524D;&#x6CA1;&#x6709;&#x8BBE;&#x7F6E;&#x6C61;&#x70B9;&#x7684; pod &#x5982;&#x679C;&#x5DF2;&#x8FD0;&#x884C;&#x5728;&#x6B64;&#x8282;&#x70B9;(&#x6709;&#x6C61;&#x70B9;&#x7684;&#x8282;&#x70B9;)&#x4E0A;&#xFF0C;&#x53EF;&#x4EE5;&#x7EE7;&#x7EED;&#x8FD0;&#x884C;&#xFF1B;</li>
+<li><code>NoExecute</code>&#xFF1A;&#x4E0D;&#x5BB9;&#x5FCD;&#x8BE5;&#x6C61;&#x70B9;&#x7684; pod &#x4E0D;&#x4F1A;&#x88AB;&#x8C03;&#x5EA6;&#x5230;&#x8BE5;&#x8282;&#x70B9;&#x4E0A;&#xFF0C;&#x540C;&#x65F6;&#x4F1A;&#x5C06;&#x5DF2;&#x8C03;&#x5EA6;&#x5230;&#x8BE5;&#x8282;&#x70B9;&#x4E0A;&#x4F46;&#x4E0D;&#x5BB9;&#x5FCD; node &#x6C61;&#x70B9;&#x7684; pod &#x9A71;&#x9010;&#x6389;&#xFF1B;</li>
+</ul>
+<h4 id="nodelifecyclecontroller-&#x4E2D;&#x7684;-feature-gates"><a name="nodelifecyclecontroller-&#x4E2D;&#x7684;-feature-gates" class="anchor-navigation-ex-anchor" href="#nodelifecyclecontroller-&#x4E2D;&#x7684;-feature-gates"><i class="fa fa-link" aria-hidden="true"></i></a>NodeLifecycleController &#x4E2D;&#x7684; feature-gates</h4>
+<p>&#x5728; NodeLifecycleController &#x7528;&#x5230;&#x4E86;&#x591A;&#x4E2A; feature-gates&#xFF0C;&#x6B64;&#x5904;&#x5148;&#x8FDB;&#x884C;&#x89E3;&#x91CA;&#x4E0B;&#xFF1A;</p>
+<ul>
+<li><code>NodeLease</code> &#xFF1A;&#x8BE5;&#x7279;&#x6027;&#x5728; v1.12 &#x5F15;&#x5165;&#xFF0C;v1.14 &#x4E3A; Beta &#x7248;&#x672C;&#x5E76;&#x9ED8;&#x8BA4;&#x542F;&#x7528;&#xFF0C;&#x5728; v1.17 &#x4E2D; GA&#xFF1B;</li>
+<li><code>NodeDisruptionExclusion</code>&#xFF1A;&#x8BE5;&#x7279;&#x6027;&#x5728; v1.16 &#x5F15;&#x5165;&#xFF0C;Alpha &#x7248;&#x672C;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; false&#xFF0C;&#x5176;&#x529F;&#x80FD;&#x662F;&#x5F53; node &#x5B58;&#x5728; <code>node.kubernetes.io/exclude-disruption</code> &#x6807;&#x7B7E;&#x65F6;&#xFF0C;&#x5F53; node &#x7F51;&#x7EDC;&#x4E2D;&#x65AD;&#x65F6;&#x5176;&#x8282;&#x70B9;&#x4E0A;&#x7684; pod &#x4E0D;&#x4F1A;&#x88AB;&#x9A71;&#x9010;&#x6389;&#xFF1B;</li>
+<li><code>LegacyNodeRoleBehavior</code>&#xFF1A;&#x8BE5;&#x7279;&#x6027;&#x5728; v1.16 &#x4E2D;&#x5F15;&#x5165;&#xFF0C;Alpha &#x7248;&#x672C;&#x4E14;&#x9ED8;&#x8BA4;&#x4E3A; true&#xFF0C;&#x5728;&#x521B;&#x5EFA; load balancers &#x4EE5;&#x53CA;&#x4E2D;&#x65AD;&#x5904;&#x7406;&#x65F6;&#x4E0D;&#x4F1A;&#x5FFD;&#x7565;&#x5177;&#x6709; <code>node-role.kubernetes.io/master</code> label &#x7684; node&#xFF0C;&#x8BE5;&#x529F;&#x80FD;&#x5728; v1.19 &#x4E2D;&#x5C06;&#x88AB;&#x79FB;&#x9664;&#xFF1B;</li>
+<li><code>TaintBasedEvictions</code>&#xFF1A;&#x8BE5;&#x7279;&#x6027;&#x4ECE; v1.13 &#x5F00;&#x59CB;&#x4E3A; Beta &#x7248;&#x672C;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; true&#x3002;&#x5176;&#x529F;&#x80FD;&#x662F;&#x5F53; node &#x5904;&#x4E8E; <code>NodeNotReady</code>&#x3001;<code>NodeUnreachable</code> &#x72B6;&#x6001;&#x65F6;&#x4E3A; node &#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; taint&#xFF0C;<code>TaintBasedEvictions</code> &#x6DFB;&#x52A0;&#x7684; taint effect &#x4E3A; <code>NoExecute</code>&#xFF0C;&#x5373;&#x4F1A;&#x9A71;&#x9010; node &#x4E0A;&#x5BF9;&#x5E94;&#x7684; pod&#xFF1B;</li>
+<li><code>TaintNodesByCondition</code>&#xFF1A;&#x8BE5;&#x7279;&#x6027;&#x4ECE; v1.12 &#x5F00;&#x59CB;&#x4E3A; Beta &#x7248;&#x672C;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; true&#xFF0C;v1.17 &#x4E3A; GA &#x7248;&#x672C;&#x3002;&#x5176;&#x529F;&#x80FD;&#x662F;&#x57FA;&#x4E8E;&#x8282;&#x70B9;&#x72B6;&#x6001;&#x6DFB;&#x52A0; taint&#xFF0C;&#x5F53;&#x8282;&#x70B9;&#x5904;&#x4E8E; <code>NetworkUnavailable</code>&#x3001;<code>MemoryPressure</code>&#x3001;<code>PIDPressure</code>&#x3001;<code>DiskPressure</code> &#x72B6;&#x6001;&#x65F6;&#x4F1A;&#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; taint&#xFF0C;<code>TaintNodesByCondition</code> &#x6DFB;&#x52A0;&#x7684; taint  effect &#x4EC5;&#x4E3A;<code>NoSchedule</code>&#xFF0C;&#x5373;&#x4EC5;&#x4EC5;&#x4E0D;&#x4F1A;&#x8BA9;&#x65B0;&#x521B;&#x5EFA;&#x7684; pod &#x8C03;&#x5EA6;&#x5230;&#x8BE5; node &#x4E0A;&#xFF1B;     </li>
+<li><code>NodeLease</code>&#xFF1A;&#x8BE5;&#x7279;&#x6027;&#x5728; v1.12 &#x5F15;&#x5165;&#xFF0C;v 1.14 &#x4E3A; Beta &#x7248;&#x672C;&#x4E14;&#x9ED8;&#x8BA4;&#x542F;&#x7528;&#xFF0C;v 1.17 GA&#xFF0C;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x51CF;&#x5C11; node &#x7684;&#x5FC3;&#x8DF3;&#x8BF7;&#x6C42;&#x4EE5;&#x51CF;&#x8F7B; apiserver &#x7684;&#x8D1F;&#x62C5;&#xFF1B;              </li>
+</ul>
+<h3 id="nodelifecyclecontroller-&#x6E90;&#x7801;&#x5206;&#x6790;"><a name="nodelifecyclecontroller-&#x6E90;&#x7801;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#nodelifecyclecontroller-&#x6E90;&#x7801;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>NodeLifecycleController &#x6E90;&#x7801;&#x5206;&#x6790;</h3>
+<blockquote>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
+</blockquote>
+<h4 id="startnodelifecyclecontroller"><a name="startnodelifecyclecontroller" class="anchor-navigation-ex-anchor" href="#startnodelifecyclecontroller"><i class="fa fa-link" aria-hidden="true"></i></a>startNodeLifecycleController</h4>
+<p>&#x9996;&#x5148;&#x8FD8;&#x662F;&#x770B; NodeLifecycleController &#x7684;&#x542F;&#x52A8;&#x65B9;&#x6CD5; <code>startNodeLifecycleController</code>&#xFF0C;&#x5728; <code>startNodeLifecycleController</code> &#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528;&#x4E86; <code>lifecyclecontroller.NewNodeLifecycleController</code> &#x5BF9; lifecycleController &#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x5728;&#x8BE5;&#x65B9;&#x6CD5;&#x4E2D;&#x4F20;&#x5165;&#x4E86;&#x7EC4;&#x4EF6;&#x7684;&#x591A;&#x4E2A;&#x53C2;&#x6570;&#x4EE5;&#x53CA; <code>TaintBasedEvictions</code> &#x548C; <code>TaintNodesByCondition</code> &#x4E24;&#x4E2A; feature-gates&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528;&#x4E86; <code>lifecycleController.Run</code> &#x542F;&#x52A8; lifecycleController&#xFF0C;&#x53EF;&#x4EE5;&#x770B;&#x5230; NodeLifecycleController &#x4E3B;&#x8981;&#x76D1;&#x542C; lease&#x3001;pods&#x3001;nodes&#x3001;daemonSets &#x56DB;&#x79CD;&#x5BF9;&#x8C61;&#x3002;</p>
+<p>&#x5176;&#x4E2D;&#x5728;&#x542F;&#x52A8;&#x65F6;&#x6307;&#x5B9A;&#x7684;&#x51E0;&#x4E2A;&#x53C2;&#x6570;&#x9ED8;&#x8BA4;&#x503C;&#x5206;&#x522B;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li><code>NodeMonitorPeriod</code>&#xFF1A;&#x901A;&#x8FC7;<code>--node-monitor-period</code> &#x8BBE;&#x7F6E;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 5s&#xFF0C;&#x8868;&#x793A;&#x5728; NodeController &#x4E2D;&#x540C;&#x6B65;NodeStatus &#x7684;&#x5468;&#x671F;&#xFF1B;</li>
+<li><code>NodeStartupGracePeriod</code>&#xFF1A;<code>--node-startup-grace-period</code> &#x9ED8;&#x8BA4; 60s&#xFF0C;&#x5728; node &#x542F;&#x52A8;&#x5B8C;&#x6210;&#x524D;&#x6807;&#x8BB0;&#x8282;&#x70B9;&#x4E3A;unhealthy &#x7684;&#x5141;&#x8BB8;&#x65E0;&#x54CD;&#x5E94;&#x65F6;&#x95F4;&#xFF1B;</li>
+<li><code>NodeMonitorGracePeriod</code>&#xFF1A;&#x901A;&#x8FC7;<code>--node-monitor-grace-period</code> &#x8BBE;&#x7F6E;&#xFF0C;&#x9ED8;&#x8BA4; 40s&#xFF0C;&#x8868;&#x793A;&#x5728;&#x6807;&#x8BB0;&#x67D0;&#x4E2A; node&#x4E3A; unhealthy &#x524D;&#xFF0C;&#x5141;&#x8BB8; 40s &#x5185;&#x8BE5; node &#x65E0;&#x54CD;&#x5E94;&#xFF1B;</li>
+<li><code>PodEvictionTimeout</code>&#xFF1A;&#x901A;&#x8FC7;<code>--pod-eviction-timeout</code> &#x8BBE;&#x7F6E;&#xFF0C;&#x9ED8;&#x8BA4; 5 &#x5206;&#x949F;&#xFF0C;&#x8868;&#x793A;&#x5728;&#x5F3A;&#x5236;&#x5220;&#x9664; node &#x4E0A;&#x7684; pod &#x65F6;&#xFF0C;&#x5BB9;&#x5FCD; pod &#x65F6;&#x95F4;&#xFF1B;</li>
+<li><code>NodeEvictionRate</code>&#xFF1A;&#x901A;&#x8FC7;<code>--node-eviction-rate</code>&#x8BBE;&#x7F6E;&#xFF0C; &#x9ED8;&#x8BA4; 0.1&#xFF0C;&#x8868;&#x793A;&#x5F53;&#x96C6;&#x7FA4;&#x4E0B;&#x67D0;&#x4E2A; zone &#x4E3A; unhealthy &#x65F6;&#xFF0C;&#x6BCF;&#x79D2;&#x5E94;&#x8BE5;&#x5254;&#x9664;&#x7684; node &#x6570;&#x91CF;&#xFF0C;&#x9ED8;&#x8BA4;&#x5373;&#x6BCF; 10s &#x5254;&#x9664;1&#x4E2A; node&#xFF1B;</li>
+<li><code>SecondaryNodeEvictionRate</code>&#xFF1A;&#x901A;&#x8FC7; <code>--secondary-node-eviction-rate</code>&#x8BBE;&#x7F6E;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 0.01&#xFF0C;&#x8868;&#x793A;&#x5982;&#x679C;&#x67D0;&#x4E2A; zone &#x4E0B;&#x7684; unhealthy &#x8282;&#x70B9;&#x7684;&#x767E;&#x5206;&#x6BD4;&#x8D85;&#x8FC7; <code>--unhealthy-zone-threshold</code> &#xFF08;&#x9ED8;&#x8BA4;&#x4E3A; 0.55&#xFF09;&#x65F6;&#xFF0C;&#x9A71;&#x9010;&#x901F;&#x7387;&#x5C06;&#x4F1A;&#x51CF;&#x5C0F;&#xFF0C;&#x5982;&#x679C;&#x96C6;&#x7FA4;&#x8F83;&#x5C0F;&#xFF08;&#x5C0F;&#x4E8E;&#x7B49;&#x4E8E; <code>--large-cluster-size-threshold</code> &#x4E2A; &#x8282;&#x70B9; - &#x9ED8;&#x8BA4;&#x4E3A; 50&#xFF09;&#xFF0C;&#x9A71;&#x9010;&#x64CD;&#x4F5C;&#x5C06;&#x4F1A;&#x505C;&#x6B62;&#xFF0C;&#x5426;&#x5219;&#x9A71;&#x9010;&#x901F;&#x7387;&#x5C06;&#x964D;&#x4E3A;&#x6BCF;&#x79D2; <code>--secondary-node-eviction-rate</code> &#x4E2A;&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A; 0.01&#xFF09;&#xFF1B;</li>
+<li><code>LargeClusterSizeThreshold</code>&#xFF1A;&#x901A;&#x8FC7;<code>--large-cluster-size-threshold</code> &#x8BBE;&#x7F6E;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 50&#xFF0C;&#x5F53;&#x8BE5; zone &#x7684;&#x8282;&#x70B9;&#x8D85;&#x8FC7;&#x8BE5;&#x9608;&#x503C;&#x65F6;&#xFF0C;&#x5219;&#x8BA4;&#x4E3A;&#x8BE5; zone &#x662F;&#x4E00;&#x4E2A;&#x5927;&#x96C6;&#x7FA4;&#xFF1B;</li>
+<li><code>UnhealthyZoneThreshold</code>&#xFF1A;&#x901A;&#x8FC7;<code>--unhealthy-zone-threshold</code> &#x8BBE;&#x7F6E;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 0.55&#xFF0C;&#x4E0D;&#x5065;&#x5EB7; zone &#x9608;&#x503C;&#xFF0C;&#x4F1A;&#x5F71;&#x54CD;&#x4EC0;&#x4E48;&#x65F6;&#x5019;&#x5F00;&#x542F;&#x4E8C;&#x7EA7;&#x9A71;&#x8D76;&#x901F;&#x7387;&#xFF0C;&#x5373;&#x5F53;&#x8BE5; zone &#x4E2D;&#x8282;&#x70B9;&#x5B95;&#x673A;&#x6570;&#x76EE;&#x8D85;&#x8FC7; 55%&#xFF0C;&#x8BA4;&#x4E3A;&#x8BE5; zone &#x4E0D;&#x5065;&#x5EB7;&#xFF1B;</li>
+<li><code>EnableTaintManager</code>&#xFF1A;<code>--enable-taint-manager</code> &#x9ED8;&#x8BA4;&#x4E3A; true&#xFF0C;Beta feature&#xFF0C;&#x5982;&#x679C;&#x4E3A; true&#xFF0C;&#x5219;&#x8868;&#x793A;NodeController &#x5C06;&#x4F1A;&#x542F;&#x52A8; TaintManager&#xFF0C;&#x5F53;&#x5DF2;&#x7ECF;&#x8C03;&#x5EA6;&#x5230;&#x8BE5; node &#x4E0A;&#x7684; pod &#x4E0D;&#x80FD;&#x5BB9;&#x5FCD; node &#x7684; taint &#x65F6;&#xFF0C;&#x7531; TaintManager &#x8D1F;&#x8D23;&#x9A71;&#x9010;&#x6B64;&#x7C7B; pod&#xFF0C;&#x82E5;&#x4E0D;&#x5F00;&#x542F;&#x8BE5;&#x7279;&#x6027;&#x5219;&#x5DF2;&#x8C03;&#x5EA6;&#x5230;&#x8BE5; node &#x4E0A;&#x7684; pod &#x4F1A;&#x7EE7;&#x7EED;&#x5B58;&#x5728;&#xFF1B;</li>
+<li><code>TaintBasedEvictions</code> &#xFF1A;&#x9ED8;&#x8BA4;&#x4E3A; true&#xFF1B;</li>
+<li><code>TaintNodesByCondition</code> &#xFF1A;&#x9ED8;&#x8BA4;&#x4E3A; true&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kube-controller-manager/app/core.go:163</code></p>
+<pre class="language-"><code>func startNodeLifecycleController(ctx ControllerContext) (http.Handler, bool, error) {
+    lifecycleController, err := lifecyclecontroller.NewNodeLifecycleController(
+        ctx.InformerFactory.Coordination().V1beta1().Leases(),
+        ctx.InformerFactory.Core().V1().Pods(),
+        ctx.InformerFactory.Core().V1().Nodes(),
+        ctx.InformerFactory.Apps().V1().DaemonSets(),
+        ctx.ClientBuilder.ClientOrDie(&quot;node-controller&quot;),
+        ctx.ComponentConfig.KubeCloudShared.NodeMonitorPeriod.Duration,
+        ctx.ComponentConfig.NodeLifecycleController.NodeStartupGracePeriod.Duration,
+        ctx.ComponentConfig.NodeLifecycleController.NodeMonitorGracePeriod.Duration,
+        ctx.ComponentConfig.NodeLifecycleController.PodEvictionTimeout.Duration,
+        ctx.ComponentConfig.NodeLifecycleController.NodeEvictionRate,
+        ctx.ComponentConfig.NodeLifecycleController.SecondaryNodeEvictionRate,
+        ctx.ComponentConfig.NodeLifecycleController.LargeClusterSizeThreshold,
+        ctx.ComponentConfig.NodeLifecycleController.UnhealthyZoneThreshold,
+        ctx.ComponentConfig.NodeLifecycleController.EnableTaintManager,
+        utilfeature.DefaultFeatureGate.Enabled(features.TaintBasedEvictions),
+        utilfeature.DefaultFeatureGate.Enabled(features.TaintNodesByCondition),
+    )
+    if err != nil {
+        return nil, true, err
+    }
+    go lifecycleController.Run(ctx.Stop)
+    return nil, true, nil
+}
+</code></pre><h4 id="newnodelifecyclecontroller"><a name="newnodelifecyclecontroller" class="anchor-navigation-ex-anchor" href="#newnodelifecyclecontroller"><i class="fa fa-link" aria-hidden="true"></i></a>NewNodeLifecycleController</h4>
+<p>&#x9996;&#x5148;&#x6709;&#x5FC5;&#x8981;&#x8BF4;&#x660E;&#x4E00;&#x4E0B; NodeLifecycleController &#x5BF9;&#x8C61;&#x4E2D;&#x90E8;&#x5206;&#x5B57;&#x6BB5;&#x7684;&#x610F;&#x4E49;&#xFF0C;&#x5176;&#x7ED3;&#x6784;&#x4F53;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>type Controller struct {
+    taintManager *scheduler.NoExecuteTaintManager
+
+    podInformerSynced cache.InformerSynced
+    kubeClient        clientset.Interface
+
+    now func() metav1.Time
+
+    // &#x8BA1;&#x7B97; zone &#x4E0B; node &#x9A71;&#x9010;&#x901F;&#x7387;
+    enterPartialDisruptionFunc func(nodeNum int) float32
+    enterFullDisruptionFunc    func(nodeNum int) float32
+
+    // &#x8BA1;&#x7B97; zone &#x72B6;&#x6001;
+    computeZoneStateFunc       func(nodeConditions []*v1.NodeCondition) (int, ZoneState)
+
+    // &#x7528;&#x6765;&#x8BB0;&#x5F55;NodeController observed&#x8282;&#x70B9;&#x7684;&#x96C6;&#x5408;
+    knownNodeSet map[string]*v1.Node
+    // &#x8BB0;&#x5F55; node &#x6700;&#x8FD1;&#x4E00;&#x6B21;&#x72B6;&#x6001;&#x7684;&#x96C6;&#x5408;
+    nodeHealthMap map[string]*nodeHealthData
+
+    evictorLock sync.Mutex
+
+    // &#x9700;&#x8981;&#x9A71;&#x9010;&#x8282;&#x70B9;&#x4E0A; pod &#x7684; node &#x961F;&#x5217; 
+    zonePodEvictor map[string]*scheduler.RateLimitedTimedQueue
+
+    // &#x9700;&#x8981;&#x6253; taint &#x6807;&#x7B7E;&#x7684; node &#x961F;&#x5217;
+    zoneNoExecuteTainter map[string]*scheduler.RateLimitedTimedQueue
+
+    // &#x5C06; node &#x5212;&#x5206;&#x4E3A;&#x4E0D;&#x540C;&#x7684; zone
+    zoneStates map[string]ZoneState
+
+    daemonSetStore          appsv1listers.DaemonSetLister
+    daemonSetInformerSynced cache.InformerSynced
+    leaseLister         coordlisters.LeaseLister
+    leaseInformerSynced cache.InformerSynced
+    nodeLister          corelisters.NodeLister
+    nodeInformerSynced  cache.InformerSynced
+
+    getPodsAssignedToNode func(nodeName string) ([]v1.Pod, error)
+
+    recorder record.EventRecorder
+
+    // kube-controller-manager &#x542F;&#x52A8;&#x65F6;&#x6307;&#x5B9A;&#x7684;&#x51E0;&#x4E2A;&#x53C2;&#x6570;
+    nodeMonitorPeriod time.Duration
+    nodeStartupGracePeriod time.Duration
+    nodeMonitorGracePeriod time.Duration
+    podEvictionTimeout          time.Duration
+    evictionLimiterQPS          float32
+    secondaryEvictionLimiterQPS float32
+    largeClusterThreshold       int32
+    unhealthyZoneThreshold      float32
+
+    // &#x542F;&#x52A8;&#x65F6;&#x9ED8;&#x8BA4;&#x5F00;&#x542F;&#x7684;&#x51E0;&#x4E2A; feature-gates
+    runTaintManager bool
+    useTaintBasedEvictions bool
+    taintNodeByCondition bool
+
+    nodeUpdateQueue workqueue.Interface
+}
+</code></pre><p><code>NewNodeLifecycleController</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x521D;&#x59CB;&#x5316; controller &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x4E3A; podInformer &#x6CE8;&#x518C;&#x4E0E; <code>taintManager</code> &#x76F8;&#x5173;&#x7684; EventHandler&#xFF1B;</li>
+<li>3&#x3001;&#x82E5;&#x542F;&#x7528; TaintManager &#x5219;&#x4E3A; nodeInformer &#x6CE8;&#x518C;&#x4E0E; <code>taintManager</code> &#x76F8;&#x5173;&#x7684; EventHandler&#xFF1B;</li>
+<li>4&#x3001;&#x4E3A; NodeLifecycleController &#x6CE8;&#x518C; nodeInformer&#xFF1B;</li>
+<li>5&#x3001;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86; <code>NodeLease</code> feature-gates&#xFF1B;</li>
+<li>6&#x3001;daemonSet &#x9ED8;&#x8BA4;&#x4E0D;&#x4F1A;&#x6CE8;&#x518C;&#x5BF9;&#x5E94;&#x7684; EventHandler&#xFF0C;&#x6B64;&#x5904;&#x4EC5;&#x4EC5;&#x662F;&#x540C;&#x6B65;&#x8BE5;&#x5BF9;&#x8C61;&#xFF1B;</li>
+</ul>
+<p>&#x7531;&#x4EE5;&#x4E0A;&#x903B;&#x8F91;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF0C;<code>taintManager</code> &#x4EE5;&#x53CA; NodeLifecycleController &#x90FD;&#x4F1A; watch node &#x7684;&#x53D8;&#x5316;&#x5E76;&#x8FDB;&#x884C;&#x4E0D;&#x540C;&#x7684;&#x5904;&#x7406;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:268</code></p>
+<pre class="language-"><code>func NewNodeLifecycleController(......) (*Controller, error) {
+    ......
+
+    // 1&#x3001;&#x521D;&#x59CB;&#x5316; controller &#x5BF9;&#x8C61;
+    nc := &amp;Controller{
+        ......
+    }
+
+    ......
+
+    // 2&#x3001;&#x6CE8;&#x518C;&#x8BA1;&#x7B97; node &#x9A71;&#x9010;&#x901F;&#x7387;&#x4EE5;&#x53CA; zone &#x72B6;&#x6001;&#x7684;&#x65B9;&#x6CD5;
+    nc.enterPartialDisruptionFunc = nc.ReducedQPSFunc
+    nc.enterFullDisruptionFunc = nc.HealthyQPSFunc
+    nc.computeZoneStateFunc = nc.ComputeZoneState
+
+    // 3&#x3001;&#x4E3A; podInformer &#x6CE8;&#x518C; EventHandler&#xFF0C;&#x76D1;&#x542C;&#x5230;&#x7684;&#x5BF9;&#x8C61;&#x4F1A;&#x88AB;&#x653E;&#x5230; nc.taintManager.PodUpdated &#x4E2D;
+    podInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+        AddFunc: func(obj interface{}) {
+            pod := obj.(*v1.Pod)
+            if nc.taintManager != nil {
+                nc.taintManager.PodUpdated(nil, pod)
+            }
+        },
+        UpdateFunc: func(prev, obj interface{}) {
+            prevPod := prev.(*v1.Pod)
+            newPod := obj.(*v1.Pod)
+            if nc.taintManager != nil {
+                nc.taintManager.PodUpdated(prevPod, newPod)
+            }
+        },
+        DeleteFunc: func(obj interface{}) {
+            pod, isPod := obj.(*v1.Pod)
+            if !isPod {
+                deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
+                if !ok {
+                    return
+                }
+                pod, ok = deletedState.Obj.(*v1.Pod)
+                if !ok {
+                    return
+                }
+            }
+            if nc.taintManager != nil {
+                nc.taintManager.PodUpdated(pod, nil)
+            }
+        },
+    })
+    nc.podInformerSynced = podInformer.Informer().HasSynced
+    podInformer.Informer().AddIndexers(cache.Indexers{
+        nodeNameKeyIndex: func(obj interface{}) ([]string, error) {
+            pod, ok := obj.(*v1.Pod)
+            if !ok {
+                return []string{}, nil
+            }
+            if len(pod.Spec.NodeName) == 0 {
+                return []string{}, nil
+            }
+            return []string{pod.Spec.NodeName}, nil
+        },
+    })
+
+    podIndexer := podInformer.Informer().GetIndexer()
+    nc.getPodsAssignedToNode = func(nodeName string) ([]v1.Pod, error) {
+        objs, err := podIndexer.ByIndex(nodeNameKeyIndex, nodeName)
+        if err != nil {
+            return nil, err
+        }
+        pods := make([]v1.Pod, 0, len(objs))
+        for _, obj := range objs {
+            pod, ok := obj.(*v1.Pod)
+            if !ok {
+                continue
+            }
+            pods = append(pods, *pod)
+        }
+        return pods, nil
+    }
+
+    // 4&#x3001;&#x521D;&#x59CB;&#x5316; TaintManager&#xFF0C;&#x4E3A; nodeInformer &#x6CE8;&#x518C; EventHandler
+    //    &#x76D1;&#x542C;&#x5230;&#x7684;&#x5BF9;&#x8C61;&#x4F1A;&#x88AB;&#x653E;&#x5230; nc.taintManager.NodeUpdated &#x4E2D;
+    if nc.runTaintManager {
+        podLister := podInformer.Lister()
+        podGetter := func(name, namespace string) (*v1.Pod, error) { return podLister.Pods(namespace).Get(name) }
+        nodeLister := nodeInformer.Lister()
+        nodeGetter := func(name string) (*v1.Node, error) { return nodeLister.Get(name) }
+
+        // 5&#x3001;&#x521D;&#x59CB;&#x5316; taintManager
+        nc.taintManager = scheduler.NewNoExecuteTaintManager(kubeClient, podGetter, nodeGetter, nc.getPodsAssignedToNode)
+        nodeInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+            AddFunc: nodeutil.CreateAddNodeHandler(func(node *v1.Node) error {
+                nc.taintManager.NodeUpdated(nil, node)
+                return nil
+            }),
+            UpdateFunc: nodeutil.CreateUpdateNodeHandler(func(oldNode, newNode *v1.Node) error {
+                nc.taintManager.NodeUpdated(oldNode, newNode)
+                return nil
+            }),
+            DeleteFunc: nodeutil.CreateDeleteNodeHandler(func(node *v1.Node) error {
+                nc.taintManager.NodeUpdated(node, nil)
+                return nil
+            }),
+        })
+    }
+
+    // 6&#x3001;&#x4E3A; NodeLifecycleController &#x6CE8;&#x518C; nodeInformer 
+    nodeInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+        AddFunc: nodeutil.CreateAddNodeHandler(func(node *v1.Node) error {
+            nc.nodeUpdateQueue.Add(node.Name)
+            return nil
+        }),
+        UpdateFunc: nodeutil.CreateUpdateNodeHandler(func(_, newNode *v1.Node) error {
+            nc.nodeUpdateQueue.Add(newNode.Name)
+            return nil
+        }),
+    })
+
+    ......
+
+    // 7&#x3001;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86; NodeLease feature-gates
+    nc.leaseLister = leaseInformer.Lister()
+    if utilfeature.DefaultFeatureGate.Enabled(features.NodeLease) {
+        nc.leaseInformerSynced = leaseInformer.Informer().HasSynced
+    } else {
+        nc.leaseInformerSynced = func() bool { return true }
+    }
+
+    nc.nodeLister = nodeInformer.Lister()
+    nc.nodeInformerSynced = nodeInformer.Informer().HasSynced
+
+    nc.daemonSetStore = daemonSetInformer.Lister()
+    nc.daemonSetInformerSynced = daemonSetInformer.Informer().HasSynced
+
+    return nc, nil
+}
+</code></pre><h4 id="run"><a name="run" class="anchor-navigation-ex-anchor" href="#run"><i class="fa fa-link" aria-hidden="true"></i></a>Run</h4>
+<p><code>Run</code> &#x65B9;&#x6CD5;&#x662F; NodeLifecycleController &#x7684;&#x542F;&#x52A8;&#x65B9;&#x6CD5;&#xFF0C;&#x5176;&#x4E2D;&#x4F1A;&#x542F;&#x52A8;&#x591A;&#x4E2A; goroutine &#x5B8C;&#x6210; controller &#x7684;&#x529F;&#x80FD;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x7B49;&#x5F85;&#x56DB;&#x79CD;&#x5BF9;&#x8C61; Informer &#x4E2D;&#x7684; cache &#x540C;&#x6B65;&#x5B8C;&#x6210;&#xFF1B;</li>
+<li>2&#x3001;&#x82E5;&#x6307;&#x5B9A;&#x8981;&#x8FD0;&#x884C; taintManager &#x5219;&#x8C03;&#x7528; <code>nc.taintManager.Run</code> &#x542F;&#x52A8; taintManager&#xFF1B;</li>
+<li>3&#x3001;&#x542F;&#x52A8;&#x591A;&#x4E2A; goroutine &#x8C03;&#x7528; <code>nc.doNodeProcessingPassWorker</code> &#x5904;&#x7406; <code>nc.nodeUpdateQueue</code> &#x961F;&#x5217;&#x4E2D;&#x7684; node&#xFF1B;</li>
+<li>4&#x3001;&#x82E5;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code> &#x7279;&#x6027;&#x5219;&#x542F;&#x52A8;&#x4E00;&#x4E2A; goroutine &#x8C03;&#x7528; <code>nc.doNoExecuteTaintingPass</code> &#x5904;&#x7406; <code>nc.zoneNoExecuteTainter</code> &#x961F;&#x5217;&#x4E2D;&#x7684; node&#xFF0C;&#x5426;&#x5219;&#x8C03;&#x7528; <code>nc.doEvictionPass</code> &#x5904;&#x7406; <code>nc.zonePodEvictor</code> &#x961F;&#x5217;&#x4E2D;&#x7684; node&#xFF1B;  </li>
+<li>5&#x3001;&#x542F;&#x52A8;&#x4E00;&#x4E2A; goroutine &#x8C03;&#x7528; <code>nc.monitorNodeHealth</code> &#x5B9A;&#x671F;&#x76D1;&#x63A7; node &#x7684;&#x72B6;&#x6001;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:455</code></p>
+<pre class="language-"><code>func (nc *Controller) Run(stopCh &lt;-chan struct{}) {
+    defer utilruntime.HandleCrash()
+
+    defer klog.Infof(&quot;Shutting down node controller&quot;)
+
+    if !cache.WaitForNamedCacheSync(&quot;taint&quot;, stopCh, nc.leaseInformerSynced, nc.nodeInformerSynced, nc.podInformerSynced, nc.daemonSetInformerSynced) {         return
+    }
+
+    // 1&#x3001;&#x542F;&#x52A8; taintManager
+    if nc.runTaintManager {
+        go nc.taintManager.Run(stopCh)
+    }
+
+    defer nc.nodeUpdateQueue.ShutDown()
+
+    // 2&#x3001;&#x6267;&#x884C; nc.doNodeProcessingPassWorker
+    for i := 0; i &lt; scheduler.UpdateWorkerSize; i++ {
+        go wait.Until(nc.doNodeProcessingPassWorker, time.Second, stopCh)
+    }
+
+    // 3&#x3001;&#x6839;&#x636E;&#x662F;&#x5426;&#x542F;&#x7528; TaintBasedEvictions &#x6267;&#x884C;&#x4E0D;&#x540C;&#x7684;&#x5904;&#x7406;&#x903B;&#x8F91;
+    if nc.useTaintBasedEvictions {
+        go wait.Until(nc.doNoExecuteTaintingPass, scheduler.NodeEvictionPeriod, stopCh)
+    } else {
+        go wait.Until(nc.doEvictionPass, scheduler.NodeEvictionPeriod, stopCh)
+    }
+
+    // 4&#x3001;&#x6267;&#x884C; nc.monitorNodeHealth
+    go wait.Until(func() {
+        if err := nc.monitorNodeHealth(); err != nil {
+            klog.Errorf(&quot;Error monitoring node health: %v&quot;, err)
+        }
+    }, nc.nodeMonitorPeriod, stopCh)
+
+    &lt;-stopCh
+}
+</code></pre><p><code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528;&#x4E86; 5 &#x4E2A;&#x65B9;&#x6CD5;&#x6765;&#x5B8C;&#x6210;&#x5176;&#x6838;&#x5FC3;&#x529F;&#x80FD;&#xFF1A;</p>
+<ul>
+<li><code>nc.taintManager.Run</code>&#xFF1A;&#x5904;&#x7406; <code>taintManager</code> &#x4E2D; nodeUpdateQueue &#x548C;  podUpdateQueue &#x4E2D;&#x7684; pod &#x4EE5;&#x53CA; node&#xFF0C;&#x82E5; pod &#x4E0D;&#x80FD;&#x5BB9;&#x5FCD; node &#x4E0A;&#x7684; taint &#x5219;&#x5C06;&#x5176;&#x52A0;&#x5165;&#x5230; <code>taintEvictionQueue</code> &#x4E2D;&#x5E76;&#x6700;&#x7EC8;&#x4F1A;&#x5220;&#x9664;&#xFF1B;</li>
+<li><code>nc.doNodeProcessingPassWorker</code>&#xFF1A;&#x4ECE; NodeLifecycleController &#x7684; nodeUpdateQueue &#x53D6;&#x51FA; node&#xFF0C;&#xFF08;1&#xFF09;&#x82E5;&#x542F;&#x7528; <code>taintNodeByCondition</code> &#x7279;&#x6027;&#x65F6;&#x6839;&#x636E; node condition &#x4EE5;&#x53CA; node &#x662F;&#x5426;&#x8C03;&#x5EA6;&#x4E3A; node &#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; <code>NoSchedule</code> taint &#x6807;&#x7B7E;&#xFF1B;&#xFF08;2&#xFF09;&#x8C03;&#x7528; <code>nc.reconcileNodeLabels</code> &#x4E3A; node &#x6DFB;&#x52A0;&#x9ED8;&#x8BA4;&#x7684; label&#xFF1B;</li>
+<li><code>nc.doNoExecuteTaintingPass</code>&#xFF1A;&#x5904;&#x7406; <code>nc.zoneNoExecuteTainter</code> &#x961F;&#x5217;&#x4E2D;&#x7684;&#x6570;&#x636E;&#xFF0C;&#x6839;&#x636E; node &#x7684; NodeReadyCondition &#x6DFB;&#x52A0;&#x6216;&#x79FB;&#x9664;&#x5BF9;&#x5E94;&#x7684; taint&#xFF1B;</li>
+<li><code>nc.doEvictionPass</code>&#xFF1A;&#x5904;&#x7406; <code>nc.zonePodEvictor</code> &#x961F;&#x5217;&#x4E2D;&#x7684; node&#xFF0C;&#x5C06; node &#x4E0A;&#x7684; pod &#x8FDB;&#x884C;&#x9A71;&#x9010;&#xFF1B;</li>
+<li><code>nc.monitorNodeHealth</code>&#xFF1A;&#x6301;&#x7EED;&#x76D1;&#x63A7; node &#x7684;&#x72B6;&#x6001;&#xFF0C;&#x5F53; node &#x5904;&#x4E8E;&#x5F02;&#x5E38;&#x72B6;&#x6001;&#x65F6;&#x66F4;&#x65B0; node &#x7684; taint &#x4EE5;&#x53CA; node &#x4E0A; pod &#x7684;&#x72B6;&#x6001;&#x6216;&#x8005;&#x76F4;&#x63A5;&#x9A71;&#x9010; node &#x4E0A;&#x7684; pod&#xFF0C;&#x6B64;&#x5916;&#x8FD8;&#x4F1A;&#x4E3A;&#x96C6;&#x7FA4;&#x4E0B;&#x7684;&#x6240;&#x6709; node &#x5212;&#x5206; zoneStates &#x5E76;&#x4E3A;&#x6BCF;&#x4E2A; zoneStates &#x8BBE;&#x7F6E;&#x5BF9;&#x5E94;&#x7684;&#x9A71;&#x9010;&#x901F;&#x7387;&#xFF1B;</li>
+</ul>
+<p>&#x4E0B;&#x6587;&#x4F1A;&#x8BE6;&#x7EC6;&#x5206;&#x6790;&#x4EE5;&#x4E0A; 5 &#x79CD;&#x65B9;&#x6CD5;&#x7684;&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x3002;</p>
+<h4 id="nctaintmanagerrun"><a name="nctaintmanagerrun" class="anchor-navigation-ex-anchor" href="#nctaintmanagerrun"><i class="fa fa-link" aria-hidden="true"></i></a>nc.taintManager.Run</h4>
+<p>&#x5F53;&#x7EC4;&#x4EF6;&#x542F;&#x52A8;&#x65F6;&#x8BBE;&#x7F6E; <code>--enable-taint-manager</code> &#x53C2;&#x6570;&#x4E3A; true &#x65F6;(&#x9ED8;&#x8BA4;&#x4E3A; true)&#xFF0C;&#x8BE5;&#x529F;&#x80FD;&#x4F1A;&#x542F;&#x7528;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x4F5C;&#x7528;&#x662F;&#x5F53;&#x8BE5; node &#x4E0A;&#x7684; pod &#x4E0D;&#x5BB9;&#x5FCD; node taint &#x65F6;&#x5C06; pod &#x8FDB;&#x884C;&#x9A71;&#x9010;&#xFF0C;&#x82E5;&#x4E0D;&#x5F00;&#x542F;&#x8BE5;&#x529F;&#x80FD;&#x5219;&#x5DF2;&#x8C03;&#x5EA6;&#x5230;&#x8BE5; node &#x4E0A;&#x7684; pod &#x4F1A;&#x7EE7;&#x7EED;&#x5B58;&#x5728;&#xFF0C;&#x65B0;&#x521B;&#x5EFA;&#x7684; pod &#x9700;&#x8981;&#x5BB9;&#x5FCD; node &#x7684; taint &#x624D;&#x4F1A;&#x8C03;&#x5EA6;&#x81F3;&#x8BE5; node &#x4E0A;&#x3002;</p>
+<p>&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x5904;&#x7406; nodeUpdateQueue &#x4E2D;&#x7684; node &#x5E76;&#x5C06;&#x5176;&#x53D1;&#x9001;&#x5230; nodeUpdateChannels &#x4E2D;&#xFF1B;</li>
+<li>2&#x3001;&#x5904;&#x7406; podUpdateQueue &#x4E2D;&#x7684; pod &#x5E76;&#x5C06;&#x5176;&#x53D1;&#x9001;&#x5230; podUpdateChannels &#x4E2D;&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>tc.worker</code> &#x5904;&#x7406; nodeUpdateChannels &#x548C; podUpdateChannels &#x4E2D;&#x7684;&#x6570;&#x636E;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/scheduler/taint_manager.go:185</code></p>
+<pre class="language-"><code>func (tc *NoExecuteTaintManager) Run(stopCh &lt;-chan struct{}) {
+    for i := 0; i &lt; UpdateWorkerSize; i++ {
+        tc.nodeUpdateChannels = append(tc.nodeUpdateChannels, make(chan nodeUpdateItem, NodeUpdateChannelSize))
+        tc.podUpdateChannels = append(tc.podUpdateChannels, make(chan podUpdateItem, podUpdateChannelSize))
+    }
+
+    go func(stopCh &lt;-chan struct{}) {
+        for {
+            item, shutdown := tc.nodeUpdateQueue.Get()
+            if shutdown {
+                break
+            }
+            nodeUpdate := item.(nodeUpdateItem)
+            hash := hash(nodeUpdate.nodeName, UpdateWorkerSize)
+            select {
+            case &lt;-stopCh:
+                tc.nodeUpdateQueue.Done(item)
+                return
+            case tc.nodeUpdateChannels[hash] &lt;- nodeUpdate:
+            }
+        }
+    }(stopCh)
+
+    go func(stopCh &lt;-chan struct{}) {
+        for {
+            item, shutdown := tc.podUpdateQueue.Get()
+            if shutdown {
+                break
+            }
+            podUpdate := item.(podUpdateItem)
+            hash := hash(podUpdate.nodeName, UpdateWorkerSize)
+            select {
+            case &lt;-stopCh:
+                tc.podUpdateQueue.Done(item)
+                return
+            case tc.podUpdateChannels[hash] &lt;- podUpdate:
+            }
+        }
+    }(stopCh)
+
+    wg := sync.WaitGroup{}
+    wg.Add(UpdateWorkerSize)
+    for i := 0; i &lt; UpdateWorkerSize; i++ {
+        go tc.worker(i, wg.Done, stopCh)
+    }
+    wg.Wait()
+}
+</code></pre><h5 id="tcworker"><a name="tcworker" class="anchor-navigation-ex-anchor" href="#tcworker"><i class="fa fa-link" aria-hidden="true"></i></a>tc.worker</h5>
+<p><code>tc.worker</code> &#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x8C03;&#x7528; <code>tc.handleNodeUpdate</code> &#x548C; <code>tc.handlePodUpdate</code> &#x5904;&#x7406; <code>tc.nodeUpdateChannels</code> &#x548C; <code>tc.podUpdateChannels</code> &#x4E24;&#x4E2A; channel &#x4E2D;&#x7684;&#x6570;&#x636E;&#xFF0C;&#x4F46;&#x4F1A;&#x4F18;&#x5148;&#x5904;&#x7406; nodeUpdateChannels &#x4E2D;&#x7684;&#x6570;&#x636E;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/scheduler/taint_manager.go:243</code></p>
+<pre class="language-"><code>func (tc *NoExecuteTaintManager) worker(worker int, done func(), stopCh &lt;-chan struct{}) {
+    defer done()
+
+    for {
+        select {
+        case &lt;-stopCh:
+            return
+        case nodeUpdate := &lt;-tc.nodeUpdateChannels[worker]:
+            tc.handleNodeUpdate(nodeUpdate)
+            tc.nodeUpdateQueue.Done(nodeUpdate)
+        case podUpdate := &lt;-tc.podUpdateChannels[worker]:
+
+        // &#x4F18;&#x5148;&#x5904;&#x7406; nodeUpdateChannels 
+        priority:
+            for {
+                select {
+                case nodeUpdate := &lt;-tc.nodeUpdateChannels[worker]:
+                    tc.handleNodeUpdate(nodeUpdate)
+                    tc.nodeUpdateQueue.Done(nodeUpdate)
+                default:
+                    break priority
+                }
+            }
+            tc.handlePodUpdate(podUpdate)
+            tc.podUpdateQueue.Done(podUpdate)
+        }
+    }
+}
+</code></pre><h6 id="tchandlenodeupdate"><a name="tchandlenodeupdate" class="anchor-navigation-ex-anchor" href="#tchandlenodeupdate"><i class="fa fa-link" aria-hidden="true"></i></a>tc.handleNodeUpdate</h6>
+<p><code>tc.handleNodeUpdate</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x9996;&#x5148;&#x901A;&#x8FC7; nodeLister &#x83B7;&#x53D6; node &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x83B7;&#x53D6; node &#x4E0A; effect &#x4E3A; <code>NoExecute</code> &#x7684; taints&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>tc.getPodsAssignedToNode</code> &#x83B7;&#x53D6;&#x8BE5; node &#x4E0A;&#x7684;&#x6240;&#x6709; pods&#xFF1B;</li>
+<li>4&#x3001;&#x82E5; node &#x4E0A;&#x7684; taints &#x4E3A;&#x7A7A;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#xFF0C;&#x5426;&#x5219;&#x904D;&#x5386;&#x6BCF;&#x4E00;&#x4E2A; pod &#x8C03;&#x7528; <code>tc.processPodOnNode</code> &#x68C0;&#x67E5; pod &#x662F;&#x5426;&#x8981;&#x88AB;&#x9A71;&#x9010;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/scheduler/taint_manager.go:417</code></p>
+<pre class="language-"><code>func (tc *NoExecuteTaintManager) handleNodeUpdate(nodeUpdate nodeUpdateItem) {
+    node, err := tc.getNode(nodeUpdate.nodeName)
+    if err != nil {
+        ......
+    }
+    // 1&#x3001;&#x83B7;&#x53D6; node &#x7684; taints
+    taints := getNoExecuteTaints(node.Spec.Taints)
+    func() {
+        tc.taintedNodesLock.Lock()
+        defer tc.taintedNodesLock.Unlock()
+        if len(taints) == 0 {
+            delete(tc.taintedNodes, node.Name)
+        } else {
+            tc.taintedNodes[node.Name] = taints
+        }
+    }()
+
+    // 2&#x3001;&#x83B7;&#x53D6; node &#x4E0A;&#x7684;&#x6240;&#x6709; pod
+    pods, err := tc.getPodsAssignedToNode(node.Name)
+    if err != nil {
+        klog.Errorf(err.Error())
+        return
+    }
+    if len(pods) == 0 {
+        return
+    }
+
+    // 3&#x3001;&#x82E5;&#x4E0D;&#x5B58;&#x5728; taints&#xFF0C;&#x5219;&#x53D6;&#x6D88;&#x6240;&#x6709;&#x7684;&#x9A71;&#x9010;&#x64CD;&#x4F5C;
+    if len(taints) == 0 {
+        for i := range pods {
+            tc.cancelWorkWithEvent(types.NamespacedName{Namespace: pods[i].Namespace, Name: pods[i].Name})
+        }
+        return
+    }
+
+    now := time.Now()
+    for i := range pods {
+        pod := &amp;pods[i]
+        podNamespacedName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
+        // 4&#x3001;&#x8C03;&#x7528; tc.processPodOnNode &#x8FDB;&#x884C;&#x5904;&#x7406;
+        tc.processPodOnNode(podNamespacedName, node.Name, pod.Spec.Tolerations, taints, now)
+    }
+}
+</code></pre><h6 id="tchandlepodupdate"><a name="tchandlepodupdate" class="anchor-navigation-ex-anchor" href="#tchandlepodupdate"><i class="fa fa-link" aria-hidden="true"></i></a>tc.handlePodUpdate</h6>
+<p>&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x901A;&#x8FC7; podLister &#x83B7;&#x53D6; pod &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x83B7;&#x53D6; pod &#x6240;&#x5728; node &#x7684; taints&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>tc.processPodOnNode</code> &#x8FDB;&#x884C;&#x5904;&#x7406;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/scheduler/taint_manager.go:377</code></p>
+<pre class="language-"><code>func (tc *NoExecuteTaintManager) handlePodUpdate(podUpdate podUpdateItem) {
+    pod, err := tc.getPod(podUpdate.podName, podUpdate.podNamespace)
+    if err != nil {
+        ......
+    }
+
+    if pod.Spec.NodeName != podUpdate.nodeName {
+        return
+    }
+
+    podNamespacedName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
+
+    nodeName := pod.Spec.NodeName
+    if nodeName == &quot;&quot; {
+        return
+    }
+    taints, ok := func() ([]v1.Taint, bool) {
+        tc.taintedNodesLock.Lock()
+        defer tc.taintedNodesLock.Unlock()
+        taints, ok := tc.taintedNodes[nodeName]
+        return taints, ok
+    }()
+
+    if !ok {
+        return
+    }
+    // &#x8C03;&#x7528; tc.processPodOnNode &#x8FDB;&#x884C;&#x5904;&#x7406;
+    tc.processPodOnNode(podNamespacedName, nodeName, pod.Spec.Tolerations, taints, time.Now())
+}
+</code></pre><h6 id="tcprocesspodonnode"><a name="tcprocesspodonnode" class="anchor-navigation-ex-anchor" href="#tcprocesspodonnode"><i class="fa fa-link" aria-hidden="true"></i></a>tc.processPodOnNode</h6>
+<p><code>tc.handlePodUpdate</code> &#x548C; <code>tc.handleNodeUpdate</code> &#x6700;&#x7EC8;&#x90FD;&#x662F;&#x8C03;&#x7528; <code>tc.processPodOnNode</code> &#x68C0;&#x67E5; pod &#x662F;&#x5426;&#x5BB9;&#x5FCD; node &#x7684; taints&#xFF0C;<code>tc.processPodOnNode</code> &#x9996;&#x5148;&#x68C0;&#x67E5; pod &#x7684; tolerations &#x662F;&#x5426;&#x80FD;&#x5339;&#x914D; node &#x4E0A;&#x6240;&#x6709;&#x7684; taints&#xFF0C;&#x82E5;&#x65E0;&#x6CD5;&#x5B8C;&#x5168;&#x5339;&#x914D;&#x5219;&#x5C06; pod &#x52A0;&#x5165;&#x5230; taintEvictionQueue &#x7136;&#x540E;&#x88AB;&#x5220;&#x9664;&#xFF0C;&#x82E5;&#x80FD;&#x5339;&#x914D;&#x9996;&#x5148;&#x83B7;&#x53D6; pod tolerations &#x4E2D;&#x7684;&#x6700;&#x5C0F;&#x5BB9;&#x5FCD;&#x65F6;&#x95F4;&#xFF0C;&#x5982;&#x679C; tolerations &#x672A;&#x8BBE;&#x7F6E;&#x5BB9;&#x5FCD;&#x65F6;&#x95F4;&#x8BF4;&#x660E;&#x4F1A;&#x4E00;&#x76F4;&#x5BB9;&#x5FCD;&#x5219;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#xFF0C;&#x5426;&#x5219;&#x52A0;&#x5165;&#x5230; taintEvictionQueue &#x7684;&#x5EF6;&#x8FDF;&#x961F;&#x5217;&#x4E2D;&#xFF0C;&#x5F53;&#x8FBE;&#x5230;&#x6700;&#x5C0F;&#x5BB9;&#x5FCD;&#x65F6;&#x95F4;&#x65F6; pod &#x4F1A;&#x88AB;&#x52A0;&#x5165;&#x5230; taintEvictionQueue &#x4E2D;&#x5E76;&#x9A71;&#x9010;&#x3002;</p>
+<p>&#x901A;&#x5E38;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5982;&#x679C;&#x7ED9;&#x4E00;&#x4E2A;&#x8282;&#x70B9;&#x6DFB;&#x52A0;&#x4E86;&#x4E00;&#x4E2A; effect &#x503C;&#x4E3A; <code>NoExecute</code> &#x7684; taint&#xFF0C;&#x5219;&#x4EFB;&#x4F55;&#x4E0D;&#x80FD;&#x5FCD;&#x53D7;&#x8FD9;&#x4E2A; taint &#x7684; pod &#x90FD;&#x4F1A;&#x9A6C;&#x4E0A;&#x88AB;&#x9A71;&#x9010;&#xFF0C;&#x4EFB;&#x4F55;&#x53EF;&#x4EE5;&#x5FCD;&#x53D7;&#x8FD9;&#x4E2A; taint &#x7684; pod &#x90FD;&#x4E0D;&#x4F1A;&#x88AB;&#x9A71;&#x9010;&#x3002;&#x4F46;&#x662F;&#xFF0C;&#x5982;&#x679C; pod &#x5B58;&#x5728;&#x4E00;&#x4E2A; effect &#x503C;&#x4E3A; <code>NoExecute</code> &#x7684; toleration &#x6307;&#x5B9A;&#x4E86;&#x53EF;&#x9009;&#x5C5E;&#x6027; <code>tolerationSeconds</code> &#x7684;&#x503C;&#xFF0C;&#x5219;&#x8868;&#x793A;&#x5728;&#x7ED9;&#x8282;&#x70B9;&#x6DFB;&#x52A0;&#x4E86;&#x4E0A;&#x8FF0; taint &#x4E4B;&#x540E;&#xFF0C;pod &#x8FD8;&#x80FD;&#x7EE7;&#x7EED;&#x5728;&#x8282;&#x70B9;&#x4E0A;&#x8FD0;&#x884C;&#x7684;&#x65F6;&#x95F4;&#x3002;&#x4F8B;&#x5982;&#xFF0C;</p>
+<pre class="language-"><code>tolerations:
+- key: &quot;key1&quot;
+  operator: &quot;Equal&quot;
+  value: &quot;value1&quot;
+  effect: &quot;NoExecute&quot;
+  tolerationSeconds: 3600
+</code></pre><p>&#x8FD9;&#x8868;&#x793A;&#x5982;&#x679C;&#x8FD9;&#x4E2A; pod &#x6B63;&#x5728;&#x8FD0;&#x884C;&#xFF0C;&#x7136;&#x540E;&#x4E00;&#x4E2A;&#x5339;&#x914D;&#x7684; taint &#x88AB;&#x6DFB;&#x52A0;&#x5230;&#x5176;&#x6240;&#x5728;&#x7684;&#x8282;&#x70B9;&#xFF0C;&#x90A3;&#x4E48; pod &#x8FD8;&#x5C06;&#x7EE7;&#x7EED;&#x5728;&#x8282;&#x70B9;&#x4E0A;&#x8FD0;&#x884C; 3600 &#x79D2;&#xFF0C;&#x7136;&#x540E;&#x88AB;&#x9A71;&#x9010;&#x3002;&#x5982;&#x679C;&#x5728;&#x6B64;&#x4E4B;&#x524D;&#x4E0A;&#x8FF0; taint &#x88AB;&#x5220;&#x9664;&#x4E86;&#xFF0C;&#x5219; pod &#x4E0D;&#x4F1A;&#x88AB;&#x9A71;&#x9010;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/scheduler/taint_manager.go:339</code></p>
+<pre class="language-"><code>func (tc *NoExecuteTaintManager) processPodOnNode(......) {
+    if len(taints) == 0 {
+        tc.cancelWorkWithEvent(podNamespacedName)
+    }
+    // 1&#x3001;&#x68C0;&#x67E5; pod &#x7684; tolerations &#x662F;&#x5426;&#x5339;&#x914D;&#x6240;&#x6709; taints
+    allTolerated, usedTolerations := v1helper.GetMatchingTolerations(taints, tolerations)
+    if !allTolerated {
+        tc.cancelWorkWithEvent(podNamespacedName)
+        tc.taintEvictionQueue.AddWork(NewWorkArgs(podNamespacedName.Name, podNamespacedName.Namespace), time.Now(), time.Now())
+        return
+    }
+
+    // 2&#x3001;&#x83B7;&#x53D6;&#x6700;&#x5C0F;&#x5BB9;&#x5FCD;&#x65F6;&#x95F4;
+    minTolerationTime := getMinTolerationTime(usedTolerations)
+    if minTolerationTime &lt; 0 {
+        return
+    }
+
+    // 3&#x3001;&#x82E5;&#x5B58;&#x5728;&#x6700;&#x5C0F;&#x5BB9;&#x5FCD;&#x65F6;&#x95F4;&#x5219;&#x5C06;&#x5176;&#x52A0;&#x5165;&#x5230;&#x5EF6;&#x65F6;&#x961F;&#x5217;&#x4E2D;
+    startTime := now
+    triggerTime := startTime.Add(minTolerationTime)
+    scheduledEviction := tc.taintEvictionQueue.GetWorkerUnsafe(podNamespacedName.String())
+    if scheduledEviction != nil {
+        startTime = scheduledEviction.CreatedAt
+        if startTime.Add(minTolerationTime).Before(triggerTime) {
+            return
+        }
+        tc.cancelWorkWithEvent(podNamespacedName)
+    }
+    tc.taintEvictionQueue.AddWork(NewWorkArgs(podNamespacedName.Name, podNamespacedName.Namespace), startTime, triggerTime)
+}
+</code></pre><h4 id="ncdonodeprocessingpassworker"><a name="ncdonodeprocessingpassworker" class="anchor-navigation-ex-anchor" href="#ncdonodeprocessingpassworker"><i class="fa fa-link" aria-hidden="true"></i></a>nc.doNodeProcessingPassWorker</h4>
+<p>NodeLifecycleController &#x4E2D; nodeInformer &#x76D1;&#x542C;&#x5230; node &#x53D8;&#x5316;&#x65F6;&#x4F1A;&#x5C06;&#x5176;&#x6DFB;&#x52A0;&#x5230; nodeUpdateQueue &#x4E2D;&#xFF0C;<code>nc.doNodeProcessingPassWorker</code> &#x4E3B;&#x8981;&#x662F;&#x5904;&#x7406; nodeUpdateQueue &#x4E2D;&#x7684; node&#xFF0C;&#x4E3A;&#x5176;&#x6DFB;&#x52A0;&#x5408;&#x9002;&#x7684; <code>NoSchedule</code> taint &#x4EE5;&#x53CA; label&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x4ECE; <code>nc.nodeUpdateQueue</code> &#x4E2D;&#x53D6;&#x51FA; node&#xFF1B;</li>
+<li>2&#x3001;&#x82E5;&#x542F;&#x7528;&#x4E86; <code>TaintNodeByCondition</code> feature-gates&#xFF0C;&#x8C03;&#x7528;<code>nc.doNoScheduleTaintingPass</code> &#x68C0;&#x67E5;&#x8BE5; node &#x662F;&#x5426;&#x9700;&#x8981;&#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; <code>NoSchedule</code> taint&#xFF1B;
+<code>nc.doNoScheduleTaintingPass</code> &#x4E2D;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;<ul>
+<li>1&#x3001;&#x4ECE; nodeLister &#x4E2D;&#x83B7;&#x53D6;&#x8BE5; node &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x5224;&#x65AD;&#x8BE5; node &#x662F;&#x5426;&#x5B58;&#x5728;&#x4EE5;&#x4E0B;&#x51E0;&#x79CD; Condition&#xFF1A;(1) False &#x6216; Unknown &#x72B6;&#x6001;&#x7684; NodeReady Condition&#xFF1B;(2) MemoryPressureCondition&#xFF1B;(3) DiskPressureCondition&#xFF1B;(4) NetworkUnavailableCondition&#xFF1B;(5) PIDPressureCondition&#xFF1B;&#x82E5;&#x4EFB;&#x4E00;&#x4E00;&#x79CD;&#x5B58;&#x5728;&#x4F1A;&#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; <code>NoSchedule</code> taint&#xFF1B;</li>
+<li>3&#x3001;&#x5224;&#x65AD; node &#x662F;&#x5426;&#x5904;&#x4E8E; <code>Unschedulable</code> &#x72B6;&#x6001;&#xFF0C;&#x82E5;&#x4E3A; <code>Unschedulable</code> &#x4E5F;&#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; <code>NoSchedule</code> taint&#xFF1B;</li>
+<li>4&#x3001;&#x5BF9;&#x6BD4; node &#x5DF2;&#x6709;&#x7684; taints &#x4EE5;&#x53CA;&#x9700;&#x8981;&#x6DFB;&#x52A0;&#x7684; taints&#xFF0C;&#x4EE5;&#x9700;&#x8981;&#x6DFB;&#x52A0;&#x7684; taints &#x4E3A;&#x51C6;&#xFF0C;&#x8C03;&#x7528; <code>nodeutil.SwapNodeControllerTaint</code> &#x4E3A; node &#x6DFB;&#x52A0;&#x4E0D;&#x5B58;&#x5728;&#x7684; taints &#x5E76;&#x5220;&#x9664;&#x4E0D;&#x9700;&#x8981;&#x7684; taints&#xFF1B;</li>
+</ul>
+</li>
+<li><p>3&#x3001;&#x8C03;&#x7528; <code>nc.reconcileNodeLabels</code> &#x68C0;&#x67E5; node &#x662F;&#x5426;&#x5B58;&#x5728;&#x4EE5;&#x4E0B; label&#xFF0C;&#x82E5;&#x4E0D;&#x5B58;&#x5728;&#x5219;&#x4E3A;&#x5176;&#x6DFB;&#x52A0;&#xFF1B;</p>
+<pre class="language-"><code>  labels:
+    beta.kubernetes.io/arch: amd64
+    beta.kubernetes.io/os: linux
+    kubernetes.io/arch: amd64
+    kubernetes.io/os: linux
+</code></pre></li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:502</code></p>
+<pre class="language-"><code>func (nc *Controller) doNodeProcessingPassWorker() {
+    for {
+        obj, shutdown := nc.nodeUpdateQueue.Get()
+        if shutdown {
+            return
+        }
+        nodeName := obj.(string)
+        if nc.taintNodeByCondition {
+            if err := nc.doNoScheduleTaintingPass(nodeName); err != nil {
+                ......
+            }
+        }
+
+        if err := nc.reconcileNodeLabels(nodeName); err != nil {
+            ......
+        }
+        nc.nodeUpdateQueue.Done(nodeName)
+    }
+}
+
+func (nc *Controller) doNoScheduleTaintingPass(nodeName string) error {
+    // 1&#x3001;&#x83B7;&#x53D6; node &#x5BF9;&#x8C61;
+    node, err := nc.nodeLister.Get(nodeName)
+    if err != nil {
+        ......
+    }
+
+    // 2&#x3001;&#x82E5; node &#x5B58;&#x5728;&#x5BF9;&#x5E94;&#x7684; condition &#x5219;&#x4E3A;&#x5176;&#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; taint
+    var taints []v1.Taint
+    for _, condition := range node.Status.Conditions {
+        if taintMap, found := nodeConditionToTaintKeyStatusMap[condition.Type]; found {
+            if taintKey, found := taintMap[condition.Status]; found {
+                taints = append(taints, v1.Taint{
+                    Key:    taintKey,
+                    Effect: v1.TaintEffectNoSchedule,
+                })
+            }
+        }
+    }
+
+    // 3&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x4E3A; Unschedulable 
+    if node.Spec.Unschedulable {
+        taints = append(taints, v1.Taint{
+            Key:    schedulerapi.TaintNodeUnschedulable,
+            Effect: v1.TaintEffectNoSchedule,
+        })
+    }
+
+    nodeTaints := taintutils.TaintSetFilter(node.Spec.Taints, func(t *v1.Taint) bool {
+        if t.Effect != v1.TaintEffectNoSchedule {
+            return false
+        }
+        if t.Key == schedulerapi.TaintNodeUnschedulable {
+            return true
+        }
+        _, found := taintKeyToNodeConditionMap[t.Key]
+        return found
+    })
+
+    // 4&#x3001;&#x5BF9;&#x6BD4; node &#x5DF2;&#x6709; taints &#x548C;&#x9700;&#x8981;&#x6DFB;&#x52A0;&#x7684; taints &#x5F97;&#x5230; taintsToAdd, taintsToDel
+    taintsToAdd, taintsToDel := taintutils.TaintSetDiff(taints, nodeTaints)
+    if len(taintsToAdd) == 0 &amp;&amp; len(taintsToDel) == 0 {
+        return nil
+    }
+
+    // 5&#x3001;&#x66F4;&#x65B0; node &#x7684; taints
+    if !nodeutil.SwapNodeControllerTaint(nc.kubeClient, taintsToAdd, taintsToDel, node) {
+        return fmt.Errorf(&quot;failed to swap taints of node %+v&quot;, node)
+    }
+    return nil
+}
+</code></pre><h4 id="ncdonoexecutetaintingpass"><a name="ncdonoexecutetaintingpass" class="anchor-navigation-ex-anchor" href="#ncdonoexecutetaintingpass"><i class="fa fa-link" aria-hidden="true"></i></a>nc.doNoExecuteTaintingPass</h4>
+<p>&#x5F53;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code> &#x7279;&#x6027;&#x65F6;&#xFF0C;&#x901A;&#x8FC7; <code>nc.monitorNodeHealth</code> &#x68C0;&#x6D4B;&#x5230; node &#x5F02;&#x5E38;&#x65F6;&#x4F1A;&#x5C06;&#x5176;&#x52A0;&#x5165;&#x5230; <code>nc.zoneNoExecuteTainter</code> &#x961F;&#x5217;&#x4E2D;&#xFF0C;<code>nc.doNoExecuteTaintingPass</code> &#x4F1A;&#x5904;&#x7406; <code>nc.zoneNoExecuteTainter</code> &#x961F;&#x5217;&#x4E2D;&#x7684; node&#xFF0C;&#x5E76;&#x4E14;&#x4F1A;&#x6309;&#x4E00;&#x5B9A;&#x7684;&#x901F;&#x7387;&#x8FDB;&#x884C;&#xFF0C;&#x6B64;&#x65F6;&#x4F1A;&#x6839;&#x636E; node &#x5B9E;&#x9645;&#x7684; NodeCondition &#x4E3A; node &#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; taint&#xFF0C;&#x5F53; node &#x5B58;&#x5728; taint &#x65F6;&#xFF0C;taintManager &#x4F1A;&#x9A71;&#x9010; node &#x4E0A;&#x7684; pod&#x3002;&#x6B64;&#x8FC7;&#x7A0B;&#x4E2D;&#x4E3A; node &#x6DFB;&#x52A0; taint &#x65F6;&#x8FDB;&#x884C;&#x4E86;&#x9650;&#x901F;&#x907F;&#x514D;&#x4E00;&#x6B21;&#x6027;&#x9A71;&#x9010;&#x8FC7;&#x591A; pod&#xFF0C;&#x5728;&#x9A71;&#x9010; node &#x4E0A;&#x7684; pod &#x65F6;&#x4E0D;&#x4F1A;&#x9650;&#x901F;&#x3002;</p>
+<p><code>nc.doNoExecuteTaintingPass</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x904D;&#x5386; zoneNoExecuteTainter &#x4E2D;&#x7684; node &#x5217;&#x8868;&#xFF0C;&#x4ECE; nodeLister &#x4E2D;&#x83B7;&#x53D6; node &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x83B7;&#x53D6;&#x8BE5; node &#x7684; NodeReadyCondition&#xFF1B;</li>
+<li>3&#x3001;&#x5224;&#x65AD; NodeReadyCondition &#x7684;&#x72B6;&#x6001;&#xFF0C;&#x82E5;&#x4E3A; false&#xFF0C;&#x5219;&#x4E3A; node &#x6DFB;&#x52A0; <code>node.kubernetes.io/not-ready:NoExecute</code> &#x7684; taint &#x4E14;&#x4FDD;&#x8BC1; node &#x4E0D;&#x5B58;&#x5728; <code>node.kubernetes.io/unreachable:NoExecute</code> &#x7684; taint</li>
+<li>4&#x3001;&#x82E5; NodeReadyCondition &#x4E3A; unknown&#xFF0C;&#x5219;&#x4E3A; node &#x6DFB;&#x52A0; <code>node.kubernetes.io/unreachable:NoExecute</code> &#x7684; taint &#x4E14;&#x4FDD;&#x8BC1; node &#x4E0D;&#x5B58;&#x5728; <code>node.kubernetes.io/not-ready:NoExecute</code> &#x7684; taint&#xFF1B;
+&quot;unreachable&quot; &#x548C; &quot;not ready&quot; &#x4E24;&#x4E2A; taint &#x662F;&#x4E92;&#x65A5;&#x7684;&#xFF0C;&#x53EA;&#x80FD;&#x5B58;&#x5728;&#x4E00;&#x4E2A;&#xFF1B; </li>
+<li>5&#x3001;&#x82E5; NodeReadyCondition &#x4E3A; true&#xFF0C;&#x6B64;&#x65F6;&#x8BF4;&#x660E;&#x8BE5; node &#x5904;&#x4E8E;&#x6B63;&#x5E38;&#x72B6;&#x6001;&#x76F4;&#x63A5;&#x8FD4;&#x56DE;&#xFF1B;</li>
+<li>6&#x3001;&#x8C03;&#x7528; <code>nodeutil.SwapNodeControllerTaint</code> &#x66F4;&#x65B0; node &#x7684; taint&#xFF1B;</li>
+<li>7&#x3001;&#x82E5;&#x6574;&#x4E2A;&#x8FC7;&#x7A0B;&#x4E2D;&#x6709;&#x5931;&#x8D25;&#x7684;&#x64CD;&#x4F5C;&#x4F1A;&#x8FDB;&#x884C;&#x91CD;&#x8BD5;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:582</code></p>
+<pre class="language-"><code>func (nc *Controller) doNoExecuteTaintingPass() {
+    nc.evictorLock.Lock()
+    defer nc.evictorLock.Unlock()
+    for k := range nc.zoneNoExecuteTainter {
+        nc.zoneNoExecuteTainter[k].Try(func(value scheduler.TimedValue) (bool, time.Duration) {
+            // 1&#x3001;&#x83B7;&#x53D6; node &#x5BF9;&#x8C61;
+            node, err := nc.nodeLister.Get(value.Value)
+            if apierrors.IsNotFound(err) {
+                return true, 0
+            } else if err != nil {
+                return false, 50 * time.Millisecond
+            }
+
+            // 2&#x3001;&#x83B7;&#x53D6; node &#x7684; NodeReadyCondition
+            _, condition := nodeutil.GetNodeCondition(&amp;node.Status, v1.NodeReady)
+            taintToAdd := v1.Taint{}
+            oppositeTaint := v1.Taint{}
+
+            // 3&#x3001;&#x5224;&#x65AD; Condition &#x72B6;&#x6001;&#xFF0C;&#x5E76;&#x4E3A;&#x5176;&#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; taint
+            switch condition.Status {
+            case v1.ConditionFalse:
+                taintToAdd = *NotReadyTaintTemplate
+                oppositeTaint = *UnreachableTaintTemplate
+            case v1.ConditionUnknown:
+                taintToAdd = *UnreachableTaintTemplate
+                oppositeTaint = *NotReadyTaintTemplate
+            default:
+                return true, 0
+            }
+
+            // 4&#x3001;&#x66F4;&#x65B0; node &#x7684; taint
+            result := nodeutil.SwapNodeControllerTaint(nc.kubeClient, []*v1.Taint{&amp;taintToAdd}, []*v1.Taint{&amp;oppositeTaint}, node)
+            if result {
+                zone := utilnode.GetZoneKey(node)
+                evictionsNumber.WithLabelValues(zone).Inc()
+            }
+
+            return result, 0
+        })
+    }
+}
+</code></pre><h4 id="ncdoevictionpass"><a name="ncdoevictionpass" class="anchor-navigation-ex-anchor" href="#ncdoevictionpass"><i class="fa fa-link" aria-hidden="true"></i></a>nc.doEvictionPass</h4>
+<p>&#x82E5;&#x672A;&#x542F;&#x7528; <code>TaintBasedEvictions</code> &#x7279;&#x6027;&#xFF0C;&#x6B64;&#x65F6;&#x901A;&#x8FC7; <code>nc.monitorNodeHealth</code> &#x68C0;&#x6D4B;&#x5230; node &#x5F02;&#x5E38;&#x65F6;&#x4F1A;&#x5C06;&#x5176;&#x52A0;&#x5165;&#x5230;  <code>nc.zonePodEvictor</code> &#x961F;&#x5217;&#x4E2D;&#xFF0C;<code>nc.doEvictionPass</code> &#x4F1A;&#x5C06; <code>nc.zonePodEvictor</code> &#x961F;&#x5217;&#x4E2D; node &#x4E0A;&#x7684; pod &#x9A71;&#x9010;&#x6389;&#x3002;</p>
+<p><code>nc.doEvictionPass</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x904D;&#x5386; zonePodEvictor &#x7684; node &#x5217;&#x8868;&#x83B7;&#xFF0C;&#x4ECE; nodeLister &#x4E2D;&#x83B7;&#x53D6; node &#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>nodeutil.DeletePods</code> &#x5220;&#x9664;&#x8BE5; node &#x4E0A;&#x7684;&#x6240;&#x6709; pod&#xFF0C;&#x5728; <code>nodeutil.DeletePods</code> &#x4E2D;&#x9996;&#x5148;&#x901A;&#x8FC7;&#x4ECE; apiserver  &#x83B7;&#x53D6;&#x8BE5; node &#x4E0A;&#x6240;&#x6709;&#x7684; pod&#xFF0C;&#x9010;&#x4E2A;&#x5220;&#x9664; pod&#xFF0C;&#x82E5;&#x8BE5; pod &#x4E3A; daemonset &#x6240;&#x7BA1;&#x7406;&#x7684; pod &#x5219;&#x5FFD;&#x7565;&#xFF1B;</li>
+<li>3&#x3001;&#x82E5;&#x6574;&#x4E2A;&#x8FC7;&#x7A0B;&#x4E2D;&#x6709;&#x5931;&#x8D25;&#x7684;&#x64CD;&#x4F5C;&#x4F1A;&#x8FDB;&#x884C;&#x91CD;&#x8BD5;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:626</code></p>
+<pre class="language-"><code>func (nc *Controller) doEvictionPass() {
+    nc.evictorLock.Lock()
+    defer nc.evictorLock.Unlock()
+    for k := range nc.zonePodEvictor {
+        nc.zonePodEvictor[k].Try(func(value scheduler.TimedValue) (bool, time.Duration) {
+            node, err := nc.nodeLister.Get(value.Value)
+            ......
+            nodeUID, _ := value.UID.(string)
+            remaining, err := nodeutil.DeletePods(nc.kubeClient, nc.recorder, value.Value, nodeUID, nc.daemonSetStore)
+            if err != nil {
+                utilruntime.HandleError(fmt.Errorf(&quot;unable to evict node %q: %v&quot;, value.Value, err))
+                return false, 0
+            }
+            ......
+
+            if node != nil {
+                zone := utilnode.GetZoneKey(node)
+                evictionsNumber.WithLabelValues(zone).Inc()
+            }
+
+            return true, 0
+        })
+    }
+}
+</code></pre><h4 id="ncmonitornodehealth"><a name="ncmonitornodehealth" class="anchor-navigation-ex-anchor" href="#ncmonitornodehealth"><i class="fa fa-link" aria-hidden="true"></i></a>nc.monitorNodeHealth</h4>
+<p>&#x4E0A;&#x9762;&#x5DF2;&#x7ECF;&#x4ECB;&#x7ECD;&#x4E86;&#x65E0;&#x8BBA;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code> &#x7279;&#x6027;&#xFF0C;&#x9700;&#x8981;&#x6253; taint &#x6216;&#x8005;&#x9A71;&#x9010; pod &#x7684; node &#x90FD;&#x4F1A;&#x88AB;&#x653E;&#x5728; zoneNoExecuteTainter &#x6216;&#x8005; zonePodEvictor &#x961F;&#x5217;&#x4E2D;&#xFF0C;&#x800C; <code>nc.monitorNodeHealth</code> &#x5C31;&#x662F;&#x8FD9;&#x4E24;&#x4E2A;&#x961F;&#x5217;&#x4E2D;&#x6570;&#x636E;&#x7684;&#x751F;&#x4EA7;&#x8005;&#x3002;<code>nc.monitorNodeHealth</code> &#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x6301;&#x7EED;&#x76D1;&#x63A7; node &#x7684;&#x72B6;&#x6001;&#xFF0C;&#x5F53; node &#x5904;&#x4E8E;&#x5F02;&#x5E38;&#x72B6;&#x6001;&#x65F6;&#x66F4;&#x65B0; node &#x7684; taint &#x4EE5;&#x53CA; node &#x4E0A; pod &#x7684;&#x72B6;&#x6001;&#x6216;&#x8005;&#x76F4;&#x63A5;&#x9A71;&#x9010; node &#x4E0A;&#x7684; pod&#xFF0C;&#x6B64;&#x5916;&#x8FD8;&#x4F1A;&#x4E3A;&#x96C6;&#x7FA4;&#x4E0B;&#x7684;&#x6240;&#x6709; node &#x5212;&#x5206; zoneStates &#x5E76;&#x4E3A;&#x6BCF;&#x4E2A; zoneStates &#x8BBE;&#x7F6E;&#x5BF9;&#x5E94;&#x7684;&#x9A71;&#x9010;&#x901F;&#x7387;&#x3002;</p>
+<p><code>nc.monitorNodeHealth</code> &#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x4ECE; nodeLister &#x4E2D;&#x83B7;&#x53D6;&#x6240;&#x6709;&#x7684; node&#xFF1B;</li>
+<li>2&#x3001;NodeLifecycleController &#x6839;&#x636E;&#x81EA;&#x8EAB; knownNodeSet &#x5217;&#x8868;&#x4E2D;&#x7684;&#x6570;&#x636E;&#x8C03;&#x7528; <code>nc.classifyNodes</code> &#x5C06; node &#x5206;&#x4E3A;&#x4E09;&#x7C7B;&#xFF1A;added&#x3001;deleted&#x3001;newZoneRepresentatives&#xFF0C;added &#x8868;&#x793A;&#x65B0;&#x589E;&#x7684;&#xFF0C;deleted &#x8868;&#x793A;&#x88AB;&#x5220;&#x9664;&#x7684;&#xFF0C;newZoneRepresentatives &#x4EE3;&#x8868;&#x8BE5; node &#x4E0D;&#x5B58;&#x5728; zoneStates&#xFF0C;NodeLifecycleController &#x4F1A;&#x4E3A;&#x6BCF;&#x4E00;&#x4E2A; node &#x5212;&#x5206;&#x4E00;&#x4E2A; zoneStates&#xFF0C;zoneStates &#x6709; Initial&#x3001;Normal&#x3001;FullDisruption&#x3001;PartialDisruption &#x56DB;&#x79CD;&#xFF0C;&#x65B0;&#x589E;&#x52A0;&#x7684; node &#x9ED8;&#x8BA4;&#x7684; zoneStates &#x4E3A; Initial&#xFF0C;&#x5176;&#x4F59;&#x7684;&#x51E0;&#x4E2A; zoneStates &#x5206;&#x522B;&#x5BF9;&#x5E94;&#x7740;&#x4E0D;&#x540C;&#x7684;&#x9A71;&#x9010;&#x901F;&#x7387;&#xFF1B;</li>
+<li>3&#x3001;&#x5BF9;&#x4E8E; newZoneRepresentatives &#x4E2D; node &#x5217;&#x8868;&#xFF0C;&#x8C03;&#x7528; <code>nc.addPodEvictorForNewZone</code> &#x5C06; node &#x6DFB;&#x52A0;&#x5230;&#x5BF9;&#x5E94;&#x7684;&#x7684; zoneStates &#x4E2D;&#xFF0C;&#x7136;&#x540E;&#x6839;&#x636E;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code> &#x7279;&#x6027;&#x5C06; node &#x5206;&#x522B;&#x52A0;&#x5165;&#x5230; zonePodEvictor &#x6216; zoneNoExecuteTainter &#x5217;&#x8868;&#x4E2D;&#xFF0C;&#x82E5;&#x542F;&#x7528;&#x4E86;&#x5219;&#x52A0;&#x5165;&#x5230; zoneNoExecuteTainter &#x5217;&#x8868;&#x4E2D;&#x5426;&#x5219;&#x52A0;&#x5165;&#x5230; zonePodEvictor &#x4E2D;&#xFF1B;</li>
+<li>4&#x3001;&#x5BF9;&#x5E94; added &#x5217;&#x8868;&#x4E2D;&#x7684; node&#xFF0C;&#x9996;&#x5148;&#x5C06;&#x5176;&#x52A0;&#x5165;&#x5230; knownNodeSet &#x5217;&#x8868;&#x4E2D;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>nc.addPodEvictorForNewZone</code> &#x5C06;&#x8BE5; node &#x6DFB;&#x52A0;&#x5230;&#x5BF9;&#x5E94;&#x7684; zoneStates &#x4E2D;&#xFF0C;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code> &#x7279;&#x6027;&#xFF0C;&#x82E5;&#x542F;&#x7528;&#x4E86;&#x5219;&#x8C03;&#x7528; <code>nc.markNodeAsReachable</code> &#x79FB;&#x9664;&#x8BE5; node &#x4E0A;&#x7684; <code>UnreachableTaint</code> &#x548C; <code>NotReadyTaint</code>&#xFF0C;&#x5E76;&#x4ECE; zoneNoExecuteTainter &#x4E2D;&#x79FB;&#x9664;&#x8BE5; node&#xFF0C;&#x8868;&#x793A;&#x4E3A;&#x8BE5; node &#x8FDB;&#x884C;&#x4E00;&#x6B21;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x82E5;&#x672A;&#x542F;&#x7528; <code>TaintBasedEvictions</code> &#x7279;&#x6027;&#x5219;&#x8C03;&#x7528; <code>nc.cancelPodEviction</code> &#x5C06;&#x8BE5; node &#x4ECE; zonePodEvictor &#x4E2D;&#x5220;&#x9664;&#xFF1B;</li>
+<li>5&#x3001;&#x5BF9;&#x4E8E; deleted &#x5217;&#x8868;&#x4E2D;&#x7684; node&#xFF0C;&#x5C06;&#x5176;&#x4ECE; knownNodeSet &#x5217;&#x8868;&#x4E2D;&#x5220;&#x9664;&#xFF1B;</li>
+<li>6&#x3001;&#x904D;&#x5386;&#x6240;&#x6709;&#x7684; nodes&#xFF1A;</li>
+<li>7&#x3001;&#x8C03;&#x7528; <code>nc.tryUpdateNodeHealth</code> &#x83B7;&#x53D6;&#x8BE5; node &#x7684; gracePeriod&#x3001;observedReadyCondition&#x3001;currentReadyCondition&#xFF0C;observedReadyCondition &#x53EF;&#x4EE5;&#x7406;&#x89E3;&#x4E3A; node &#x4E0A;&#x4E00;&#x6B21;&#x7684;&#x72B6;&#x6001;&#xFF0C; currentReadyCondition &#x4E3A;&#x672C;&#x6B21;&#x7684;&#x72B6;&#x6001;&#xFF1B;</li>
+<li>8&#x3001;&#x68C0;&#x67E5; node &#x662F;&#x5426;&#x5728;&#x4E2D;&#x65AD;&#x68C0;&#x67E5;&#x4E2D;&#x88AB;&#x6392;&#x9664;&#xFF0C;&#x4E3B;&#x8981;&#x5224;&#x65AD;&#x5F53;&#x542F;&#x7528; <code>LegacyNodeRoleBehavior</code> &#x6216; <code>NodeDisruptionExclusion</code> &#x7279;&#x6027;&#x65F6;&#xFF0C;node &#x662F;&#x5426;&#x5B58;&#x5728;&#x5BF9;&#x5E94;&#x7684;&#x6807;&#x7B7E;&#xFF0C;&#x5982;&#x679C;&#x8BE5; node &#x6CA1;&#x6709;&#x88AB;&#x6392;&#x9664;&#xFF0C;&#x5219;&#x5C06;&#x5176;&#x5BF9;&#x5E94;&#x7684; zone &#x52A0;&#x5165;&#x5230; zoneToNodeConditions &#x4E2D;&#xFF1B;</li>
+<li>9&#x3001;&#x5F53;&#x8BE5; node &#x7684; currentReadyCondition &#x4E0D;&#x4E3A;&#x7A7A;&#x65F6;&#xFF0C;&#x68C0;&#x67E5; observedReadyCondition&#xFF0C;&#x5373;&#x68C0;&#x67E5;&#x4E0A;&#x4E00;&#x6B21;&#x7684;&#x72B6;&#x6001;&#xFF1A;<ul>
+<li>1&#x3001;&#x82E5; observedReadyCondition &#x4E3A; false&#xFF0C;&#x6B64;&#x65F6;&#x82E5;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code> &#x65F6;&#xFF0C;&#x4E3A;&#x5176;&#x6DFB;&#x52A0; <code>NotReadyTaint</code> &#x5E76;&#x4E14;&#x786E;&#x4FDD; node &#x4E0D;&#x5B58;&#x5728; <code>UnreachableTaint</code> &#x3002;&#x82E5;&#x672A;&#x542F;&#x7528; <code>TaintBasedEvictions</code> &#x5219;&#x5224;&#x65AD;&#x8DDD; node &#x4E0A;&#x4E00;&#x6B21; readyTransitionTimestamp &#x7684;&#x65F6;&#x95F4;&#x662F;&#x5426;&#x8D85;&#x8FC7;&#x4E86; <code>podEvictionTimeout</code>&#xFF08;&#x9ED8;&#x8BA4; 5 &#x5206;&#x949F;&#xFF09;&#xFF0C;&#x82E5;&#x8D85;&#x8FC7;&#x5219;&#x5C06; node &#x52A0;&#x5165;&#x5230; zonePodEvictor &#x961F;&#x5217;&#x4E2D;&#xFF0C;&#x6700;&#x7EC8;&#x4F1A;&#x9A71;&#x9010; node &#x4E0A;&#x7684;&#x6240;&#x6709; pod&#xFF1B;</li>
+<li>2&#x3001;&#x82E5; observedReadyCondition &#x4E3A; unknown&#xFF0C;&#x6B64;&#x65F6;&#x82E5;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code> &#x65F6;&#xFF0C;&#x5219;&#x4E3A; node &#x6DFB;&#x52A0; <code>UnreachableTaint</code> &#x5E76;&#x4E14;&#x786E;&#x4FDD; node &#x4E0D;&#x4F1A;&#x6709; <code>NotReadyTaint</code>&#x3002;&#x82E5;&#x672A;&#x542F;&#x7528; <code>TaintBasedEvictions</code> &#x5219;&#x5224;&#x65AD;&#x8DDD; node &#x4E0A;&#x4E00;&#x6B21; probeTimestamp &#x7684;&#x65F6;&#x95F4;&#x662F;&#x5426;&#x8D85;&#x8FC7;&#x4E86; <code>podEvictionTimeout</code>&#xFF08;&#x9ED8;&#x8BA4; 5 &#x5206;&#x949F;&#xFF09;&#xFF0C;&#x82E5;&#x8D85;&#x8FC7;&#x5219;&#x5C06; node &#x52A0;&#x5165;&#x5230; zonePodEvictor &#x961F;&#x5217;&#x4E2D;&#xFF0C;&#x6700;&#x7EC8;&#x4F1A;&#x9A71;&#x9010; node &#x4E0A;&#x7684;&#x6240;&#x6709; pod&#xFF1B;</li>
+<li>3&#x3001;&#x82E5; observedReadyCondition &#x4E3A; true &#x65F6;&#xFF0C;&#x6B64;&#x65F6;&#x82E5;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code> &#x65F6;&#xFF0C;&#x8C03;&#x7528; <code>nc.markNodeAsReachable</code> &#x79FB;&#x9664; node &#x4E0A;&#x7684; <code>NotReadyTaint</code> &#x548C; <code>UnreachableTaint</code> &#xFF0C;&#x82E5;&#x672A;&#x542F;&#x7528; <code>TaintBasedEvictions</code> &#x5219;&#x5C06; node &#x4ECE; zonePodEvictor &#x961F;&#x5217;&#x4E2D;&#x79FB;&#x9664;&#xFF1B;
+&#x6B64;&#x5904;&#x4E3B;&#x8981;&#x662F;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86; <code>TaintBasedEvictions</code>  &#x7279;&#x6027;&#xFF0C;&#x7136;&#x540E;&#x6839;&#x636E; node &#x7684; ReadyCondition &#x5224;&#x65AD;&#x662F;&#x5426;&#x76F4;&#x63A5;&#x9A71;&#x9010; node &#x4E0A;&#x7684; pod &#x8FD8;&#x662F;&#x4E3A; node &#x6253; taint &#x7B49;&#x5F85; taintManager &#x9A71;&#x9010; node &#x4E0A;&#x7684; pod&#xFF1B; </li>
+</ul>
+</li>
+<li>10&#x3001;&#x6700;&#x540E;&#x5224;&#x65AD;&#x5F53; node ReadyCondition &#x7531; true &#x53D8;&#x4E3A; false &#x65F6;&#xFF0C;&#x8C03;&#x7528; <code>nodeutil.MarkAllPodsNotReady</code> &#x5C06;&#x8BE5;node &#x4E0A;&#x7684;&#x6240;&#x6709; pod &#x6807;&#x8BB0;&#x4E3A; notReady&#xFF1B;</li>
+<li>11&#x3001;&#x8C03;&#x7528; <code>nc.handleDisruption</code> &#x5904;&#x7406;&#x4E2D;&#x65AD;&#x60C5;&#x51B5;&#xFF0C;&#x4E3A;&#x4E0D;&#x540C; zoneState &#x8BBE;&#x7F6E;&#x9A71;&#x9010;&#x7684;&#x901F;&#x5EA6;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:664</code></p>
+<pre class="language-"><code>func (nc *Controller) monitorNodeHealth() error {
+    // 1&#x3001;&#x4ECE; nodeLister &#x83B7;&#x53D6;&#x6240;&#x6709; node
+    nodes, err := nc.nodeLister.List(labels.Everything())
+    if err != nil {
+        return err
+    }
+
+    // 2&#x3001;&#x6839;&#x636E; controller knownNodeSet &#x4E2D;&#x7684;&#x8BB0;&#x5F55;&#x5C06; node &#x5206;&#x4E3A;&#x4E09;&#x7C7B;
+    added, deleted, newZoneRepresentatives := nc.classifyNodes(nodes)
+
+    // 3&#x3001;&#x4E3A;&#x6CA1;&#x6709; zone &#x7684; node &#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; zone
+    for i := range newZoneRepresentatives {
+        nc.addPodEvictorForNewZone(newZoneRepresentatives[i])
+    }
+
+    // 4&#x3001;&#x5C06;&#x65B0;&#x589E;&#x52A0;&#x7684; node &#x6DFB;&#x52A0;&#x5230; knownNodeSet &#x4E2D;&#x5E76;&#x4E14;&#x5BF9; node &#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;
+    for i := range added {
+        ......
+        nc.knownNodeSet[added[i].Name] = added[i]
+        nc.addPodEvictorForNewZone(added[i])
+        if nc.useTaintBasedEvictions {
+            nc.markNodeAsReachable(added[i])
+        } else {
+            nc.cancelPodEviction(added[i])
+        }
+    }
+
+    // 5&#x3001;&#x5C06; deleted &#x5217;&#x8868;&#x4E2D;&#x7684; node &#x4ECE; knownNodeSet &#x4E2D;&#x5220;&#x9664;
+    for i := range deleted {
+        ......
+        delete(nc.knownNodeSet, deleted[i].Name)
+    }
+
+    zoneToNodeConditions := map[string][]*v1.NodeCondition{}
+    for i := range nodes {
+        var gracePeriod time.Duration
+        var observedReadyCondition v1.NodeCondition
+        var currentReadyCondition *v1.NodeCondition
+        node := nodes[i].DeepCopy()
+
+        // 6&#x3001;&#x83B7;&#x53D6; node &#x7684; gracePeriod, observedReadyCondition, currentReadyCondition
+        if err := wait.PollImmediate(retrySleepTime, retrySleepTime*scheduler.NodeHealthUpdateRetry, func() (bool, error) {
+            gracePeriod, observedReadyCondition, currentReadyCondition, err = nc.tryUpdateNodeHealth(node)
+            if err == nil {
+                return true, nil
+            }
+            name := node.Name
+            node, err = nc.kubeClient.CoreV1().Nodes().Get(name, metav1.GetOptions{})
+            if err != nil {
+                return false, err
+            }
+            return false, nil
+        }); err != nil {
+            ......
+        }
+
+        // 7&#x3001;&#x82E5; node &#x6CA1;&#x6709;&#x88AB;&#x6392;&#x9664;&#x5219;&#x52A0;&#x5165;&#x5230; zoneToNodeConditions &#x5217;&#x8868;&#x4E2D;
+        if !isNodeExcludedFromDisruptionChecks(node) {
+            zoneToNodeConditions[utilnode.GetZoneKey(node)] = append(zoneToNodeConditions[utilnode.GetZoneKey(node)], currentReadyCondition)
+        }
+
+        decisionTimestamp := nc.now()
+
+        // 8&#x3001;&#x6839;&#x636E; observedReadyCondition &#x4E3A; node &#x6DFB;&#x52A0;&#x4E0D;&#x540C;&#x7684; taint 
+        if currentReadyCondition != nil {
+            switch observedReadyCondition.Status {
+
+            case v1.ConditionFalse:
+                // 9&#x3001;false &#x72B6;&#x6001;&#x6DFB;&#x52A0; NotReady taint
+                if nc.useTaintBasedEvictions {
+                    if taintutils.TaintExists(node.Spec.Taints, UnreachableTaintTemplate) {
+                        taintToAdd := *NotReadyTaintTemplate
+                        if !nodeutil.SwapNodeControllerTaint(nc.kubeClient, []*v1.Taint{&amp;taintToAdd}, []*v1.Taint{UnreachableTaintTemplate}, node) {
+                            ......
+                        }
+                    } else if nc.markNodeForTainting(node) {
+                        ......
+                    }
+                // 10&#x3001;&#x6216;&#x8005;&#x5F53;&#x8D85;&#x8FC7; podEvictionTimeout &#x540E;&#x76F4;&#x63A5;&#x9A71;&#x9010; node &#x4E0A;&#x7684; pod
+                } else {
+                    if decisionTimestamp.After(nc.nodeHealthMap[node.Name].readyTransitionTimestamp.Add(nc.podEvictionTimeout)) {
+                        if nc.evictPods(node) {
+                            ......
+                        }
+                    }
+                }
+            case v1.ConditionUnknown:
+                // 11&#x3001;unknown &#x72B6;&#x6001;&#x65F6;&#x6DFB;&#x52A0; UnreachableTaint
+                if nc.useTaintBasedEvictions {
+                    if taintutils.TaintExists(node.Spec.Taints, NotReadyTaintTemplate) {
+                        taintToAdd := *UnreachableTaintTemplate
+                        if !nodeutil.SwapNodeControllerTaint(nc.kubeClient, []*v1.Taint{&amp;taintToAdd}, []*v1.Taint{NotReadyTaintTemplate}, node) {
+                            ......
+                        }
+                    } else if nc.markNodeForTainting(node) {
+                        ......
+                    }
+                } else {
+                    if decisionTimestamp.After(nc.nodeHealthMap[node.Name].probeTimestamp.Add(nc.podEvictionTimeout)) {
+                        if nc.evictPods(node) {
+                            ......
+                        }
+                    }
+                }
+            case v1.ConditionTrue:
+                // 12&#x3001;true &#x72B6;&#x6001;&#x65F6;&#x79FB;&#x9664;&#x6240;&#x6709; UnreachableTaint &#x548C; NotReadyTaint
+                if nc.useTaintBasedEvictions {
+                    removed, err := nc.markNodeAsReachable(node)
+                    if err != nil {
+                        ......
+                    }
+                // 13&#x3001;&#x4ECE; PodEviction &#x961F;&#x5217;&#x4E2D;&#x79FB;&#x9664;
+                } else {
+                    if nc.cancelPodEviction(node) {
+                        ......
+                    }
+                }
+            }
+
+            // 14&#x3001;ReadyCondition &#x7531; true &#x53D8;&#x4E3A; false &#x65F6;&#x6807;&#x8BB0; node &#x4E0A;&#x7684; pod &#x4E3A; notready
+            if currentReadyCondition.Status != v1.ConditionTrue &amp;&amp; observedReadyCondition.Status == v1.ConditionTrue {
+                nodeutil.RecordNodeStatusChange(nc.recorder, node, &quot;NodeNotReady&quot;)
+                if err = nodeutil.MarkAllPodsNotReady(nc.kubeClient, node); err != nil {
+                    utilruntime.HandleError(fmt.Errorf(&quot;Unable to mark all pods NotReady on node %v: %v&quot;, node.Name, err))
+                }
+            }
+        }
+    }
+    // 15&#x3001;&#x5904;&#x7406;&#x4E2D;&#x65AD;&#x60C5;&#x51B5;
+    nc.handleDisruption(zoneToNodeConditions, nodes)
+
+    return nil
+}
+</code></pre><h5 id="nctryupdatenodehealth"><a name="nctryupdatenodehealth" class="anchor-navigation-ex-anchor" href="#nctryupdatenodehealth"><i class="fa fa-link" aria-hidden="true"></i></a>nc.tryUpdateNodeHealth</h5>
+<p><code>nc.tryUpdateNodeHealth</code> &#x4F1A;&#x6839;&#x636E;&#x5F53;&#x524D;&#x83B7;&#x53D6;&#x7684; node status &#x66F4;&#x65B0; <code>nc.nodeHealthMap</code> &#x4E2D;&#x7684;&#x6570;&#x636E;&#xFF0C;<code>nc.nodeHealthMap</code> &#x4FDD;&#x5B58; node &#x6700;&#x8FD1;&#x4E00;&#x6B21;&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x5E76;&#x4F1A;&#x6839;&#x636E; <code>nc.nodeHealthMap</code> &#x5224;&#x65AD; node &#x662F;&#x5426;&#x5DF2;&#x7ECF;&#x5904;&#x4E8E; unknown &#x72B6;&#x6001;&#x3002;</p>
+<p><code>nc.tryUpdateNodeHealth</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x83B7;&#x53D6;&#x5F53;&#x524D; node &#x7684; ReadyCondition &#x4F5C;&#x4E3A; currentReadyCondition&#xFF0C;&#x82E5; ReadyCondition &#x4E3A;&#x7A7A;&#x5219;&#x6B64; node &#x53EF;&#x80FD;&#x672A;&#x4E0A;&#x62A5; status&#xFF0C;&#x6B64;&#x65F6;&#x4E3A;&#x8BE5; node fake &#x4E00;&#x4E2A; observedReadyCondition &#x4E14;&#x5176; status &#x4E3A; Unknown&#xFF0C;&#x5C06;&#x5176; gracePeriod &#x8BBE;&#x4E3A; nodeStartupGracePeriod&#xFF0C;&#x5426;&#x5219; observedReadyCondition &#x8BBE;&#x4E3A; currentReadyCondition &#x4E14; gracePeriod &#x4E3A; nodeMonitorGracePeriod&#xFF0C;&#x7136;&#x540E;&#x5728; <code>nc.nodeHealthMap</code> &#x4E2D;&#x66F4;&#x65B0; node &#x7684; Status&#xFF1B;</li>
+<li>2&#x3001;&#x82E5; ReadyCondition &#x5B58;&#x5728;&#xFF0C;&#x5219;&#x5C06; observedReadyCondition &#x7F6E;&#x4F4D;&#x5F53;&#x524D; ReadyCondition&#xFF0C;gracePeriod &#x8BBE;&#x4E3A; 40s&#xFF1B;</li>
+<li>3&#x3001;&#x8BA1;&#x7B97; node &#x5F53;&#x524D;&#x7684; nodeHealthData&#xFF0C;nodeHealthData &#x4E2D;&#x4FDD;&#x5B58;&#x4E86; node &#x6700;&#x8FD1;&#x4E00;&#x6B21;&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x5305;&#x542B; probeTimestamp&#x3001;readyTransitionTimestamp&#x3001;status&#x3001;lease &#x56DB;&#x4E2A;&#x5B57;&#x6BB5;&#x3002;&#x4ECE;  <code>nc.nodeHealthMap</code> &#x4E2D;&#x83B7;&#x53D6; node &#x7684; condition &#x548C; lease &#x4FE1;&#x606F;&#xFF0C;&#x66F4;&#x65B0; savedNodeHealth &#x4E2D; status&#x3001;probeTimestamp&#x3001;readyTransitionTimestamp&#xFF0C;&#x82E5;&#x542F;&#x7528;&#x4E86; <code>NodeLease</code> &#x7279;&#x6027;&#x4E5F;&#x4F1A;&#x66F4;&#x65B0; NodeHealth &#x4E2D;&#x7684; lease &#x4EE5;&#x53CA; probeTimestamp&#xFF0C;&#x6700;&#x540E;&#x5C06;&#x5F53;&#x524D;&#x8BA1;&#x7B97;&#x51FA; savedNodeHealth &#x4FDD;&#x5B58;&#x5230; <code>nc.nodeHealthMap</code> &#x4E2D;&#xFF1B;</li>
+<li>4&#x3001;&#x901A;&#x8FC7;&#x83B7;&#x53D6;&#x5230;&#x7684; savedNodeHealth &#x68C0;&#x67E5; node &#x72B6;&#x6001;&#xFF0C;&#x82E5; NodeReady condition &#x6216;&#x8005; lease &#x5BF9;&#x8C61;&#x66F4;&#x65B0;&#x65F6;&#x95F4;&#x8D85;&#x8FC7; gracePeriod&#xFF0C;&#x5219;&#x66F4;&#x65B0; node &#x7684; Ready&#x3001;MemoryPressure&#x3001;DiskPressure&#x3001;PIDPressure &#x4E3A; Unknown&#xFF0C;&#x82E5;&#x5F53;&#x524D;&#x8BA1;&#x7B97;&#x51FA;&#x6765;&#x7684; node status &#x4E0E;&#x4E0A;&#x4E00;&#x6B21;&#x7684; status &#x4E0D;&#x4E00;&#x81F4;&#x5219;&#x540C;&#x6B65;&#x5230; apiserver&#xFF0C;&#x5E76;&#x4E14;&#x66F4;&#x65B0; nodeHealthMap&#xFF1B; </li>
+<li>5&#x3001;&#x6700;&#x540E;&#x8FD4;&#x56DE; gracePeriod&#x3001;observedReadyCondition&#x3001;currentReadyCondition&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:851</code></p>
+<pre class="language-"><code>func (nc *Controller) tryUpdateNodeHealth(node *v1.Node) (time.Duration, v1.NodeCondition, *v1.NodeCondition, error) {
+    var gracePeriod time.Duration
+    var observedReadyCondition v1.NodeCondition
+    _, currentReadyCondition := nodeutil.GetNodeCondition(&amp;node.Status, v1.NodeReady)
+
+    // 1&#x3001;&#x82E5; currentReadyCondition &#x4E3A; nil &#x5219; fake &#x4E00;&#x4E2A; observedReadyCondition
+    if currentReadyCondition == nil {
+        observedReadyCondition = v1.NodeCondition{
+            Type:               v1.NodeReady,
+            Status:             v1.ConditionUnknown,
+            LastHeartbeatTime:  node.CreationTimestamp,
+            LastTransitionTime: node.CreationTimestamp,
+        }
+        gracePeriod = nc.nodeStartupGracePeriod
+        if _, found := nc.nodeHealthMap[node.Name]; found {
+            nc.nodeHealthMap[node.Name].status = &amp;node.Status
+        } else {
+            nc.nodeHealthMap[node.Name] = &amp;nodeHealthData{
+                status:                   &amp;node.Status,
+                probeTimestamp:           node.CreationTimestamp,
+                readyTransitionTimestamp: node.CreationTimestamp,
+            }
+        }
+    } else {
+        observedReadyCondition = *currentReadyCondition
+        gracePeriod = nc.nodeMonitorGracePeriod
+    }
+
+    // 2&#x3001;savedNodeHealth &#x4E2D;&#x4FDD;&#x5B58; node &#x6700;&#x8FD1;&#x7684;&#x4E00;&#x6B21;&#x72B6;&#x6001;
+    savedNodeHealth, found := nc.nodeHealthMap[node.Name]
+
+    var savedCondition *v1.NodeCondition
+    var savedLease *coordv1beta1.Lease
+    if found {
+        _, savedCondition = nodeutil.GetNodeCondition(savedNodeHealth.status, v1.NodeReady)
+        savedLease = savedNodeHealth.lease
+    }
+
+    // 3&#x3001;&#x6839;&#x636E; savedCondition &#x4EE5;&#x53CA; currentReadyCondition &#x66F4;&#x65B0; savedNodeHealth &#x4E2D;&#x7684;&#x6570;&#x636E;
+    if !found {
+        savedNodeHealth = &amp;nodeHealthData{
+            status:                   &amp;node.Status,
+            probeTimestamp:           nc.now(),
+            readyTransitionTimestamp: nc.now(),
+        }
+    } else if savedCondition == nil &amp;&amp; currentReadyCondition != nil {
+        savedNodeHealth = &amp;nodeHealthData{
+            status:                   &amp;node.Status,
+            probeTimestamp:           nc.now(),
+            readyTransitionTimestamp: nc.now(),
+        }
+    } else if savedCondition != nil &amp;&amp; currentReadyCondition == nil {
+        savedNodeHealth = &amp;nodeHealthData{
+            status:                   &amp;node.Status,
+            probeTimestamp:           nc.now(),
+            readyTransitionTimestamp: nc.now(),
+        }
+    } else if savedCondition != nil &amp;&amp; currentReadyCondition != nil &amp;&amp; savedCondition.LastHeartbeatTime != currentReadyCondition.LastHeartbeatTime {
+        var transitionTime metav1.Time
+        if savedCondition.LastTransitionTime != currentReadyCondition.LastTransitionTime {
+            transitionTime = nc.now()
+        } else {
+            transitionTime = savedNodeHealth.readyTransitionTimestamp
+        }
+
+        savedNodeHealth = &amp;nodeHealthData{
+            status:                   &amp;node.Status,
+            probeTimestamp:           nc.now(),
+            readyTransitionTimestamp: transitionTime,
+        }
+    }
+
+    // 4&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86; nodeLease &#x529F;&#x80FD;
+    var observedLease *coordv1beta1.Lease
+    if utilfeature.DefaultFeatureGate.Enabled(features.NodeLease) {
+        observedLease, _ = nc.leaseLister.Leases(v1.NamespaceNodeLease).Get(node.Name)
+        if observedLease != nil &amp;&amp; (savedLease == nil || savedLease.Spec.RenewTime.Before(observedLease.Spec.RenewTime)) {
+            savedNodeHealth.lease = observedLease
+            savedNodeHealth.probeTimestamp = nc.now()
+        }
+    }
+    nc.nodeHealthMap[node.Name] = savedNodeHealth
+
+    // 5&#x3001;&#x68C0;&#x67E5; node &#x662F;&#x5426;&#x5DF2;&#x7ECF;&#x8D85;&#x8FC7; gracePeriod &#x65F6;&#x95F4;&#x6CA1;&#x6709;&#x4E0A;&#x62A5;&#x72B6;&#x6001;&#x4E86;
+    if nc.now().After(savedNodeHealth.probeTimestamp.Add(gracePeriod)) {
+        nodeConditionTypes := []v1.NodeConditionType{
+            v1.NodeReady,
+            v1.NodeMemoryPressure,
+            v1.NodeDiskPressure,
+            v1.NodePIDPressure,
+        }
+        nowTimestamp := nc.now()
+
+        // 6&#x3001;&#x82E5; node &#x8D85;&#x8FC7; gracePeriod &#x65F6;&#x95F4;&#x6CA1;&#x6709;&#x4E0A;&#x62A5;&#x72B6;&#x6001;&#x5C06;&#x5176;&#x6240;&#x6709; Condition &#x8BBE;&#x7F6E; unknown
+        for _, nodeConditionType := range nodeConditionTypes {
+            _, currentCondition := nodeutil.GetNodeCondition(&amp;node.Status, nodeConditionType)
+            if currentCondition == nil {
+                node.Status.Conditions = append(node.Status.Conditions, v1.NodeCondition{
+                    Type:               nodeConditionType,
+                    Status:             v1.ConditionUnknown,
+                    Reason:             &quot;NodeStatusNeverUpdated&quot;,
+                    Message:            &quot;Kubelet never posted node status.&quot;,
+                    LastHeartbeatTime:  node.CreationTimestamp,
+                    LastTransitionTime: nowTimestamp,
+                })
+            } else {
+                if currentCondition.Status != v1.ConditionUnknown {
+                    currentCondition.Status = v1.ConditionUnknown
+                    currentCondition.Reason = &quot;NodeStatusUnknown&quot;
+                    currentCondition.Message = &quot;Kubelet stopped posting node status.&quot;
+                    currentCondition.LastTransitionTime = nowTimestamp
+                }
+            }
+        }
+
+        // 7&#x3001;&#x66F4;&#x65B0; node &#x6700;&#x65B0;&#x72B6;&#x6001;&#x81F3; apiserver &#x5E76;&#x66F4;&#x65B0; nodeHealthMap &#x4E2D;&#x7684;&#x6570;&#x636E;
+        _, currentReadyCondition = nodeutil.GetNodeCondition(&amp;node.Status, v1.NodeReady)
+        if !apiequality.Semantic.DeepEqual(currentReadyCondition, &amp;observedReadyCondition) {
+            if _, err := nc.kubeClient.CoreV1().Nodes().UpdateStatus(node); err != nil {
+                return gracePeriod, observedReadyCondition, currentReadyCondition, err
+            }
+            nc.nodeHealthMap[node.Name] = &amp;nodeHealthData{
+                status:                   &amp;node.Status,
+                probeTimestamp:           nc.nodeHealthMap[node.Name].probeTimestamp,
+                readyTransitionTimestamp: nc.now(),
+                lease:                    observedLease,
+            }
+            return gracePeriod, observedReadyCondition, currentReadyCondition, nil
+        }
+    }
+
+    return gracePeriod, observedReadyCondition, currentReadyCondition, nil
+}
+</code></pre><h5 id="nchandledisruption"><a name="nchandledisruption" class="anchor-navigation-ex-anchor" href="#nchandledisruption"><i class="fa fa-link" aria-hidden="true"></i></a>nc.handleDisruption</h5>
+<p><code>monitorNodeHealth</code> &#x4E2D;&#x4F1A;&#x4E3A;&#x6BCF;&#x4E2A; node &#x5212;&#x5206; zone &#x5E76;&#x8BBE;&#x7F6E; zoneState&#xFF0C;<code>nc.handleDisruption</code> &#x7684;&#x76EE;&#x7684;&#x662F;&#x5F53;&#x96C6;&#x7FA4;&#x4E2D;&#x4E0D;&#x540C; zone &#x4E0B;&#x51FA;&#x73B0;&#x591A;&#x4E2A; unhealthy node &#x65F6;&#x4F1A; zone &#x8BBE;&#x7F6E;&#x4E0D;&#x540C;&#x7684;&#x9A71;&#x9010;&#x901F;&#x7387;&#x3002;</p>
+<p><code>nc.handleDisruption</code> &#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8BBE;&#x7F6E; allAreFullyDisrupted &#x9ED8;&#x8BA4;&#x503C;&#x4E3A; true&#xFF0C;&#x6839;&#x636E; zoneToNodeConditions &#x4E2D;&#x7684;&#x6570;&#x636E;&#xFF0C;&#x5224;&#x65AD;&#x5F53;&#x524D;&#x6240;&#x6709; zone &#x662F;&#x5426;&#x90FD;&#x4E3A; FullDisruption &#x72B6;&#x6001;&#xFF1B;</li>
+<li>2&#x3001;&#x904D;&#x5386; zoneToNodeConditions &#x9996;&#x5148;&#x8C03;&#x7528; <code>nc.computeZoneStateFunc</code> &#x8BA1;&#x7B97;&#x6BCF;&#x4E2A; zone &#x7684;&#x72B6;&#x6001;&#xFF0C;&#x5206;&#x4E3A;&#x4E09;&#x79CD; <code>fullyDisrupted</code>&#xFF08;zone &#x4E0B;&#x6240;&#x6709; node &#x90FD;&#x5904;&#x4E8E; notReady &#x72B6;&#x6001;&#xFF09;&#x3001;<code>partiallyDisrupted</code>&#xFF08;notReady node &#x5360;&#x6BD4; &gt;= unhealthyZoneThreshold &#x7684;&#x503C;&#x4E14; node &#x6570;&#x8D85;&#x8FC7;&#x4E09;&#x4E2A;&#xFF09;&#x3001;<code>normal</code>&#xFF08;&#x4EE5;&#x4E0A;&#x4E24;&#x79CD;&#x60C5;&#x51B5;&#x4E4B;&#x5916;&#xFF09;&#x3002;&#x82E5; newState &#x4E0D;&#x4E3A; <code>stateFullDisruption</code> &#x5C06; allAreFullyDisrupted &#x8BBE;&#x4E3A; false&#xFF0C;&#x5C06; newState &#x4FDD;&#x5B58;&#x5728; newZoneStates &#x4E2D;&#xFF0C;</li>
+<li>3&#x3001;&#x5C06; allWasFullyDisrupted &#x9ED8;&#x8BA4;&#x503C;&#x8BBE;&#x7F6E;&#x4E3A; true&#xFF0C;&#x6839;&#x636E; zoneStates &#x4E2D; nodeCondition &#x7684;&#x6570;&#x636E;&#xFF0C;&#x5224;&#x65AD;&#x4E0A;&#x4E00;&#x6B21;&#x89C2;&#x5BDF;&#x5230;&#x7684;&#x6240;&#x6709; zone &#x662F;&#x5426;&#x90FD;&#x4E3A; <code>FullDisruption</code> &#x72B6;&#x6001;&#xFF1B;</li>
+<li>4&#x3001;&#x5982;&#x679C;&#x6240;&#x6709; zone &#x90FD;&#x4E3A; <code>FullyDisrupted</code> &#x76F4;&#x63A5;&#x505C;&#x6B62;&#x6240;&#x6709;&#x7684;&#x9A71;&#x9010;&#x5DE5;&#x4F5C;&#xFF0C;&#x56E0;&#x4E3A;&#x6B64;&#x65F6;&#x53EF;&#x80FD;&#x5904;&#x4E8E;&#x7F51;&#x7EDC;&#x4E2D;&#x65AD;&#x7684;&#x72B6;&#x6001;&#xFF1B;</li>
+<li>5&#x3001;&#x5982;&#x679C; allAreFullyDisrupted &#x4E3A; true&#xFF0C;allWasFullyDisrupted &#x4E3A; false&#xFF0C;&#x8BF4;&#x660E;&#x4ECE;&#x975E; <code>FullyDisrupted</code> &#x5207;&#x6362;&#x5230;&#x4E86; <code>FullyDisrupted</code> &#x6A21;&#x5F0F;&#xFF0C;&#x6B64;&#x65F6;&#x9700;&#x8981;&#x505C;&#x6B62;&#x6240;&#x6709; node &#x7684;&#x9A71;&#x9010;&#x5DE5;&#x4F5C;&#xFF0C;&#x9996;&#x5148;&#x53BB;&#x6389; node &#x4E0A;&#x7684; taint &#x5E76;&#x8BBE;&#x7F6E;&#x6240;&#x6709;zone&#x7684;&#x5BF9;&#x5E94; zoneNoExecuteTainter &#x6216;&#x8005; zonePodEvictor &#x7684; Rate Limeter &#x4E3A;0&#xFF0C;&#x6700;&#x540E;&#x66F4;&#x65B0;&#x6240;&#x6709; zone &#x7684;&#x72B6;&#x6001;&#x4E3A; <code>FullDisruption</code>&#xFF1B;</li>
+<li>6&#x3001;&#x5982;&#x679C; allWasFullyDisrupted &#x4E3A; true&#xFF0C;allAreFullyDisrupted &#x4E3A; false&#xFF0C;&#x8BF4;&#x660E;&#x96C6;&#x7FA4;&#x4ECE; <code>FullyDisrupted</code> &#x53D8;&#x4E3A; &#x975E; <code>FullyDisrupted</code> &#x6A21;&#x5F0F;&#xFF0C;&#x6B64;&#x65F6;&#x9996;&#x5148;&#x66F4;&#x65B0; <code>nc.nodeHealthMap</code> &#x4E2D;&#x6240;&#x6709; node &#x7684; probeTimestamp &#x548C; readyTransitionTimestamp &#x4E3A;&#x5F53;&#x524D;&#x65F6;&#x95F4;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>nc.setLimiterInZone</code> &#x91CD;&#x7F6E;&#x6BCF;&#x4E2A; zone &#x7684;&#x9A71;&#x9010;&#x901F;&#x7387;&#xFF1B;</li>
+<li>7&#x3001;&#x5982;&#x679C; allWasFullyDisrupted&#x4E3A;false &#x4E14; allAreFullyDisrupted &#x4E3A;false&#xFF0C;&#x5373;&#x96C6;&#x7FA4;&#x72B6;&#x6001;&#x4FDD;&#x6301;&#x4E3A;&#x975E; <code>FullDisruption</code> &#x65F6;&#xFF0C;&#x6B64;&#x65F6;&#x6839;&#x636E; zone &#x7684; state &#x4E3A;&#x6BCF;&#x4E2A; zone &#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x7684;&#x9A71;&#x9010;&#x901F;&#x7387;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:1017</code></p>
+<pre class="language-"><code>func (nc *Controller) handleDisruption(zoneToNodeConditions map[string][]*v1.NodeCondition, nodes []*v1.Node) {
+    newZoneStates := map[string]ZoneState{}
+    allAreFullyDisrupted := true
+
+    // 1&#x3001;&#x5224;&#x65AD;&#x5F53;&#x524D;&#x6240;&#x6709; zone &#x662F;&#x5426;&#x90FD;&#x4E3A; FullDisruption &#x72B6;&#x6001;
+    for k, v := range zoneToNodeConditions {
+        zoneSize.WithLabelValues(k).Set(float64(len(v)))
+        // 2&#x3001;&#x8BA1;&#x7B97; zone state &#x4EE5;&#x53CA; unhealthy node
+        unhealthy, newState := nc.computeZoneStateFunc(v)
+        zoneHealth.WithLabelValues(k).Set(float64(100*(len(v)-unhealthy)) / float64(len(v)))
+        unhealthyNodes.WithLabelValues(k).Set(float64(unhealthy))
+        if newState != stateFullDisruption {
+            allAreFullyDisrupted = false
+        }
+        newZoneStates[k] = newState
+        if _, had := nc.zoneStates[k]; !had {
+            nc.zoneStates[k] = stateInitial
+        }
+    }
+
+    // 3&#x3001;&#x5224;&#x65AD;&#x4E0A;&#x4E00;&#x6B21;&#x89C2;&#x5BDF;&#x5230;&#x7684;&#x6240;&#x6709; zone &#x662F;&#x5426;&#x90FD;&#x4E3A; FullDisruption &#x72B6;&#x6001;
+    allWasFullyDisrupted := true
+    for k, v := range nc.zoneStates {
+        if _, have := zoneToNodeConditions[k]; !have {
+            zoneSize.WithLabelValues(k).Set(0)
+            zoneHealth.WithLabelValues(k).Set(100)
+            unhealthyNodes.WithLabelValues(k).Set(0)
+            delete(nc.zoneStates, k)
+            continue
+        }
+        if v != stateFullDisruption {
+            allWasFullyDisrupted = false
+            break
+        }
+    }
+    // 4&#x3001;&#x82E5;&#x5B58;&#x5728;&#x4E00;&#x4E2A;&#x4E0D;&#x4E3A; FullyDisrupted 
+    if !allAreFullyDisrupted || !allWasFullyDisrupted {
+        // 5&#x3001;&#x5982;&#x679C; allAreFullyDisrupted &#x4E3A; true&#xFF0C;&#x5219; allWasFullyDisrupted &#x4E3A; false
+        //   &#x8BF4;&#x660E;&#x4ECE;&#x975E; FullyDisrupted &#x5207;&#x6362;&#x5230;&#x4E86; FullyDisrupted &#x6A21;&#x5F0F;
+        if allAreFullyDisrupted {
+            for i := range nodes {
+                if nc.useTaintBasedEvictions {
+                    _, err := nc.markNodeAsReachable(nodes[i])
+                    if err != nil {
+                        klog.Errorf(&quot;Failed to remove taints from Node %v&quot;, nodes[i].Name)
+                    }
+                } else {
+                    nc.cancelPodEviction(nodes[i])
+                }
+            }
+
+            for k := range nc.zoneStates {
+                if nc.useTaintBasedEvictions {
+                    nc.zoneNoExecuteTainter[k].SwapLimiter(0)
+                } else {
+                    nc.zonePodEvictor[k].SwapLimiter(0)
+                }
+            }
+            for k := range nc.zoneStates {
+                nc.zoneStates[k] = stateFullDisruption
+            }
+            return
+        }
+        // 6&#x3001;&#x5982;&#x679C; allWasFullyDisrupted &#x4E3A; true&#xFF0C;&#x5219; allAreFullyDisrupted &#x4E3A; false
+        //   &#x8BF4;&#x660E; cluster &#x4ECE; FullyDisrupted &#x5207;&#x6362;&#x4E3A;&#x975E; FullyDisrupted &#x6A21;&#x5F0F;
+        if allWasFullyDisrupted {
+            now := nc.now()
+            for i := range nodes {
+                v := nc.nodeHealthMap[nodes[i].Name]
+                v.probeTimestamp = now
+                v.readyTransitionTimestamp = now
+                nc.nodeHealthMap[nodes[i].Name] = v
+            }
+
+            for k := range nc.zoneStates {
+                nc.setLimiterInZone(k, len(zoneToNodeConditions[k]), newZoneStates[k])
+                nc.zoneStates[k] = newZoneStates[k]
+            }
+            return
+        }
+
+        // 7&#x3001;&#x6839;&#x636E; zoneState &#x4E3A;&#x6BCF;&#x4E2A; zone &#x8BBE;&#x7F6E;&#x9A71;&#x9010;&#x901F;&#x7387;
+        for k, v := range nc.zoneStates {
+            newState := newZoneStates[k]
+            if v == newState {
+                continue
+            }
+
+            nc.setLimiterInZone(k, len(zoneToNodeConditions[k]), newState)
+            nc.zoneStates[k] = newState
+        }
+    }
+}
+</code></pre><h6 id="nccomputezonestatefunc"><a name="nccomputezonestatefunc" class="anchor-navigation-ex-anchor" href="#nccomputezonestatefunc"><i class="fa fa-link" aria-hidden="true"></i></a>nc.computeZoneStateFunc</h6>
+<p><code>nc.computeZoneStateFunc</code> &#x662F;&#x8BA1;&#x7B97; zone state &#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x4F1A;&#x8BA1;&#x7B97;&#x6BCF;&#x4E2A; zone &#x4E0B; notReady &#x7684; node &#x5E76;&#x5C06; zone &#x5206;&#x4E3A;&#x4E09;&#x79CD;&#xFF1A;</p>
+<ul>
+<li><code>fullyDisrupted</code>&#xFF1A;zone &#x4E0B;&#x6240;&#x6709; node &#x90FD;&#x5904;&#x4E8E; notReady &#x72B6;&#x6001;&#xFF1B;</li>
+<li><code>partiallyDisrupted</code>&#xFF1A;notReady node &#x5360;&#x6BD4; &gt;= unhealthyZoneThreshold &#x7684;&#x503C;(&#x9ED8;&#x8BA4;&#x4E3A;0.55&#xFF0C;&#x901A;&#x8FC7;<code>--unhealthy-zone-threshold</code>&#x8BBE;&#x7F6E;)&#x4E14; notReady node &#x6570;&#x8D85;&#x8FC7;2&#x4E2A;&#xFF1B;</li>
+<li><code>normal</code>&#xFF1A;&#x4EE5;&#x4E0A;&#x4E24;&#x79CD;&#x60C5;&#x51B5;&#x4E4B;&#x5916;&#x7684;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:1262</code></p>
+<pre class="language-"><code>func (nc *Controller) ComputeZoneState(nodeReadyConditions []*v1.NodeCondition) (int, ZoneState) {
+    readyNodes := 0
+    notReadyNodes := 0
+    for i := range nodeReadyConditions {
+        if nodeReadyConditions[i] != nil &amp;&amp; nodeReadyConditions[i].Status == v1.ConditionTrue {
+            readyNodes++
+        } else {
+            notReadyNodes++
+        }
+    }
+    switch {
+    case readyNodes == 0 &amp;&amp; notReadyNodes &gt; 0:
+        return notReadyNodes, stateFullDisruption
+    case notReadyNodes &gt; 2 &amp;&amp; float32(notReadyNodes)/float32(notReadyNodes+readyNodes) &gt;= nc.unhealthyZoneThreshold:
+        return notReadyNodes, statePartialDisruption
+    default:
+        return notReadyNodes, stateNormal
+    }
+}
+</code></pre><h6 id="ncsetlimiterinzone"><a name="ncsetlimiterinzone" class="anchor-navigation-ex-anchor" href="#ncsetlimiterinzone"><i class="fa fa-link" aria-hidden="true"></i></a>nc.setLimiterInZone</h6>
+<p><code>nc.setLimiterInZone</code> &#x65B9;&#x6CD5;&#x4F1A;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684; zoneState &#x8BBE;&#x7F6E;&#x5BF9;&#x5E94;&#x7684;&#x9A71;&#x9010;&#x901F;&#x7387;&#xFF1A;</p>
+<ul>
+<li><code>stateNormal</code> &#xFF1A;&#x9A71;&#x9010;&#x901F;&#x7387;&#x4E3A; evictionLimiterQPS&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A;0.1&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7; <code>--node-eviction-rate</code> &#x53C2;&#x6570;&#x6307;&#x5B9A;)&#x7684;&#x503C;&#xFF0C;&#x5373;&#x6BCF;&#x9694; 10s &#x6E05;&#x7A7A;&#x4E00;&#x4E2A;&#x8282;&#x70B9;&#xFF1B;</li>
+<li><code>statePartialDisruption</code>&#xFF1A;&#x5982;&#x679C;&#x5F53;&#x524D; zone size &#x5927;&#x4E8E; <code>nc.largeClusterThreshold</code>&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A; 50&#xFF0C;&#x901A;&#x8FC7;<code>--large-cluster-size-threshold</code>&#x8BBE;&#x7F6E;&#xFF09;&#xFF0C;&#x5219;&#x8BBE;&#x7F6E;&#x4E3A; secondaryEvictionLimiterQPS&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A; 0.01&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7; <code>--secondary-node-eviction-rate</code> &#x6307;&#x5B9A;&#xFF09;&#xFF0C;&#x5426;&#x5219;&#x8BBE;&#x7F6E;&#x4E3A; 0&#xFF1B;</li>
+<li><code>stateFullDisruption</code>&#xFF1A;&#x4E3A; evictionLimiterQPS&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A;0.1&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7; <code>--node-eviction-rate</code> &#x53C2;&#x6570;&#x6307;&#x5B9A;)&#x7684;&#x503C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/controller/nodelifecycle/node_lifecycle_controller.go:1115</code></p>
+<pre class="language-"><code>func (nc *Controller) setLimiterInZone(zone string, zoneSize int, state ZoneState) {
+    switch state {
+    case stateNormal:
+        if nc.useTaintBasedEvictions {
+            nc.zoneNoExecuteTainter[zone].SwapLimiter(nc.evictionLimiterQPS)
+        } else {
+            nc.zonePodEvictor[zone].SwapLimiter(nc.evictionLimiterQPS)
+        }
+    case statePartialDisruption:
+        if nc.useTaintBasedEvictions {
+            nc.zoneNoExecuteTainter[zone].SwapLimiter(
+                nc.enterPartialDisruptionFunc(zoneSize))
+        } else {
+            nc.zonePodEvictor[zone].SwapLimiter(
+                nc.enterPartialDisruptionFunc(zoneSize))
+        }
+    case stateFullDisruption:
+        if nc.useTaintBasedEvictions {
+            nc.zoneNoExecuteTainter[zone].SwapLimiter(
+                nc.enterFullDisruptionFunc(zoneSize))
+        } else {
+            nc.zonePodEvictor[zone].SwapLimiter(
+                nc.enterFullDisruptionFunc(zoneSize))
+        }
+    }
+}
+</code></pre><h5 id="&#x5C0F;&#x7ED3;"><a name="&#x5C0F;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x5C0F;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x5C0F;&#x7ED3;</h5>
+<p>monitorNodeHealth &#x4E2D;&#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>                               monitorNodeHealth
+                                      |
+                                      |
+                            useTaintBasedEvictions
+                                      |
+                                      |
+               ---------------------------------------------
+           yes |                                           | no
+               |                                           |
+               v                                           v
+       addPodEvictorForNewZone                         evictPods
+               |                                           |
+               |                                           |
+               v                                           v
+       zoneNoExecuteTainter                         zonePodEvictor
+    (RateLimitedTimedQueue)                     (RateLimitedTimedQueue)
+               |                                           |
+               |                                           |
+               |                                           |
+               v                                           v
+       doNoExecuteTaintingPass                       doEvictionPass
+           (consumer)                                 (consumer)
+</code></pre><p>NodeLifecycleController &#x4E2D;&#x4E09;&#x4E2A;&#x6838;&#x5FC3;&#x7EC4;&#x4EF6;&#x4E4B;&#x95F4;&#x7684;&#x4EA4;&#x4E92;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;&#x6240;&#x793A;:</p>
+<pre class="language-"><code>                            monitorNodeHealth
+                                    |
+                                    |
+                                    | &#x4E3A; node &#x6DFB;&#x52A0; NoExecute taint
+                                    |
+                                    |
+                                    v       &#x4E3A; node &#x6DFB;&#x52A0;
+                 watch nodeList           NoSchedule taint
+     taintManager   ------&gt;     APIServer  &lt;-----------  nc.doNodeProcessingPassWorker
+           |
+           |
+           |
+           v
+    &#x9A71;&#x9010; node &#x4E0A;&#x4E0D;&#x5BB9;&#x5FCD;
+    node taint &#x7684; pod
+</code></pre><p>&#x81F3;&#x6B64;&#xFF0C;NodeLifecycleController &#x7684;&#x6838;&#x5FC3;&#x4EE3;&#x7801;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x5B8C;&#x3002;</p>
+<h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x5206;&#x6790;&#x4E86; NodeLifecycleController &#x7684;&#x8BBE;&#x8BA1;&#x4E0E;&#x5B9E;&#x73B0;&#xFF0C;NodeLifecycleController &#x4E3B;&#x8981;&#x662F;&#x76D1;&#x63A7; node &#x72B6;&#x6001;&#xFF0C;&#x5F53; node &#x5F02;&#x5E38;&#x65F6;&#x9A71;&#x9010; node &#x4E0A;&#x7684; pod&#xFF0C;&#x5176;&#x884C;&#x4E3A;&#x4E0E;&#x5176;&#x4ED6;&#x7EC4;&#x4EF6;&#x6709;&#x4E00;&#x5B9A;&#x5173;&#x7CFB;&#xFF0C;node &#x7684;&#x72B6;&#x6001;&#x7531; kubelet &#x4E0A;&#x62A5;&#xFF0C;node &#x5F02;&#x5E38;&#x65F6;&#x4E3A; node &#x6DFB;&#x52A0; taint &#x6807;&#x7B7E;&#x540E;&#xFF0C;scheduler &#x8C03;&#x5EA6; pod &#x4E5F;&#x4F1A;&#x6709;&#x5BF9;&#x5E94;&#x7684;&#x884C;&#x4E3A;&#x3002;&#x4E3A;&#x4E86;&#x4FDD;&#x8BC1;&#x7531;&#x4E8E;&#x7F51;&#x7EDC;&#x7B49;&#x95EE;&#x9898;&#x5F15;&#x8D77;&#x7684; pod &#x9A71;&#x9010;&#x884C;&#x4E3A;&#xFF0C;NodeLifecycleController &#x4F1A;&#x4E3A; node &#x8FDB;&#x884C;&#x5206;&#x533A;&#x5E76;&#x4F1A;&#x4E3A;&#x6BCF;&#x4E2A;&#x533A;&#x8BBE;&#x7F6E;&#x4E0D;&#x540C;&#x7684;&#x9A71;&#x9010;&#x901F;&#x7387;&#xFF0C;&#x5373;&#x5B9E;&#x9645;&#x4E0A;&#x4F1A;&#x4EE5; rate-limited &#x7684;&#x65B9;&#x5F0F;&#x6DFB;&#x52A0; taint&#xFF0C;&#x5728;&#x67D0;&#x4E9B;&#x60C5;&#x51B5;&#x4E0B;&#x53EF;&#x4EE5;&#x907F;&#x514D; pod &#x88AB;&#x5927;&#x91CF;&#x9A71;&#x9010;&#x3002;</p>
+<p>&#x6B64;&#x5916;&#xFF0C;NodeLifecycleController &#x8FD8;&#x4F1A;&#x5BF9;&#x5916;&#x66B4;&#x9732;&#x591A;&#x4E2A; metrics&#xFF0C;&#x5305;&#x62EC; zoneHealth&#x3001;zoneSize&#x3001;unhealthyNodes&#x3001;evictionsNumber &#x7B49;&#xFF0C;&#x4FBF;&#x4E8E;&#x7528;&#x6237;&#x67E5;&#x770B;&#x96C6;&#x7FA4;&#x4E0B; node &#x7684;&#x72B6;&#x6001;&#x3002;</p>
+<p>&#x53C2;&#x8003;&#xFF1A;</p>
+<p><a href="https://kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/" target="_blank">https://kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/</a></p>
+<p><a href="https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/" target="_blank">https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2020-01-09 20:44:16
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: kubernetes">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="job_controller.html" class="navigation navigation-next " aria-label="Next page: job controller 源码分析">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"node controller 源码分析","date":"2020-01-09T20:18:30.000Z","tags":["kube-controller-manager","node controller"],"type":"node controller","level":"1.2.1","depth":2,"next":{"title":"job controller 源码分析","level":"1.2.2","depth":2,"path":"kubernetes/job_controller.md","ref":"kubernetes/job_controller.md","articles":[]},"previous":{"title":"kubernetes","level":"1.2","depth":1,"path":"kubernetes/README.md","ref":"kubernetes/README.md","articles":[{"title":"node controller 源码分析","level":"1.2.1","depth":2,"path":"kubernetes/nodelifecycle_controller.md","ref":"kubernetes/nodelifecycle_controller.md","articles":[]},{"title":"job controller 源码分析","level":"1.2.2","depth":2,"path":"kubernetes/job_controller.md","ref":"kubernetes/job_controller.md","articles":[]},{"title":"garbage collector controller 源码分析","level":"1.2.3","depth":2,"path":"kubernetes/garbagecollector_controller.md","ref":"kubernetes/garbagecollector_controller.md","articles":[]},{"title":"daemonset controller 源码分析","level":"1.2.4","depth":2,"path":"kubernetes/daemonset_controller.md","ref":"kubernetes/daemonset_controller.md","articles":[]},{"title":"statefulset controller 源码分析","level":"1.2.5","depth":2,"path":"kubernetes/statefulset_controller.md","ref":"kubernetes/statefulset_controller.md","articles":[]},{"title":"deployment controller 源码分析","level":"1.2.6","depth":2,"path":"kubernetes/deployment_controller.md","ref":"kubernetes/deployment_controller.md","articles":[]},{"title":"replicaset controller 源码分析","level":"1.2.7","depth":2,"path":"kubernetes/replicaset_controller.md","ref":"kubernetes/replicaset_controller.md","articles":[]},{"title":"kube-scheduler 源码分析","level":"1.2.8","depth":2,"path":"kubernetes/kube_scheduler_process.md","ref":"kubernetes/kube_scheduler_process.md","articles":[]},{"title":"kube-scheduler predicates 与 priorities 调度算法源码分析","level":"1.2.9","depth":2,"path":"kubernetes/kube_scheduler_algorithm.md","ref":"kubernetes/kube_scheduler_algorithm.md","articles":[]},{"title":"kube-scheduler 优先级与抢占机制源码分析","level":"1.2.10","depth":2,"path":"kubernetes/kube_scheduler_preempt.md","ref":"kubernetes/kube_scheduler_preempt.md","articles":[]},{"title":"kubernetes service 原理解析","level":"1.2.11","depth":2,"path":"kubernetes/k8s_service_theory.md","ref":"kubernetes/k8s_service_theory.md","articles":[]},{"title":"kube-proxy 源码分析","level":"1.2.12","depth":2,"path":"kubernetes/kube_proxy_process.md","ref":"kubernetes/kube_proxy_process.md","articles":[]},{"title":"kube-proxy iptables 模式源码分析","level":"1.2.13","depth":2,"path":"kubernetes/kube_proxy_iptables.md","ref":"kubernetes/kube_proxy_iptables.md","articles":[]},{"title":"kube-proxy ipvs 模式源码分析","level":"1.2.14","depth":2,"path":"kubernetes/kube_proxy_ipvs.md","ref":"kubernetes/kube_proxy_ipvs.md","articles":[]},{"title":"kubelet 架构浅析","level":"1.2.15","depth":2,"path":"kubernetes/kubelet-modules.md","ref":"kubernetes/kubelet-modules.md","articles":[]},{"title":"kubelet 启动流程分析","level":"1.2.16","depth":2,"path":"kubernetes/kubelet_init.md","ref":"kubernetes/kubelet_init.md","articles":[]},{"title":"kubelet 创建 pod 的流程","level":"1.2.17","depth":2,"path":"kubernetes/kubelet_create_pod.md","ref":"kubernetes/kubelet_create_pod.md","articles":[]},{"title":"kubelet 状态上报的方式","level":"1.2.18","depth":2,"path":"kubernetes/node_status.md","ref":"kubernetes/node_status.md","articles":[]},{"title":"kubelet 中事件处理机制","level":"1.2.19","depth":2,"path":"kubernetes/k8s_events.md","ref":"kubernetes/k8s_events.md","articles":[]},{"title":"kubelet statusManager 源码分析","level":"1.2.20","depth":2,"path":"kubernetes/kubelet_status_manager.md","ref":"kubernetes/kubelet_status_manager.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/nodelifecycle_controller.md","mtime":"2020-01-09T12:44:16.959Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-01-09T12:45:09.526Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+
