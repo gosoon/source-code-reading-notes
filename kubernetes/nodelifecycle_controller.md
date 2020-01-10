@@ -30,7 +30,6 @@ type: "node controller"
 * [总结](#总结)
 
 
-
 在早期的版本中 NodeController 只有一种，v1.16 版本中 NodeController 已经分为了 NodeIpamController 与 NodeLifecycleController，本文主要介绍 NodeLifecycleController。
 
 
@@ -785,7 +784,7 @@ func (nc *Controller) doNoScheduleTaintingPass(nodeName string) error {
 `nc.doNoExecuteTaintingPass` 的主要逻辑为：
 - 1、遍历 zoneNoExecuteTainter 中的 node 列表，从 nodeLister 中获取 node 对象；
 - 2、获取该 node 的 NodeReadyCondition；
-- 3、判断 NodeReadyCondition 的状态，若为 false，则为 node 添加 `node.kubernetes.io/not-ready:NoExecute` 的 taint 且保证 node 不存在 `node.kubernetes.io/unreachable:NoExecute` 的 taint
+- 3、判断 NodeReadyCondition 的状态，若为 false，则为 node 添加 `node.kubernetes.io/not-ready:NoExecute` 的 taint 且保证 node 不存在 `node.kubernetes.io/unreachable:NoExecute` 的 taint;
 - 4、若 NodeReadyCondition 为 unknown，则为 node 添加 `node.kubernetes.io/unreachable:NoExecute` 的 taint 且保证 node 不存在 `node.kubernetes.io/not-ready:NoExecute` 的 taint；
   "unreachable" 和 "not ready" 两个 taint 是互斥的，只能存在一个； 
 - 5、若 NodeReadyCondition 为 true，此时说明该 node 处于正常状态直接返回；
@@ -846,7 +845,7 @@ func (nc *Controller) doNoExecuteTaintingPass() {
 若未启用 `TaintBasedEvictions` 特性，此时通过 `nc.monitorNodeHealth` 检测到 node 异常时会将其加入到  `nc.zonePodEvictor` 队列中，`nc.doEvictionPass` 会将 `nc.zonePodEvictor` 队列中 node 上的 pod 驱逐掉。
 
 `nc.doEvictionPass` 的主要逻辑为：
-- 1、遍历 zonePodEvictor 的 node 列表获，从 nodeLister 中获取 node 对象；
+- 1、遍历 zonePodEvictor 的 node 列表，从 nodeLister 中获取 node 对象；
 - 2、调用 `nodeutil.DeletePods` 删除该 node 上的所有 pod，在 `nodeutil.DeletePods` 中首先通过从 apiserver  获取该 node 上所有的 pod，逐个删除 pod，若该 pod 为 daemonset 所管理的 pod 则忽略；
 - 3、若整个过程中有失败的操作会进行重试；
 
@@ -1053,7 +1052,7 @@ func (nc *Controller) monitorNodeHealth() error {
 
 `nc.tryUpdateNodeHealth` 的主要逻辑为：
 - 1、获取当前 node 的 ReadyCondition 作为 currentReadyCondition，若 ReadyCondition 为空则此 node 可能未上报 status，此时为该 node fake 一个 observedReadyCondition 且其 status 为 Unknown，将其 gracePeriod 设为 nodeStartupGracePeriod，否则 observedReadyCondition 设为 currentReadyCondition 且 gracePeriod 为 nodeMonitorGracePeriod，然后在 `nc.nodeHealthMap` 中更新 node 的 Status；
-- 2、若 ReadyCondition 存在，则将 observedReadyCondition 置位当前 ReadyCondition，gracePeriod 设为 40s；
+- 2、若 ReadyCondition 存在，则将 observedReadyCondition 置为当前 ReadyCondition，gracePeriod 设为 40s；
 - 3、计算 node 当前的 nodeHealthData，nodeHealthData 中保存了 node 最近一次的状态，包含 probeTimestamp、readyTransitionTimestamp、status、lease 四个字段。从  `nc.nodeHealthMap` 中获取 node 的 condition 和 lease 信息，更新 savedNodeHealth 中 status、probeTimestamp、readyTransitionTimestamp，若启用了 `NodeLease` 特性也会更新 NodeHealth 中的 lease 以及 probeTimestamp，最后将当前计算出 savedNodeHealth 保存到 `nc.nodeHealthMap` 中；
 - 4、通过获取到的 savedNodeHealth 检查 node 状态，若 NodeReady condition 或者 lease 对象更新时间超过 gracePeriod，则更新 node 的 Ready、MemoryPressure、DiskPressure、PIDPressure 为 Unknown，若当前计算出来的 node status 与上一次的 status 不一致则同步到 apiserver，并且更新 nodeHealthMap； 
 - 5、最后返回 gracePeriod、observedReadyCondition、currentReadyCondition；
@@ -1207,7 +1206,7 @@ func (nc *Controller) tryUpdateNodeHealth(node *v1.Node) (time.Duration, v1.Node
 
 `nc.handleDisruption` 主要逻辑为：
 - 1、设置 allAreFullyDisrupted 默认值为 true，根据 zoneToNodeConditions 中的数据，判断当前所有 zone 是否都为 FullDisruption 状态；
-- 2、遍历 zoneToNodeConditions 首先调用 `nc.computeZoneStateFunc` 计算每个 zone 的状态，分为三种 `fullyDisrupted`（zone 下所有 node 都处于 notReady 状态）、`partiallyDisrupted`（notReady node 占比 >= unhealthyZoneThreshold 的值且 node 数超过三个）、`normal`（以上两种情况之外）。若 newState 不为 `stateFullDisruption` 将 allAreFullyDisrupted 设为 false，将 newState 保存在 newZoneStates 中，
+- 2、遍历 zoneToNodeConditions 首先调用 `nc.computeZoneStateFunc` 计算每个 zone 的状态，分为三种 `fullyDisrupted`（zone 下所有 node 都处于 notReady 状态）、`partiallyDisrupted`（notReady node 占比 >= unhealthyZoneThreshold 的值且 node 数超过三个）、`normal`（以上两种情况之外）。若 newState 不为 `stateFullDisruption` 将 allAreFullyDisrupted 设为 false，将 newState 保存在 newZoneStates 中;
 - 3、将 allWasFullyDisrupted 默认值设置为 true，根据 zoneStates 中 nodeCondition 的数据，判断上一次观察到的所有 zone 是否都为 `FullDisruption` 状态；
 - 4、如果所有 zone 都为 `FullyDisrupted` 直接停止所有的驱逐工作，因为此时可能处于网络中断的状态；
 - 5、如果 allAreFullyDisrupted 为 true，allWasFullyDisrupted 为 false，说明从非 `FullyDisrupted` 切换到了 `FullyDisrupted` 模式，此时需要停止所有 node 的驱逐工作，首先去掉 node 上的 taint 并设置所有zone的对应 zoneNoExecuteTainter 或者 zonePodEvictor 的 Rate Limeter 为0，最后更新所有 zone 的状态为 `FullDisruption`；
