@@ -54,7 +54,6 @@ taint 使用效果(Effect):
 #### NodeLifecycleController 中的 feature-gates
 
 在 NodeLifecycleController 用到了多个 feature-gates，此处先进行解释下：
-- `NodeLease` ：该特性在 v1.12 引入，v1.14 为 Beta 版本并默认启用，在 v1.17 中 GA；
 - `NodeDisruptionExclusion`：该特性在 v1.16 引入，Alpha 版本，默认为 false，其功能是当 node 存在 `node.kubernetes.io/exclude-disruption` 标签时，当 node 网络中断时其节点上的 pod 不会被驱逐掉；
 - `LegacyNodeRoleBehavior`：该特性在 v1.16 中引入，Alpha 版本且默认为 true，在创建 load balancers 以及中断处理时不会忽略具有 `node-role.kubernetes.io/master` label 的 node，该功能在 v1.19 中将被移除；
 - `TaintBasedEvictions`：该特性从 v1.13 开始为 Beta 版本，默认为 true。其功能是当 node 处于 `NodeNotReady`、`NodeUnreachable` 状态时为 node 添加对应的 taint，`TaintBasedEvictions` 添加的 taint effect 为 `NoExecute`，即会驱逐 node 上对应的 pod；

@@ -310,7 +310,7 @@ func (ssc *StatefulSetController) syncStatefulSet(set *apps.StatefulSet, pods []
 
 
 
-在基本操作的回滚阶段提到了过，sts 通过 `controllerrevision` 保存历史版本，类似于 deployment 的 replicaset，与 replicaset 不同的是 controllerrevision 仅用于回滚阶段，在 sts 的滚动升级过程中是通过 `currentRevision` 和 `updateRevision`来j进行控制并不会用到 `controllerrevision`。
+在基本操作的回滚阶段提到了过，sts 通过 `controllerrevision` 保存历史版本，类似于 deployment 的 replicaset，与 replicaset 不同的是 controllerrevision 仅用于回滚阶段，在 sts 的滚动升级过程中是通过 `currentRevision` 和 `updateRevision`来进行控制并不会用到 `controllerrevision`。
 
 
 
