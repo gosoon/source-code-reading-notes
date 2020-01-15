@@ -250,10 +250,10 @@ func (g *genericScheduler) Preempt(pluginContext *framework.PluginContext, pod *
 ```
 
 该函数中调用了多个函数：
-`nodesWherePreemptionMightHelp()`：过滤 predicates 算法执行失败的 node
-`selectNodesForPreemption()`：过滤出可以抢占的 node 列表
-`pickOneNodeForPreemption()`：选出最佳的 node
-`getLowerPriorityNominatedPods()`：移除低优先级 pod 的 Nominated
+- `nodesWherePreemptionMightHelp()`：过滤 predicates 算法执行失败的 node
+- `selectNodesForPreemption()`：过滤出可以抢占的 node 列表
+- `pickOneNodeForPreemption()`：选出最佳的 node
+- `getLowerPriorityNominatedPods()`：移除低优先级 pod 的 Nominated
 
 
 `selectNodesForPreemption()` 从 prediacates 算法执行失败的 node 列表中来寻找可以被抢占的 node，通过`workqueue.ParallelizeUntil()`并发执行`checkNode()`函数检查 node。
