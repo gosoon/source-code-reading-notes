@@ -1,0 +1,1400 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>kubernetes 中 Qos 的设计与实现 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="kubelet_status_manager.html" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="nodelifecycle_controller.html">
+            
+                <a href="nodelifecycle_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    node controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="job_controller.html">
+            
+                <a href="job_controller.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    job controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="garbagecollector_controller.html">
+            
+                <a href="garbagecollector_controller.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    garbage collector controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="daemonset_controller.html">
+            
+                <a href="daemonset_controller.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    daemonset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="statefulset_controller.html">
+            
+                <a href="statefulset_controller.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    statefulset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="replicaset_controller.html">
+            
+                <a href="replicaset_controller.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    replicaset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.12" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.12.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.13" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.13.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.14" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.14.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.15" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.15.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.16" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.16.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.17" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.17.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.18" data-path="node_status.html">
+            
+                <a href="node_status.html">
+            
+                    
+                        <b>1.2.18.</b>
+                    
+                    kubelet 状态上报的方式
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.19" data-path="k8s_events.html">
+            
+                <a href="k8s_events.html">
+            
+                    
+                        <b>1.2.19.</b>
+                    
+                    kubelet 中事件处理机制
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.20" data-path="kubelet_status_manager.html">
+            
+                <a href="kubelet_status_manager.html">
+            
+                    
+                        <b>1.2.20.</b>
+                    
+                    kubelet statusManager 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.21" data-path="kubelet_qos.html">
+            
+                <a href="kubelet_qos.html">
+            
+                    
+                        <b>1.2.21.</b>
+                    
+                    kubernetes 中 Qos 的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >kubernetes 中 Qos 的设计与实现</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <ul>
+<li><a href="#kubernetes-&#x4E2D;&#x7684;-qos">kubernetes &#x4E2D;&#x7684; Qos</a><ul>
+<li><a href="#&#x4E0D;&#x540C;-qos-&#x7684;&#x672C;&#x8D28;&#x533A;&#x522B;">&#x4E0D;&#x540C; Qos &#x7684;&#x672C;&#x8D28;&#x533A;&#x522B;</a></li>
+</ul>
+</li>
+<li><a href="#&#x542F;&#x7528;-qos-&#x548C;-pod-level-cgroup">&#x542F;&#x7528; Qos &#x548C; Pod level cgroup</a><ul>
+<li><a href="#&#x914D;&#x7F6E;-cgroup-driver">&#x914D;&#x7F6E; cgroup driver</a></li>
+</ul>
+</li>
+<li><a href="#kubernetes-&#x4E2D;&#x7684;-cgroup-level">kubernetes &#x4E2D;&#x7684; cgroup level</a><ul>
+<li><a href="#container-level-cgroups">Container level cgroups</a></li>
+<li><a href="#pod-level-cgroups">Pod level cgroups</a><ul>
+<li><a href="#guaranteed-pod-qos">Guaranteed Pod QoS</a></li>
+<li><a href="#burstable-pod-qos">Burstable Pod QoS</a></li>
+<li><a href="#besteffort-pod-qos">BestEffort Pod QoS</a></li>
+</ul>
+</li>
+<li><a href="#qos-level-cgroups">QoS level cgroups</a></li>
+<li><a href="#&#x5C0F;&#x7ED3;">&#x5C0F;&#x7ED3;</a></li>
+</ul>
+</li>
+<li><a href="#qoscontainermanager-&#x6E90;&#x7801;&#x5206;&#x6790;">QOSContainerManager &#x6E90;&#x7801;&#x5206;&#x6790;</a><ul>
+<li><a href="#qoscontainermanager-&#x7684;&#x521D;&#x59CB;&#x5316;">qosContainerManager &#x7684;&#x521D;&#x59CB;&#x5316;</a></li>
+<li><a href="#qoscontainermanager-&#x7684;&#x542F;&#x52A8;">qosContainerManager &#x7684;&#x542F;&#x52A8;</a><ul>
+<li><a href="#cmsetupnode">cm.setupNode</a></li>
+<li><a href="#cmqoscontainermanagerstart">cm.qosContainerManager.Start</a></li>
+<li><a href="#mupdatecgroups">m.UpdateCgroups</a></li>
+<li><a href="#mcgroupmanagerupdate">m.cgroupManager.Update</a><ul>
+<li><a href="#setsupportedsubsystem">setSupportedSubsystem</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#pod-level-cgroup">Pod Level Cgroup</a></li>
+<li><a href="#container-level-cgroup">Container Level Cgroup</a></li>
+</ul>
+</li>
+<li><a href="#&#x603B;&#x7ED3;">&#x603B;&#x7ED3;</a></li>
+</ul>
+<h3 id="kubernetes-&#x4E2D;&#x7684;-qos"><a name="kubernetes-&#x4E2D;&#x7684;-qos" class="anchor-navigation-ex-anchor" href="#kubernetes-&#x4E2D;&#x7684;-qos"><i class="fa fa-link" aria-hidden="true"></i></a>kubernetes &#x4E2D;&#x7684; Qos</h3>
+<p>QoS(Quality of Service) &#x5373;&#x670D;&#x52A1;&#x8D28;&#x91CF;&#xFF0C;QoS &#x662F;&#x4E00;&#x79CD;&#x63A7;&#x5236;&#x673A;&#x5236;&#xFF0C;&#x5B83;&#x63D0;&#x4F9B;&#x4E86;&#x9488;&#x5BF9;&#x4E0D;&#x540C;&#x7528;&#x6237;&#x6216;&#x8005;&#x4E0D;&#x540C;&#x6570;&#x636E;&#x6D41;&#x91C7;&#x7528;&#x76F8;&#x5E94;&#x4E0D;&#x540C;&#x7684;&#x4F18;&#x5148;&#x7EA7;&#xFF0C;&#x6216;&#x8005;&#x662F;&#x6839;&#x636E;&#x5E94;&#x7528;&#x7A0B;&#x5E8F;&#x7684;&#x8981;&#x6C42;&#xFF0C;&#x4FDD;&#x8BC1;&#x6570;&#x636E;&#x6D41;&#x7684;&#x6027;&#x80FD;&#x8FBE;&#x5230;&#x4E00;&#x5B9A;&#x7684;&#x6C34;&#x51C6;&#x3002;kubernetes &#x4E2D;&#x6709;&#x4E09;&#x79CD; Qos&#xFF0C;&#x5206;&#x522B;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;<code>Guaranteed</code>&#xFF1A;pod &#x7684; requests &#x4E0E; limits &#x8BBE;&#x5B9A;&#x7684;&#x503C;&#x76F8;&#x7B49;&#xFF1B;</li>
+<li>2&#x3001;<code>Burstable</code>&#xFF1A;pod requests &#x5C0F;&#x4E8E; limits &#x7684;&#x503C;&#x4E14;&#x4E0D;&#x4E3A; 0&#xFF1B;</li>
+<li>3&#x3001;<code>BestEffort</code>&#xFF1A;pod &#x7684; requests &#x4E0E; limits &#x5747;&#x4E3A; 0&#xFF1B;</li>
+</ul>
+<p>&#x4E09;&#x8005;&#x7684;&#x4F18;&#x5148;&#x7EA7;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF0C;&#x4F9D;&#x6B21;&#x9012;&#x589E;&#xFF1A;</p>
+<pre class="language-"><code>BestEffort -&gt; Burstable -&gt; Guaranteed
+</code></pre><h4 id="&#x4E0D;&#x540C;-qos-&#x7684;&#x672C;&#x8D28;&#x533A;&#x522B;"><a name="&#x4E0D;&#x540C;-qos-&#x7684;&#x672C;&#x8D28;&#x533A;&#x522B;" class="anchor-navigation-ex-anchor" href="#&#x4E0D;&#x540C;-qos-&#x7684;&#x672C;&#x8D28;&#x533A;&#x522B;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x4E0D;&#x540C; Qos &#x7684;&#x672C;&#x8D28;&#x533A;&#x522B;</h4>
+<p>&#x4E09;&#x79CD; Qos &#x5728;&#x8C03;&#x5EA6;&#x548C;&#x5E95;&#x5C42;&#x8868;&#x73B0;&#x4E0A;&#x90FD;&#x4E0D;&#x4E00;&#x6837;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x5728;&#x8C03;&#x5EA6;&#x65F6;&#x8C03;&#x5EA6;&#x5668;&#x53EA;&#x4F1A;&#x6839;&#x636E; request &#x503C;&#x8FDB;&#x884C;&#x8C03;&#x5EA6;&#xFF1B;</li>
+<li>2&#x3001;&#x4E8C;&#x662F;&#x5F53;&#x7CFB;&#x7EDF; OOM&#x4E0A;&#x65F6;&#x5BF9;&#x4E8E;&#x5904;&#x7406;&#x4E0D;&#x540C; OOMScore &#x7684;&#x8FDB;&#x7A0B;&#x8868;&#x73B0;&#x4E0D;&#x540C;&#xFF0C;OOMScore &#x662F;&#x9488;&#x5BF9; memory &#x7684;&#xFF0C;&#x5F53;&#x5BBF;&#x4E3B;&#x4E0A; memory &#x4E0D;&#x8DB3;&#x65F6;&#x7CFB;&#x7EDF;&#x4F1A;&#x4F18;&#x5148; kill &#x6389; OOMScore &#x503C;&#x4F4E;&#x7684;&#x8FDB;&#x7A0B;&#xFF0C;&#x53EF;&#x4EE5;&#x4F7F;&#x7528;  <code>$ cat /proc/$PID/oom_score</code> &#x67E5;&#x770B;&#x8FDB;&#x7A0B;&#x7684; OOMScore&#x3002;OOMScore &#x7684;&#x53D6;&#x503C;&#x8303;&#x56F4;&#x4E3A; [-1000, 1000]&#xFF0C;<code>Guaranteed</code> pod &#x7684;&#x9ED8;&#x8BA4;&#x503C;&#x4E3A; -998&#xFF0C;<code>Burstable</code> pod &#x7684;&#x503C;&#x4E3A; 2~999&#xFF0C;<code>BestEffort</code> pod &#x7684;&#x503C;&#x4E3A; 1000&#xFF0C;&#x4E5F;&#x5C31;&#x662F;&#x8BF4;&#x5F53;&#x7CFB;&#x7EDF; OOM &#x65F6;&#xFF0C;&#x9996;&#x5148;&#x4F1A; kill &#x6389; <code>BestEffort</code> pod &#x7684;&#x8FDB;&#x7A0B;&#xFF0C;&#x82E5;&#x7CFB;&#x7EDF;&#x4F9D;&#x7136;&#x5904;&#x4E8E; OOM &#x72B6;&#x6001;&#xFF0C;&#x7136;&#x540E;&#x624D;&#x4F1A; kill &#x6389;  <code>Burstable</code> pod&#xFF0C;&#x6700;&#x540E;&#x662F; <code>Guaranteed</code> pod&#xFF1B;</li>
+<li>3&#x3001;&#x4E09;&#x662F; cgroup &#x7684;&#x914D;&#x7F6E;&#x4E0D;&#x540C;&#xFF0C;kubelet &#x4E3A;&#x4F1A;&#x4E09;&#x79CD; Qos &#x5206;&#x522B;&#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; QoS level cgroups&#xFF0C;<code>Guaranteed</code> Pod Qos &#x7684; cgroup level &#x4F1A;&#x76F4;&#x63A5;&#x521B;&#x5EFA;&#x5728; <code>RootCgroup/kubepods</code> &#x4E0B;&#xFF0C;<code>Burstable</code> Pod Qos &#x7684;&#x521B;&#x5EFA;&#x5728; <code>RootCgroup/kubepods/burstable</code> &#x4E0B;&#xFF0C;<code>BestEffort</code> Pod Qos &#x7684;&#x521B;&#x5EFA;&#x5728; <code>RootCgroup/kubepods/BestEffort</code> &#x4E0B;&#xFF0C;&#x4E0A;&#x6587;&#x5DF2;&#x7ECF;&#x8BF4;&#x4E86;  root cgroup &#x53EF;&#x4EE5;&#x901A;&#x8FC7; <code>$ mount | grep cgroup</code>&#x770B;&#x5230;&#xFF0C;&#x5728; cgroup &#x7684;&#x6BCF;&#x4E2A;&#x5B50;&#x7CFB;&#x7EDF;&#x4E0B;&#x90FD;&#x4F1A;&#x521B;&#x5EFA; Qos level cgroups&#xFF0C; &#x6B64;&#x5916;&#x5728;&#x5BF9;&#x5E94;&#x7684; QoS level cgroups &#x8FD8;&#x4F1A;&#x4E3A; pod &#x521B;&#x5EFA; Pod level cgroups&#xFF1B;</li>
+</ul>
+<h3 id="&#x542F;&#x7528;-qos-&#x548C;-pod-level-cgroup"><a name="&#x542F;&#x7528;-qos-&#x548C;-pod-level-cgroup" class="anchor-navigation-ex-anchor" href="#&#x542F;&#x7528;-qos-&#x548C;-pod-level-cgroup"><i class="fa fa-link" aria-hidden="true"></i></a>&#x542F;&#x7528; Qos &#x548C; Pod level cgroup</h3>
+<p>&#x5728; kubernetes &#x4E2D;&#x4E3A;&#x4E86;&#x9650;&#x5236;&#x5BB9;&#x5668;&#x8D44;&#x6E90;&#x7684;&#x4F7F;&#x7528;&#xFF0C;&#x907F;&#x514D;&#x5BB9;&#x5668;&#x4E4B;&#x95F4;&#x4E89;&#x62A2;&#x8D44;&#x6E90;&#x6216;&#x8005;&#x5BB9;&#x5668;&#x5F71;&#x54CD;&#x6240;&#x5728;&#x7684;&#x5BBF;&#x4E3B;&#x673A;&#xFF0C;kubelet &#x7EC4;&#x4EF6;&#x9700;&#x8981;&#x4F7F;&#x7528; cgroup &#x9650;&#x5236;&#x5BB9;&#x5668;&#x8D44;&#x6E90;&#x7684;&#x4F7F;&#x7528;&#x91CF;&#xFF0C;cgroup &#x76EE;&#x524D;&#x652F;&#x6301;&#x5BF9;&#x8FDB;&#x7A0B;&#x591A;&#x79CD;&#x8D44;&#x6E90;&#x7684;&#x9650;&#x5236;&#xFF0C;&#x800C; kubelet &#x53EA;&#x652F;&#x6301;&#x9650;&#x5236; cpu&#x3001;memory&#x3001;pids&#x3001;hugetlb &#x51E0;&#x79CD;&#x8D44;&#x6E90;&#xFF0C;&#x4E0E;&#x6B64;&#x8D44;&#x6E90;&#x6709;&#x5173;&#x7684;&#x51E0;&#x4E2A;&#x53C2;&#x6570;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><code>--cgroups-per-qos</code>&#xFF1A;&#x542F;&#x7528;&#x540E;&#x4F1A;&#x4E3A;&#x6BCF;&#x4E2A; pod &#x4EE5;&#x53CA; pod &#x5BF9;&#x5E94;&#x7684; Qos &#x521B;&#x5EFA; cgroups &#x5C42;&#x7EA7;&#x6811;&#xFF0C;&#x9ED8;&#x8BA4;&#x542F;&#x7528;&#xFF1B;</p>
+<p><code>--cgroup-root</code>&#xFF1A;&#x6307;&#x5B9A; root cgroup&#xFF0C;&#x5982;&#x679C;&#x4E0D;&#x6307;&#x5B9A;&#x9ED8;&#x8BA4;&#x4E3A;&#x201C;&#x201D;&#xFF0C;&#x82E5;&#x4E3A;&#x9ED8;&#x8BA4;&#x503C;&#x5219;&#x76F4;&#x63A5;&#x4F7F;&#x7528; root cgroup dir&#xFF0C;&#x5728; node &#x4E0A;&#x6267;&#x884C; <code>$ mount | grep cgroup</code> &#x53EF;&#x4EE5;&#x770B;&#x5230; cgroup &#x6240;&#x6709;&#x5B50;&#x7CFB;&#x7EDF;&#x7684;&#x6302;&#x8F7D;&#x70B9;&#xFF0C;&#x8FD9;&#x4E9B;&#x6302;&#x8F7D;&#x70B9;&#x5C31;&#x662F; root cgroup&#xFF1B;</p>
+<p><code>--cpu-manager-policy</code>&#xFF1A;&#x9ED8;&#x8BA4;&#x4E3A; &quot;none&quot;&#xFF0C;&#x5373;&#x9ED8;&#x8BA4;&#x4E0D;&#x5F00;&#x542F; ,&#x652F;&#x6301;&#x4F7F;&#x7528; &quot;static&quot;&#xFF0C;&#x5F00;&#x542F;&#x540E;&#x53EF;&#x4EE5;&#x652F;&#x6301;&#x5BF9; <code>Guaranteed</code> Pod &#x8FDB;&#x884C;&#x7ED1;&#x6838;&#x64CD;&#x4F5C;&#xFF0C;&#x7ED1;&#x6838;&#x7684;&#x4E3B;&#x8981;&#x76EE;&#x7684;&#x662F;&#x4E3A;&#x4E86;&#x9AD8;&#x6548;&#x4F7F;&#x7528; cpu cache &#x4EE5;&#x53CA;&#x5185;&#x5B58;&#x8282;&#x70B9;&#xFF1B;</p>
+<p><code>--kube-reserved</code>&#xFF1A;&#x4E3A; kubernetes &#x7CFB;&#x7EDF;&#x7EC4;&#x4EF6;&#x8BBE;&#x7F6E;&#x9884;&#x7559;&#x8D44;&#x6E90;&#x503C;&#xFF0C;&#x53EF;&#x4EE5;&#x8BBE;&#x7F6E; cpu&#x3001;memory&#x3001;ephemeral-storage&#xFF1B;</p>
+<p><code>--kube-reserved-cgroup</code>&#xFF1A;&#x6307;&#x5B9A; kube-reserved &#x7684; cgroup dir name&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; &#x201C;/kube-reserved&#x201D;&#xFF1B;</p>
+<p><code>--system-reserved</code>&#xFF1A;&#x4E3A;&#x975E; kubernetes &#x7EC4;&#x4EF6;&#x8BBE;&#x7F6E;&#x9884;&#x7559;&#x8D44;&#x6E90;&#x503C;&#xFF0C;&#x53EF;&#x4EE5;&#x8BBE;&#x7F6E; cpu&#x3001;memory&#x3001;ephemeral-storage&#xFF1B;</p>
+<p><code>--system-reserved-cgroup</code>&#xFF1A;&#x8BBE;&#x7F6E; system-reserved &#x7684; cgroup dir name&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; &#x201C;/system-reserved&#x201D;&#xFF1B;</p>
+<p><code>--qos-reserved</code>&#xFF1A;Alpha feature&#xFF0C;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x6B64;&#x53C2;&#x6570;&#x4E3A;&#x9AD8;&#x4F18;&#x5148;&#x7EA7; pod &#x8BBE;&#x7F6E;&#x9884;&#x7559;&#x8D44;&#x6E90;&#x6BD4;&#x4F8B;&#xFF0C;&#x76EE;&#x524D;&#x53EA;&#x652F;&#x6301;&#x9884;&#x7559; memory&#xFF0C;&#x4F7F;&#x7528;&#x524D;&#x9700;&#x8981;&#x5F00;&#x542F; QOSReserved feature gate&#xFF1B;</p>
+<p>&#x5F53;&#x542F;&#x7528;&#x4E86; <code>--cgroups-per-qos</code> &#x540E;&#xFF0C;kubelet &#x4F1A;&#x4E3A;&#x4E0D;&#x540C; Qos &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; level cgroups&#xFF0C;&#x5728; Qos level cgroups &#x4E0B;&#x4E5F;&#x4F1A;&#x4E3A; pod &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; pod level cgroups&#xFF0C;&#x5728; pod level cgroups &#x4E0B;&#x6700;&#x7EC8;&#x4F1A;&#x4E3A; container &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; level cgroups&#xFF0C;&#x4ECE; Qos --&gt; pod --&gt; container&#xFF0C;&#x5C42;&#x5C42;&#x9650;&#x5236;&#x6BCF;&#x4E2A; level cgroups &#x7684;&#x8D44;&#x6E90;&#x4F7F;&#x7528;&#x91CF;&#x3002;</p>
+<h4 id="&#x914D;&#x7F6E;-cgroup-driver"><a name="&#x914D;&#x7F6E;-cgroup-driver" class="anchor-navigation-ex-anchor" href="#&#x914D;&#x7F6E;-cgroup-driver"><i class="fa fa-link" aria-hidden="true"></i></a>&#x914D;&#x7F6E; cgroup driver</h4>
+<p>runtime &#x6709;&#x4E24;&#x79CD; cgroup &#x9A71;&#x52A8;&#xFF1A;&#x4E00;&#x79CD;&#x662F; <code>systemd</code>&#xFF0C;&#x53E6;&#x5916;&#x4E00;&#x79CD;&#x662F; <code>cgroupfs</code>&#xFF1A;</p>
+<ul>
+<li><code>cgroupfs</code> &#x6BD4;&#x8F83;&#x597D;&#x7406;&#x89E3;&#xFF0C;&#x6BD4;&#x5982;&#x8BF4;&#x8981;&#x9650;&#x5236;&#x5185;&#x5B58;&#x662F;&#x591A;&#x5C11;&#x3001;&#x8981;&#x7528; CPU share &#x4E3A;&#x591A;&#x5C11;&#xFF0C;&#x5176;&#x5B9E;&#x76F4;&#x63A5;&#x628A; pid &#x5199;&#x5165;&#x5230;&#x5BF9;&#x5E94;cgroup task &#x6587;&#x4EF6;&#x4E2D;&#xFF0C;&#x7136;&#x540E;&#x628A;&#x5BF9;&#x5E94;&#x9700;&#x8981;&#x9650;&#x5236;&#x7684;&#x8D44;&#x6E90;&#x4E5F;&#x5199;&#x5165;&#x76F8;&#x5E94;&#x7684; memory cgroup &#x6587;&#x4EF6;&#x548C; CPU &#x7684; cgroup &#x6587;&#x4EF6;&#x5C31;&#x53EF;&#x4EE5;&#x4E86;&#xFF1B;</li>
+<li>&#x53E6;&#x5916;&#x4E00;&#x4E2A;&#x662F; <code>systemd</code> &#x7684; cgroup &#x9A71;&#x52A8;&#xFF0C;&#x8FD9;&#x4E2A;&#x9A71;&#x52A8;&#x662F;&#x56E0;&#x4E3A; <code>systemd</code> &#x672C;&#x8EAB;&#x53EF;&#x4EE5;&#x63D0;&#x4F9B;&#x4E00;&#x4E2A; cgroup &#x7BA1;&#x7406;&#x65B9;&#x5F0F;&#x3002;&#x6240;&#x4EE5;&#x5982;&#x679C;&#x7528; <code>systemd</code> &#x505A; cgroup &#x9A71;&#x52A8;&#x7684;&#x8BDD;&#xFF0C;&#x6240;&#x6709;&#x7684;&#x5199; cgroup &#x64CD;&#x4F5C;&#x90FD;&#x5FC5;&#x987B;&#x901A;&#x8FC7; systemd &#x7684;&#x63A5;&#x53E3;&#x6765;&#x5B8C;&#x6210;&#xFF0C;&#x4E0D;&#x80FD;&#x624B;&#x52A8;&#x66F4;&#x6539; cgroup &#x7684;&#x6587;&#x4EF6;&#xFF1B;</li>
+</ul>
+<p>kubernetes &#x4E2D;&#x9ED8;&#x8BA4; kubelet &#x7684; cgroup &#x9A71;&#x52A8;&#x5C31;&#x662F; <code>cgroupfs</code>&#xFF0C;&#x82E5;&#x8981;&#x4F7F;&#x7528; <code>systemd</code>&#xFF0C;&#x5219;&#x5FC5;&#x987B;&#x5C06; kubelet &#x4EE5;&#x53CA; runtime &#x90FD;&#x9700;&#x8981;&#x914D;&#x7F6E;&#x4E3A; <code>systemd</code> &#x9A71;&#x52A8;&#x3002;</p>
+<blockquote>
+<p>&#x5173;&#x4E8E; cgroupfs &#x4E0E; systemd driver &#x7684;&#x533A;&#x522B;&#x53EF;&#x4EE5;&#x53C2;&#x8003; k8s &#x5B98;&#x65B9;&#x6587;&#x6863;&#xFF1A;<a href="https://kubernetes.io/docs/setup/production-environment/container-runtimes/#cgroup-drivers" target="_blank">container-runtimes/#cgroup-drivers</a>&#xFF0C;&#x6216;&#x8005; runc &#x4E2D;&#x7684;&#x5B9E;&#x73B0; <a href="https://github.com/opencontainers/runc/tree/master/libcontainer/cgroups" target="_blank">github.com/opencontainers/runc/libcontainer/cgroups</a>&#x3002;</p>
+</blockquote>
+<h3 id="kubernetes-&#x4E2D;&#x7684;-cgroup-level"><a name="kubernetes-&#x4E2D;&#x7684;-cgroup-level" class="anchor-navigation-ex-anchor" href="#kubernetes-&#x4E2D;&#x7684;-cgroup-level"><i class="fa fa-link" aria-hidden="true"></i></a>kubernetes &#x4E2D;&#x7684; cgroup level</h3>
+<p>kubelet &#x542F;&#x52A8;&#x540E;&#x4F1A;&#x5728; root cgroup &#x4E0B;&#x9762;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x53EB;&#x505A; <code>kubepods</code> &#x5B50; cgroup&#xFF0C;kubelet &#x4F1A;&#x628A;&#x672C;&#x673A;&#x7684; allocatable &#x8D44;&#x6E90;&#x5199;&#x5165;&#x5230; <code>kubepods</code> &#x4E0B;&#x5BF9;&#x5E94;&#x7684; cgroup &#x6587;&#x4EF6;&#x4E2D;&#xFF0C;&#x6BD4;&#x5982; <code>kubepods/cpu.share</code>&#xFF0C;&#x800C;&#x8FD9;&#x4E2A; cgroup &#x4E0B;&#x9762;&#x4E5F;&#x4F1A;&#x5B58;&#x653E;&#x8282;&#x70B9;&#x4E0A;&#x9762;&#x6240;&#x6709; pod &#x7684; cgroup&#xFF0C;&#x4EE5;&#x6B64;&#x6765;&#x8FBE;&#x5230;&#x9650;&#x5236;&#x8282;&#x70B9;&#x4E0A;&#x6240;&#x6709; pod &#x8D44;&#x6E90;&#x7684;&#x76EE;&#x7684;&#x3002;&#x5728; <code>kubepods</code> cgroup &#x4E0B;&#x9762;&#xFF0C;kubernetes &#x4F1A;&#x8FDB;&#x4E00;&#x6B65;&#x518D;&#x5206;&#x522B;&#x521B;&#x5EFA;&#x4E24;&#x4E2A; QoS level cgroup&#xFF0C;&#x540D;&#x5B57;&#x5206;&#x522B;&#x53EB;&#x505A; <code>burstable</code> &#x548C; <code>besteffort</code>&#xFF0C;&#x8FD9;&#x4E24;&#x4E2A; QoS level &#x7684; cgroup &#x662F;&#x4F5C;&#x4E3A;&#x5404;&#x81EA; QoS &#x7EA7;&#x522B;&#x7684;&#x6240;&#x6709; Pod &#x7684;&#x7236; cgroup &#x6765;&#x5B58;&#x5728;&#x7684;&#xFF0C;&#x5728;&#x4E3A; pod &#x521B;&#x5EFA; cgroup &#x65F6;&#xFF0C;&#x9996;&#x5148;&#x5728;&#x5BF9;&#x5E94;&#x7684; Qos cgroup &#x4E0B;&#x521B;&#x5EFA; pod level cgroup&#xFF0C;&#x7136;&#x540E;&#x5728; pod level cgroup &#x7EE7;&#x7EED;&#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; container level cgroup&#xFF0C;&#x5BF9;&#x4E8E; <code>Guaranteed</code> Qos &#x5BF9;&#x5E94;&#x7684; pod &#x4F1A;&#x76F4;&#x63A5;&#x5728; <code>kubepods</code> &#x540C;&#x7EA7;&#x7684; cgroup &#x4E2D;&#x521B;&#x5EFA; pod cgroup&#x3002;</p>
+<p>&#x76EE;&#x524D; kubernetes &#x4EC5;&#x652F;&#x6301;  cpu&#x3001;memory&#x3001;pids &#x3001;hugetlb &#x56DB;&#x4E2A; cgroup &#x5B50;&#x7CFB;&#x7EDF;&#x3002;</p>
+<p>&#x5F53; kubernetes &#x5728;&#x6536;&#x5230;&#x4E00;&#x4E2A; pod &#x7684;&#x8D44;&#x6E90;&#x7533;&#x8BF7;&#x4FE1;&#x606F;&#x540E;&#x901A;&#x8FC7; kubelet &#x4E3A; pod &#x5206;&#x914D;&#x8D44;&#x6E90;&#xFF0C;kubelet &#x57FA;&#x4E8E; pod &#x7533;&#x8BF7;&#x7684;&#x8D44;&#x6E90;&#x4EE5;&#x53CA; pod &#x5BF9;&#x5E94;&#x7684; QoS &#x7EA7;&#x522B;&#x6765;&#x901A;&#x8FC7; cgroup &#x673A;&#x5236;&#x6700;&#x7EC8;&#x4E3A;&#x8FD9;&#x4E2A; pod &#x5206;&#x914D;&#x8D44;&#x6E90;&#x7684;&#xFF0C;&#x9488;&#x5BF9;&#x6BCF;&#x4E00;&#x79CD;&#x8D44;&#x6E90;&#xFF0C;&#x5B83;&#x4F1A;&#x505A;&#x4EE5;&#x4E0B;&#x51E0;&#x4EF6;&#x4E8B;&#x60C5;&#xFF1A;</p>
+<ul>
+<li>&#x9996;&#x5148;&#x5224;&#x65AD; pod &#x5C5E;&#x4E8E;&#x54EA;&#x79CD; Qos&#xFF0C;&#x5728;&#x5BF9;&#x5E94;&#x7684; Qos level cgroup &#x4E0B;&#x5BF9; pod &#x4E2D;&#x7684;&#x6BCF;&#x4E00;&#x4E2A;&#x5BB9;&#x5668;&#x5728; cgroup &#x6240;&#x6709;&#x5B50;&#x7CFB;&#x7EDF;&#x4E0B;&#x90FD;&#x521B;&#x5EFA;&#x4E00;&#x4E2A; pod level cgroup &#x4EE5;&#x53CA; container level cgroup&#xFF0C;&#x5E76;&#x4E14; pod level cgroup &#x662F; container level cgroup &#x7684;&#x7236; cgroup&#xFF0C;Qos level cgroup &#x5728; kubelet &#x521D;&#x59CB;&#x5316;&#x65F6;&#x5DF2;&#x7ECF;&#x521B;&#x5EFA;&#x5B8C;&#x6210;&#x4E86;&#xFF1B;</li>
+<li>&#x7136;&#x540E;&#x6839;&#x636E; pod &#x7684;&#x8D44;&#x6E90;&#x4FE1;&#x606F;&#x66F4;&#x65B0; QoS level cgroup &#x4E2D;&#x7684;&#x503C;&#xFF1B;</li>
+<li>&#x6700;&#x540E;&#x4F1A;&#x66F4;&#x65B0; <code>kubepods</code> level cgroup &#x4E2D;&#x7684;&#x503C;&#xFF1B;</li>
+</ul>
+<p>&#x5BF9;&#x4E8E;&#x6BCF;&#x4E00;&#x4E2A; pod &#x8BBE;&#x5B9A;&#x7684; requests &#x548C; limits&#xFF0C;kubernetes &#x90FD;&#x4F1A;&#x8F6C;&#x6362;&#x4E3A; cgroup &#x4E2D;&#x7684;&#x8BA1;&#x7B97;&#x65B9;&#x5F0F;&#xFF0C;CPU &#x7684;&#x8F6C;&#x6362;&#x65B9;&#x5F0F;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>cpu.shares = (cpu in millicores * 1024) / 1000</li>
+<li>cpu.cfs_period_us = 100000 (i.e. 100ms)</li>
+<li>cpu.cfs_quota_us = quota = (cpu in millicores * 100000) / 1000</li>
+<li>memory.limit_in_bytes</li>
+</ul>
+<p>CPU &#x6700;&#x7EC8;&#x90FD;&#x4F1A;&#x8F6C;&#x6362;&#x4E3A;&#x4EE5;&#x5FAE;&#x79D2;&#x4E3A;&#x5355;&#x4F4D;&#xFF0C;memory &#x4F1A;&#x8F6C;&#x6362;&#x4E3A;&#x4EE5; bytes &#x4E3A;&#x5355;&#x4F4D;&#x3002;</p>
+<p>&#x4EE5;&#x4E0B;&#x662F; kubernetes &#x4E2D;&#x7684; cgroup level &#x7684;&#x4E00;&#x4E2A;&#x793A;&#x4F8B;&#xFF0C;&#x6B64;&#x5904;&#x4EC5;&#x5C55;&#x793A; cpu&#x3001;memory &#x5BF9;&#x5E94;&#x7684;&#x5B50; cgroup&#xFF1A;</p>
+<pre class="language-"><code>.
+|-- blkio
+|-- cpu -&gt; cpu,cpuacct
+|-- cpu,cpuacct
+|   |-- init.scope
+|   |-- kubepods
+|   |   |-- besteffort
+|   |   |-- burstable
+|   |   `-- podd15c4b83-c250-4f1e-94ff-8a4bf31c6f25
+|   |-- system.slice
+|   `-- user.slice
+|-- cpuacct -&gt; cpu,cpuacct
+|-- cpuset
+|   |-- kubepods
+|   |   |-- besteffort
+|   |   |-- burstable
+|   |   `-- podd15c4b83-c250-4f1e-94ff-8a4bf31c6f25
+|-- devices
+|-- hugetlb
+|-- memory
+|   |-- init.scope
+|   |-- kubepods
+|   |   |-- besteffort
+|   |   |-- burstable
+|   |   `-- podd15c4b83-c250-4f1e-94ff-8a4bf31c6f25
+|   |-- system.slice
+|   |   |-- -.mount
+|   `-- user.slice
+|-- net_cls -&gt; net_cls,net_prio
+|-- net_cls,net_prio
+|-- net_prio -&gt; net_cls,net_prio
+|-- perf_event
+|-- pids
+`-- systemd
+</code></pre><p><img src="http://cdn.tianfeiyu.com/image-20200120164659896.png" alt=""></p>
+<p>&#x4F8B;&#x5982;&#xFF0C;&#x5F53;&#x521B;&#x5EFA;&#x8D44;&#x6E90;&#x5982;&#x4E0B;&#x6240;&#x793A;&#x7684; pod&#xFF1A;</p>
+<pre class="language-"><code>spec:
+  containers:
+  - name: nginx
+    image: nginx:latest
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 500m
+        memory: 2Gi
+</code></pre><p>&#x9996;&#x5148;&#x4F1A;&#x6839;&#x636E; pod &#x7684; Qos &#x8BE5; pod &#x4E3A; burstable &#x5728;&#x5176;&#x6240;&#x5C5E; Qos &#x4E0B;&#x521B;&#x5EFA; <code>ROOT/kubepods/burstable/pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/container<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span></code> &#x4E24;&#x4E2A; cgroup level&#xFF0C;&#x7136;&#x540E;&#x4F1A;&#x66F4;&#x65B0; pod &#x7684;&#x7236; cgroup &#x4E5F;&#x5C31;&#x662F; <code>burstable/</code> cgroup &#x4E2D;&#x7684;&#x503C;&#xFF0C;&#x6700;&#x540E;&#x4F1A;&#x66F4;&#x65B0; <code>kubepods</code> cgroup &#x4E2D;&#x7684;&#x503C;&#xFF0C;&#x4E0B;&#x9762;&#x4F1A;&#x9488;&#x5BF9;&#x6BCF;&#x4E2A; cgroup level &#x4E00;&#x4E00;&#x8FDB;&#x884C;&#x89E3;&#x91CA;&#x3002;</p>
+<h4 id="container-level-cgroups"><a name="container-level-cgroups" class="anchor-navigation-ex-anchor" href="#container-level-cgroups"><i class="fa fa-link" aria-hidden="true"></i></a>Container level cgroups</h4>
+<p>&#x5728; Container level cgroups &#x4E2D;&#xFF0C;kubelet &#x4F1A;&#x6839;&#x636E;&#x4E0A;&#x8FF0;&#x516C;&#x5F0F;&#x5C06; pod &#x4E2D;&#x6BCF;&#x4E2A; container &#x7684;&#x8D44;&#x6E90;&#x8F6C;&#x6362;&#x4E3A; cgroup &#x4E2D;&#x7684;&#x503C;&#x5E76;&#x5199;&#x5165;&#x5230;&#x5BF9;&#x5E94;&#x7684;&#x6587;&#x4EF6;&#x4E2D;&#x3002;</p>
+<pre class="language-"><code>/sys/fs/cgroup/cpu/kubepods/burstable/pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/container<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.shares = 256
+/sys/fs/cgroup/cpu/kubepods/burstable/pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/container<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.cfs_quota_us = 50000
+/sys/fs/cgroup/memory/kubepods/burstable/pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/container<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/memory.limit_in_bytes = 104857600
+</code></pre><h4 id="pod-level-cgroups"><a name="pod-level-cgroups" class="anchor-navigation-ex-anchor" href="#pod-level-cgroups"><i class="fa fa-link" aria-hidden="true"></i></a>Pod level cgroups</h4>
+<p>&#x5728;&#x521B;&#x5EFA;&#x5B8C; container level &#x7684; cgroup &#x4E4B;&#x540E;&#xFF0C;kubelet &#x4F1A;&#x4E3A;&#x540C;&#x5C5E;&#x4E8E;&#x67D0;&#x4E2A; pod &#x7684; containers &#x521B;&#x5EFA;&#x4E00;&#x4E2A; pod level cgroup&#x3002;&#x4E3A;&#x4F55;&#x8981;&#x5F15;&#x5165; pod level cgroup&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x57FA;&#x4E8E;&#x4EE5;&#x4E0B;&#x51E0;&#x70B9;&#x539F;&#x56E0;&#xFF1A;</p>
+<ul>
+<li>&#x65B9;&#x4FBF;&#x5BF9; pod &#x5185;&#x7684;&#x5BB9;&#x5668;&#x8D44;&#x6E90;&#x8FDB;&#x884C;&#x7EDF;&#x4E00;&#x7684;&#x9650;&#x5236;&#xFF1B;</li>
+<li>&#x65B9;&#x4FBF;&#x5BF9; pod &#x4F7F;&#x7528;&#x7684;&#x8D44;&#x6E90;&#x8FDB;&#x884C;&#x7EDF;&#x4E00;&#x7EDF;&#x8BA1;&#xFF1B;</li>
+</ul>
+<p>&#x5BF9;&#x4E8E;&#x4E0D;&#x540C; Pod level cgroups &#x7684;&#x8BBE;&#x7F6E;&#x65B9;&#x6CD5;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<h5 id="guaranteed-pod-qos"><a name="guaranteed-pod-qos" class="anchor-navigation-ex-anchor" href="#guaranteed-pod-qos"><i class="fa fa-link" aria-hidden="true"></i></a>Guaranteed Pod QoS</h5>
+<pre class="language-"><code>pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.shares = sum(pod.spec.containers.resources.requests[cpu])
+pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.cfs_period_us = 100000
+pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.cfs_quota_us = sum(pod.spec.containers.resources.limits[cpu])
+pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/memory.limit_in_bytes = sum(pod.spec.containers.resources.limits[memory])
+</code></pre><h5 id="burstable-pod-qos"><a name="burstable-pod-qos" class="anchor-navigation-ex-anchor" href="#burstable-pod-qos"><i class="fa fa-link" aria-hidden="true"></i></a>Burstable Pod QoS</h5>
+<pre class="language-"><code>pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.shares = sum(pod.spec.containers.resources.requests[cpu])
+pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.cfs_period_us = 100000
+pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.cfs_quota_us = sum(pod.spec.containers.resources.limits[cpu])
+pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/memory.limit_in_bytes = sum(pod.spec.containers.resources.limits[memory])
+</code></pre><h5 id="besteffort-pod-qos"><a name="besteffort-pod-qos" class="anchor-navigation-ex-anchor" href="#besteffort-pod-qos"><i class="fa fa-link" aria-hidden="true"></i></a>BestEffort Pod QoS</h5>
+<pre class="language-"><code>pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.shares = 2
+pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.cfs_quota_us = -1
+</code></pre><p><code>cpu.shares</code> &#x6307;&#x5B9A;&#x4E86; cpu &#x53EF;&#x4EE5;&#x4F7F;&#x7528;&#x7684;&#x4E0B;&#x9650;&#xFF0C;cpu &#x7684;&#x4E0A;&#x9650;&#x901A;&#x8FC7;&#x4F7F;&#x7528; <code>cpu.cfs_period_us + cpu.cfs_quota_us</code> &#x4E24;&#x4E2A;&#x53C2;&#x6570;&#x505A;&#x52A8;&#x6001;&#x7EDD;&#x5BF9;&#x914D;&#x989D;&#xFF0C;&#x4E24;&#x4E2A;&#x53C2;&#x6570;&#x7684;&#x610F;&#x4E49;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>cpu.cfs_period_us&#xFF1A;&#x6307; cpu &#x4F7F;&#x7528;&#x65F6;&#x95F4;&#x7684;&#x5468;&#x671F;&#x7EDF;&#x8BA1;&#xFF1B;</li>
+<li>cpu.cfs_quota_us&#xFF1A;&#x6307;&#x5468;&#x671F;&#x5185;&#x5141;&#x8BB8;&#x5360;&#x7528;&#x7684; cpu &#x65F6;&#x95F4;(&#x6307;&#x5355;&#x6838;&#x7684;&#x65F6;&#x95F4;, &#x591A;&#x6838;&#x5219;&#x9700;&#x8981;&#x5728;&#x8BBE;&#x7F6E;&#x65F6;&#x7D2F;&#x52A0;) &#xFF1B;</li>
+</ul>
+<p>container runtime &#x4E2D; <code>cpu.cfs_period_us</code> &#x7684;&#x503C;&#x9ED8;&#x8BA4;&#x4E3A; 100000&#x3002;&#x82E5; kubelet &#x542F;&#x7528;&#x4E86; <code>--cpu-manager-policy=static</code> &#x65F6;&#xFF0C;&#x5BF9;&#x4E8E; <code>Guaranteed</code> Qos&#xFF0C;&#x5982;&#x679C;&#x5B83;&#x7684; request &#x662F;&#x4E00;&#x4E2A;&#x6574;&#x6570;&#x7684;&#x8BDD;&#xFF0C;cgroup &#x4F1A;&#x540C;&#x65F6;&#x8BBE;&#x7F6E; <code>cpuset.cpus</code> &#x548C; <code>cpuset.mems</code> &#x4E24;&#x4E2A;&#x53C2;&#x6570;&#x4EE5;&#x6B64;&#x6765;&#x5BF9;&#x5B83;&#x8FDB;&#x884C;&#x7ED1;&#x6838;&#x3002;</p>
+<p>&#x5982;&#x679C; pod &#x6307;&#x5B9A;&#x4E86; requests &#x548C; limits&#xFF0C;kubelet &#x4F1A;&#x6309;&#x4EE5;&#x4E0A;&#x7684;&#x8BA1;&#x7B97;&#x65B9;&#x5F0F;&#x4E3A; pod &#x8BBE;&#x7F6E;&#x8D44;&#x6E90;&#x9650;&#x5236;&#xFF0C;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x6307;&#x5B9A; limit &#x7684;&#x8BDD;&#xFF0C;&#x90A3;&#x4E48; <code>cpu.cfs_quota_us</code> &#x5C06;&#x4F1A;&#x88AB;&#x8BBE;&#x7F6E;&#x4E3A; -1&#xFF0C;&#x5373;&#x6CA1;&#x6709;&#x9650;&#x5236;&#x3002;&#x800C;&#x5982;&#x679C; limit &#x548C; request &#x90FD;&#x6CA1;&#x6709;&#x6307;&#x5B9A;&#x7684;&#x8BDD;&#xFF0C;<code>cpu.shares</code> &#x5C06;&#x4F1A;&#x88AB;&#x6307;&#x5B9A;&#x4E3A; 2&#xFF0C;&#x8FD9;&#x4E2A;&#x662F; <code>cpu.shares</code> &#x5141;&#x8BB8;&#x6307;&#x5B9A;&#x7684;&#x6700;&#x5C0F;&#x6570;&#x503C;&#x4E86;&#xFF0C;&#x53EF;&#x89C1;&#x9488;&#x5BF9;&#x8FD9;&#x79CD; pod&#xFF0C;kubernetes &#x53EA;&#x4F1A;&#x7ED9;&#x5B83;&#x5206;&#x914D;&#x6700;&#x5C11;&#x7684; cpu &#x8D44;&#x6E90;&#x3002;&#x800C;&#x5BF9;&#x4E8E;&#x5185;&#x5B58;&#x6765;&#x8BF4;&#xFF0C;&#x5982;&#x679C;&#x6CA1;&#x6709; limit &#x7684;&#x6307;&#x5B9A;&#x7684;&#x8BDD;&#xFF0C;<code>memory.limit_in_bytes</code> &#x5C06;&#x4F1A;&#x88AB;&#x6307;&#x5B9A;&#x4E3A;&#x4E00;&#x4E2A;&#x975E;&#x5E38;&#x5927;&#x7684;&#x503C;&#xFF0C;&#x4E00;&#x822C;&#x662F; 2^64 &#xFF0C;&#x53EF;&#x89C1;&#x542B;&#x4E49;&#x5C31;&#x662F;&#x4E0D;&#x5BF9;&#x5185;&#x5B58;&#x505A;&#x51FA;&#x9650;&#x5236;&#x3002;</p>
+<p>&#x9488;&#x5BF9;&#x4E0A;&#x9762;&#x7684;&#x4F8B;&#x5B50;&#xFF0C;&#x5176; pod level cgroups &#x4E2D;&#x7684;&#x914D;&#x7F6E;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.shares = 102
+pod<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>UID</span><span class="token punctuation">&gt;</span></span>/cpu.cfs_quota_us = 20000
+</code></pre><h4 id="qos-level-cgroups"><a name="qos-level-cgroups" class="anchor-navigation-ex-anchor" href="#qos-level-cgroups"><i class="fa fa-link" aria-hidden="true"></i></a>QoS level cgroups</h4>
+<p>&#x4E0A;&#x6587;&#x5DF2;&#x7ECF;&#x63D0;&#x5230;&#x4E86; kubelet &#x4F1A;&#x9996;&#x5148;&#x521B;&#x5EFA; kubepods cgroup&#xFF0C;&#x7136;&#x540E;&#x4F1A;&#x5728; kubepods cgroup &#x4E0B;&#x9762;&#x518D;&#x5206;&#x522B;&#x521B;&#x5EFA; burstable &#x548C; besteffort &#x4E24;&#x4E2A; QoS level cgroup&#xFF0C;&#x90A3;&#x4E48;&#x8FD9;&#x4E24;&#x4E2A; QoS level cgroup &#x5B58;&#x5728;&#x7684;&#x76EE;&#x7684;&#x662F;&#x4EC0;&#x4E48;&#xFF1F;&#x4E3A;&#x4EC0;&#x4E48;&#x4E0D;&#x4E3A; guaranteed Qos &#x521B;&#x5EFA; cgroup level&#xFF1F;</p>
+<p>&#x9996;&#x5148;&#x770B;&#x4E00;&#x4E0B;&#x4E09;&#x79CD; QoS level cgroups &#x7684;&#x8BBE;&#x7F6E;&#x65B9;&#x6CD5;&#xFF0C;&#x5BF9;&#x4E8E; guaranteed Qos &#x56E0;&#x5176;&#x76F4;&#x63A5;&#x4F7F;&#x7528; root cgroup&#xFF0C;&#x6B64;&#x5904;&#x53EA;&#x770B;&#x53E6;&#x5916;&#x4E24;&#x79CD;&#x7684;&#x8BA1;&#x7B97;&#x65B9;&#x5F0F;&#xFF1A;</p>
+<p><code>Burstable cgroup</code>&#xFF1A;</p>
+<pre class="language-"><code>ROOT/burstable/cpu.shares = max(sum(Burstable pods cpu requests&#xFF09;, 2)
+ROOT/burstable/memory.limit_in_bytes =
+    Node.Allocatable - {(summation of memory requests of `Guaranteed` pods)*(reservePercent / 100)}
+</code></pre><p><code>BestEffort cgroup</code>&#xFF1A;</p>
+<pre class="language-"><code>ROOT/besteffort/cpu.shares = 2
+ROOT/besteffort/memory.limit_in_bytes =
+    Node.Allocatable - {(summation of memory requests of all `Guaranteed` and `Burstable` pods)*(reservePercent / 100)}
+</code></pre><p>&#x9996;&#x5148;&#x7B2C;&#x4E00;&#x4E2A;&#x95EE;&#x9898;&#xFF0C;&#x6240;&#x6709; guaranteed &#x7EA7;&#x522B;&#x7684; pod &#x7684; cgroup &#x76F4;&#x63A5;&#x4F4D;&#x4E8E; kubepods &#x8FD9;&#x4E2A; cgroup &#x4E4B;&#x4E0B;&#xFF0C;&#x548C; burstable&#x3001;besteffort QoS level cgroup &#x540C;&#x7EA7;&#xFF0C;&#x4E3B;&#x8981;&#x539F;&#x56E0;&#x5728;&#x4E8E; guaranteed &#x7EA7;&#x522B;&#x7684; pod &#x6709;&#x660E;&#x786E;&#x7684;&#x8D44;&#x6E90;&#x7533;&#x8BF7;&#x91CF;(request)&#x548C;&#x8D44;&#x6E90;&#x9650;&#x5236;&#x91CF;(limit)&#xFF0C;&#x6240;&#x4EE5;&#x5E76;&#x4E0D;&#x9700;&#x8981;&#x4E00;&#x4E2A;&#x7EDF;&#x4E00;&#x7684; QoS level &#x7684; cgroup &#x8FDB;&#x884C;&#x7BA1;&#x7406;&#x6216;&#x9650;&#x5236;&#x3002;</p>
+<p>&#x9488;&#x5BF9; burstable &#x548C; besteffort &#x8FD9;&#x4E24;&#x79CD;&#x7C7B;&#x578B;&#x7684; pod&#xFF0C;&#x5728;&#x9ED8;&#x8BA4;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;kubernetes &#x5219;&#x662F;&#x5E0C;&#x671B;&#x80FD;&#x5C3D;&#x53EF;&#x80FD;&#x5730;&#x63D0;&#x5347;&#x8D44;&#x6E90;&#x5229;&#x7528;&#x7387;&#xFF0C;&#x6240;&#x4EE5;&#x5E76;&#x4E0D;&#x4F1A;&#x5BF9;&#x8FD9;&#x4E24;&#x79CD; QoS &#x7684; pod &#x7684;&#x8D44;&#x6E90;&#x4F7F;&#x7528;&#x505A;&#x9650;&#x5236;&#x3002;&#x4F46;&#x5728;&#x67D0;&#x4E9B;&#x573A;&#x666F;&#x4E0B;&#x6211;&#x4EEC;&#x8FD8;&#x662F;&#x5E0C;&#x671B;&#x80FD;&#x591F;&#x5C3D;&#x53EF;&#x80FD;&#x4FDD;&#x8BC1; guaranteed level pod &#x8FD9;&#x79CD;&#x9AD8; QoS &#x7EA7;&#x522B; pod &#x7684;&#x8D44;&#x6E90;&#xFF0C;&#x5C24;&#x5176;&#x662F;&#x4E0D;&#x53EF;&#x538B;&#x7F29;&#x8D44;&#x6E90;&#xFF08;&#x5982;&#x5185;&#x5B58;&#xFF09;&#xFF0C;&#x4E0D;&#x8981;&#x88AB;&#x4F4E; QoS &#x7EA7;&#x522B;&#x7684; pod &#x62A2;&#x5360;&#xFF0C;&#x5BFC;&#x81F4;&#x9AD8; QoS &#x7EA7;&#x522B;&#x7684; pod &#x8FDE;&#x5B83; request &#x7684;&#x8D44;&#x6E90;&#x91CF;&#x7684;&#x8D44;&#x6E90;&#x90FD;&#x65E0;&#x6CD5;&#x5F97;&#x5230;&#x6EE1;&#x8DB3;&#xFF0C;&#x6B64;&#x65F6;&#x5C31;&#x53EF;&#x4EE5;&#x4F7F;&#x7528; <code>--qos-reserved</code> &#x4E3A;&#x9AD8; Qos pod &#x8FDB;&#x884C;&#x9884;&#x7559;&#x8D44;&#x6E90;&#xFF0C;&#x4E3E;&#x4E2A;&#x4F8B;&#x5B50;&#xFF0C;&#x5F53;&#x524D;&#x673A;&#x5668;&#x7684; allocatable &#x5185;&#x5B58;&#x8D44;&#x6E90;&#x91CF;&#x4E3A; 8G&#xFF0C;&#x5F53;&#x4E3A;&#x8FD9;&#x53F0;&#x673A;&#x5668;&#x7684; kubelet &#x5F00;&#x542F; <code>--qos-reserved</code> &#x53C2;&#x6570;&#x540E;&#xFF0C;&#x5E76;&#x4E14;&#x8BBE;&#x7F6E;&#x4E3A; memory=100%&#xFF0C;&#x5982;&#x679C;&#x6B64;&#x65F6;&#x521B;&#x5EFA;&#x4E86;&#x4E00;&#x4E2A;&#x5185;&#x5B58; request &#x4E3A; 1G &#x7684; guaranteed level &#x7684; pod&#xFF0C;&#x90A3;&#x4E48;&#x9700;&#x8981;&#x9884;&#x7559;&#x7684;&#x8D44;&#x6E90;&#x5C31;&#x662F; 1G&#xFF0C;&#x6B64;&#x65F6;&#x8FD9;&#x53F0;&#x673A;&#x5668;&#x4E0A;&#x9762;&#x7684; burstable QoS level cgroup &#x7684; <code>memory.limit_in_bytes</code> &#x7684;&#x503C;&#x5C06;&#x4F1A;&#x88AB;&#x8BBE;&#x7F6E;&#x4E3A; 7G&#xFF0C;besteffort QoS level cgroup &#x7684; <code>memory.limit_in_bytes</code> &#x7684;&#x503C;&#x4E5F;&#x4F1A;&#x88AB;&#x8BBE;&#x7F6E;&#x4E3A; 7G&#x3002;&#x800C;&#x5982;&#x679C;&#x6B64;&#x65F6;&#x53C8;&#x521B;&#x5EFA;&#x4E86;&#x4E00;&#x4E2A; burstable level &#x7684; pod&#xFF0C;&#x5B83;&#x7684;&#x5185;&#x5B58;&#x7533;&#x8BF7;&#x91CF;&#x4E3A; 2G&#xFF0C;&#x90A3;&#x4E48;&#x6B64;&#x65F6;&#x9700;&#x8981;&#x9884;&#x7559;&#x7684;&#x8D44;&#x6E90;&#x4E3A; 3G&#xFF0C;&#x800C; besteffort QoS level cgroup &#x7684; <code>memory.limit_in_bytes</code> &#x7684;&#x503C;&#x4E5F;&#x4F1A;&#x88AB;&#x8C03;&#x6574;&#x4E3A; 5G&#x3002;</p>
+<p>&#x7531;&#x4E0A;&#x9762;&#x7684;&#x516C;&#x5F0F;&#x4E5F;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;burstable &#x7684; cgroup &#x9700;&#x8981;&#x4E3A;&#x6BD4;&#x4ED6;&#x7B49;&#x7EA7;&#x9AD8;&#x7684; guaranteed &#x7EA7;&#x522B;&#x7684; pod &#x7684;&#x5185;&#x5B58;&#x8D44;&#x6E90;&#x505A;&#x9884;&#x7559;&#xFF0C;&#x800C; besteffort &#x9700;&#x8981;&#x4E3A; burstable &#x548C; guaranteed &#x90FD;&#x8981;&#x9884;&#x7559;&#x5185;&#x5B58;&#x8D44;&#x6E90;&#x3002;</p>
+<h4 id="&#x5C0F;&#x7ED3;"><a name="&#x5C0F;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x5C0F;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x5C0F;&#x7ED3;</h4>
+<p>kubelet &#x542F;&#x52A8;&#x65F6;&#x9996;&#x5148;&#x4F1A;&#x521B;&#x5EFA; root cgroups &#x4EE5;&#x53CA;&#x4E3A; Qos &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; level cgroups&#xFF0C;&#x7136;&#x540E;&#x5F53; pod &#x8C03;&#x5EA6;&#x5230;&#x8282;&#x70B9;&#x4E0A;&#x65F6;&#xFF0C;kubelet &#x4E5F;&#x4F1A;&#x4E3A; pod &#x4EE5;&#x53CA; pod &#x4E0B;&#x7684; container &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; level cgroups&#x3002;root cgroups &#x9650;&#x5236;&#x8282;&#x70B9;&#x4E0A;&#x6240;&#x6709; pod &#x7684;&#x8D44;&#x6E90;&#x4F7F;&#x7528;&#x91CF;&#xFF0C;Qos  level cgroups &#x9650;&#x5236;&#x4E0D;&#x540C; Qos &#x4E0B; pod &#x7684;&#x8D44;&#x6E90;&#x4F7F;&#x7528;&#x91CF;&#xFF0C;Pod  level cgroups &#x9650;&#x5236;&#x4E00;&#x4E2A; pod &#x4E0B;&#x7684;&#x8D44;&#x6E90;&#x4F7F;&#x7528;&#x91CF;&#xFF0C;Container level cgroups &#x9650;&#x5236; pod &#x4E0B; container &#x7684;&#x8D44;&#x6E90;&#x4F7F;&#x7528;&#x91CF;&#x3002;</p>
+<p>&#x8282;&#x70B9;&#x4E0A; cgroup &#x5C42;&#x7EA7;&#x6811;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>$ROOT
+  |
+  +- Pod1
+  |   |
+  |   +- Container1
+  |   +- Container2
+  |   ...
+  +- Pod2
+  |   +- Container3
+  |   ...
+  +- ...
+  |
+  +- burstable
+  |   |
+  |   +- Pod3
+  |   |   |
+  |   |   +- Container4
+  |   |   ...
+  |   +- Pod4
+  |   |   +- Container5
+  |   |   ...
+  |   +- ...
+  |
+  +- besteffort
+  |   |
+  |   +- Pod5
+  |   |   |
+  |   |   +- Container6
+  |   |   +- Container7
+  |   |   ...
+  |   +- ...
+</code></pre><h3 id="qoscontainermanager-&#x6E90;&#x7801;&#x5206;&#x6790;"><a name="qoscontainermanager-&#x6E90;&#x7801;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#qoscontainermanager-&#x6E90;&#x7801;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>QOSContainerManager &#x6E90;&#x7801;&#x5206;&#x6790;</h3>
+<blockquote>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
+</blockquote>
+<p>qos &#x7684;&#x5177;&#x4F53;&#x5B9E;&#x73B0;&#x662F;&#x5728; kubelet &#x4E2D;&#x7684; <code>QOSContainerManager</code>&#xFF0C;<code>QOSContainerManager</code> &#x88AB;&#x5305;&#x542B;&#x5728; <code>containerManager</code> &#x6A21;&#x5757;&#x4E2D;&#xFF0C;kubelet &#x7684; <code>containerManager</code> &#x6A21;&#x5757;&#x4E2D;&#x5305;&#x542B;&#x591A;&#x4E2A;&#x6A21;&#x5757;&#x8FD8;&#x6709;&#xFF0C;<code>cgroupManager</code>&#x3001;<code>containerManager</code>&#x3001;<code>nodeContainerManager</code>&#x3001;<code>podContainerManager</code>&#x3001;<code>topologyManager</code>&#x3001;<code>deviceManager</code>&#x3001;<code>cpuManager</code> &#x7B49;&#x3002;</p>
+<h4 id="qoscontainermanager-&#x7684;&#x521D;&#x59CB;&#x5316;"><a name="qoscontainermanager-&#x7684;&#x521D;&#x59CB;&#x5316;" class="anchor-navigation-ex-anchor" href="#qoscontainermanager-&#x7684;&#x521D;&#x59CB;&#x5316;"><i class="fa fa-link" aria-hidden="true"></i></a>qosContainerManager &#x7684;&#x521D;&#x59CB;&#x5316;</h4>
+<p>&#x9996;&#x5148;&#x770B; <code>QOSContainerManager</code> &#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x56E0;&#x4E3A; <code>QOSContainerManager</code> &#x5305;&#x542B;&#x5728; <code>containerManager</code> &#x4E2D;&#xFF0C;&#x5728;&#x521D;&#x59CB;&#x5316; <code>containerManager</code> &#x65F6;&#x4E5F;&#x4F1A;&#x521D;&#x59CB;&#x5316; <code>QOSContainerManager</code>&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kubelet/app/server.go:471</code></p>
+<pre class="language-"><code>func run(s *options.KubeletServer, kubeDeps *kubelet.Dependencies, stopCh &lt;-chan struct{}) (err error) {
+    ......
+    kubeDeps.ContainerManager, err = cm.NewContainerManager(......)
+    ......
+}
+</code></pre><p><code>k8s.io/kubernetes/pkg/kubelet/cm/container_manager_linux.go:200</code></p>
+<pre class="language-"><code>// &#x5728; NewContainerManager &#x4E2D;&#x4F1A;&#x521D;&#x59CB;&#x5316; qosContainerManager
+func NewContainerManager(......) (ContainerManager, error) {
+    ......
+    qosContainerManager, err := NewQOSContainerManager(subsystems, cgroupRoot, nodeConfig, cgroupManager)
+    if err != nil {
+        return nil, err
+    }
+    ......
+}
+</code></pre><h4 id="qoscontainermanager-&#x7684;&#x542F;&#x52A8;"><a name="qoscontainermanager-&#x7684;&#x542F;&#x52A8;" class="anchor-navigation-ex-anchor" href="#qoscontainermanager-&#x7684;&#x542F;&#x52A8;"><i class="fa fa-link" aria-hidden="true"></i></a>qosContainerManager &#x7684;&#x542F;&#x52A8;</h4>
+<p>&#x5728;&#x8C03;&#x7528; <code>kl.containerManager.Start</code> &#x542F;&#x52A8; <code>containerManager</code> &#x65F6;&#x4E5F;&#x4F1A;&#x542F;&#x52A8; <code>qosContainerManager</code>&#xFF0C;&#x4EE3;&#x7801;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:1361</code></p>
+<pre class="language-"><code>func (kl *Kubelet) initializeRuntimeDependentModules() {
+    ......
+    if err := kl.containerManager.Start(node, kl.GetActivePods, kl.sourcesReady, kl.statusManager, kl.runtimeService); err != nil {
+        klog.Fatalf(&quot;Failed to start ContainerManager %v&quot;, err)
+    }
+    ......
+}
+</code></pre><h5 id="cmsetupnode"><a name="cmsetupnode" class="anchor-navigation-ex-anchor" href="#cmsetupnode"><i class="fa fa-link" aria-hidden="true"></i></a>cm.setupNode</h5>
+<p><code>cm.setupNode</code> &#x662F;&#x542F;&#x52A8; <code>qosContainerManager</code> &#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x68C0;&#x67E5; kubelet &#x4F9D;&#x8D56;&#x7684;&#x5185;&#x6838;&#x53C2;&#x6570;&#x662F;&#x5426;&#x914D;&#x7F6E;&#x6B63;&#x786E;&#xFF1B;</li>
+<li>2&#x3001;&#x82E5; <code>CgroupsPerQOS</code> &#x4E3A; true&#xFF0C;&#x9996;&#x5148;&#x8C03;&#x7528; <code>cm.createNodeAllocatableCgroups</code> &#x521B;&#x5EFA; root cgroup&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>cm.qosContainerManager.Start</code> &#x542F;&#x52A8; <code>qosContainerManager</code>&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>cm.enforceNodeAllocatableCgroups</code> &#x8BA1;&#x7B97; node &#x7684; allocatable &#x8D44;&#x6E90;&#x5E76;&#x914D;&#x7F6E;&#x5230; root cgroup &#x4E2D;&#xFF0C;&#x7136;&#x540E;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86; <code>SystemReserved</code> &#x4EE5;&#x53CA; <code>KubeReserved</code> &#x5E76;&#x914D;&#x7F6E;&#x5BF9;&#x5E94;&#x7684; cgroup&#xFF1B;</li>
+<li>4&#x3001;&#x4E3A;&#x7CFB;&#x7EDF;&#x7EC4;&#x4EF6;&#x914D;&#x7F6E;&#x5BF9;&#x5E94;&#x7684; cgroup &#x8D44;&#x6E90;&#x9650;&#x5236;&#xFF1B;</li>
+<li>5&#x3001;&#x4E3A;&#x7CFB;&#x7EDF;&#x8FDB;&#x7A0B;&#x914D;&#x7F6E; oom_score_adj&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/cm/container_manager_linux.go:568</code></p>
+<pre class="language-"><code>func (cm *containerManagerImpl) Start(......) {
+    ......
+    if err := cm.setupNode(activePods); err != nil {
+        return err
+    }
+}
+
+// &#x5728; setupNode &#x4E2D;&#x4F1A;&#x542F;&#x52A8; qosContainerManager
+func (cm *containerManagerImpl) setupNode(activePods ActivePodsFunc) error {
+    f, err := validateSystemRequirements(cm.mountUtil)
+    if err != nil {
+        return err
+    }
+    if !f.cpuHardcapping {
+        cm.status.SoftRequirements = fmt.Errorf(&quot;CPU hardcapping unsupported&quot;)
+    }
+    b := KernelTunableModify
+    if cm.GetNodeConfig().ProtectKernelDefaults {
+        b = KernelTunableError
+    }
+    // 1&#x3001;&#x68C0;&#x67E5;&#x4F9D;&#x8D56;&#x7684;&#x5185;&#x6838;&#x53C2;&#x6570;&#x662F;&#x5426;&#x914D;&#x7F6E;&#x6B63;&#x786E;
+    if err := setupKernelTunables(b); err != nil {
+        return err
+    }
+
+    if cm.NodeConfig.CgroupsPerQOS {
+        // 2&#x3001;&#x521B;&#x5EFA; root cgroup&#xFF0C;&#x5373; kubepods dir
+        if err := cm.createNodeAllocatableCgroups(); err != nil {
+            return err
+        }
+        // 3&#x3001;&#x542F;&#x52A8; qosContainerManager
+        err = cm.qosContainerManager.Start(cm.getNodeAllocatableAbsolute, activePods)
+        if err != nil {
+            return fmt.Errorf(&quot;failed to initialize top level QOS containers: %v&quot;, err)
+        }
+    }
+
+    // 4&#x3001;&#x4E3A; node &#x914D;&#x7F6E; cgroup &#x8D44;&#x6E90;&#x9650;&#x5236;
+    if err := cm.enforceNodeAllocatableCgroups(); err != nil {
+        return err
+    }
+    if cm.ContainerRuntime == &quot;docker&quot; {
+        cm.periodicTasks = append(cm.periodicTasks, func() {
+            cont, err := getContainerNameForProcess(dockerProcessName, dockerPidFile)
+            if err != nil {
+                klog.Error(err)
+                return
+            }
+            cm.Lock()
+            defer cm.Unlock()
+            cm.RuntimeCgroupsName = cont
+        })
+    }
+
+    // 5&#x3001;&#x4E3A;&#x7CFB;&#x7EDF;&#x7EC4;&#x4EF6;&#x914D;&#x7F6E;&#x5BF9;&#x5E94;&#x7684; cgroup &#x8D44;&#x6E90;&#x9650;&#x5236;
+    if cm.SystemCgroupsName != &quot;&quot; {
+        if cm.SystemCgroupsName == &quot;/&quot; {
+            return fmt.Errorf(&quot;system container cannot be root (\&quot;/\&quot;)&quot;)
+        }
+        cont := newSystemCgroups(cm.SystemCgroupsName)
+        cont.ensureStateFunc = func(manager *fs.Manager) error {
+            return ensureSystemCgroups(&quot;/&quot;, manager)
+        }
+        systemContainers = append(systemContainers, cont)
+    }
+
+    // 6&#x3001;&#x4E3A;&#x7CFB;&#x7EDF;&#x8FDB;&#x7A0B;&#x914D;&#x7F6E; oom_score_adj
+    if cm.KubeletCgroupsName != &quot;&quot; {
+        cont := newSystemCgroups(cm.KubeletCgroupsName)
+        allowAllDevices := true
+        manager := fs.Manager{
+            Cgroups: &amp;configs.Cgroup{
+                Parent: &quot;/&quot;,
+                Name:   cm.KubeletCgroupsName,
+                Resources: &amp;configs.Resources{
+                    AllowAllDevices: &amp;allowAllDevices,
+                },
+            },
+        }
+        cont.ensureStateFunc = func(_ *fs.Manager) error {
+            return ensureProcessInContainerWithOOMScore(os.Getpid(), qos.KubeletOOMScoreAdj, &amp;manager)
+        }
+        systemContainers = append(systemContainers, cont)
+    } else {
+        cm.periodicTasks = append(cm.periodicTasks, func() {
+            if err := ensureProcessInContainerWithOOMScore(os.Getpid(), qos.KubeletOOMScoreAdj, nil); err != nil {
+                klog.Error(err)
+                return
+            }
+            cont, err := getContainer(os.Getpid())
+            if err != nil {
+                klog.Errorf(&quot;failed to find cgroups of kubelet - %v&quot;, err)
+                return
+            }
+            cm.Lock()
+            defer cm.Unlock()
+
+            cm.KubeletCgroupsName = cont
+        })
+    }
+    cm.systemContainers = systemContainers
+    return nil
+}
+</code></pre><h5 id="cmqoscontainermanagerstart"><a name="cmqoscontainermanagerstart" class="anchor-navigation-ex-anchor" href="#cmqoscontainermanagerstart"><i class="fa fa-link" aria-hidden="true"></i></a>cm.qosContainerManager.Start</h5>
+<p><code>cm.qosContainerManager.Start</code> &#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x68C0;&#x67E5; root cgroup &#x662F;&#x5426;&#x5B58;&#x5728;&#xFF0C;root cgroup &#x4F1A;&#x5728;&#x542F;&#x52A8; <code>qosContainerManager</code> &#x4E4B;&#x524D;&#x521B;&#x5EFA;&#xFF1B;</li>
+<li>2&#x3001;&#x4E3A; <code>Burstable</code> &#x548C; <code>BestEffort</code> &#x521B;&#x5EFA; Qos level cgroups &#x5E76;&#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>m.UpdateCgroups</code> &#x6BCF;&#x5206;&#x949F;&#x5B9A;&#x671F;&#x66F4;&#x65B0; cgroup &#x4FE1;&#x606F;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/cm/qos_container_manager_linux.go:80</code></p>
+<pre class="language-"><code>func (m *qosContainerManagerImpl) Start(getNodeAllocatable func() v1.ResourceList, activePods ActivePodsFunc) error {
+    cm := m.cgroupManager
+    rootContainer := m.cgroupRoot
+
+    // 1&#x3001;&#x68C0;&#x67E5; root cgroup &#x662F;&#x5426;&#x5B58;&#x5728;
+    if !cm.Exists(rootContainer) {
+        return fmt.Errorf(&quot;root container %v doesn&apos;t exist&quot;, rootContainer)
+    }
+
+    // 2&#x3001;&#x4E3A; Qos &#x914D;&#x7F6E; Top level cgroups
+    qosClasses := map[v1.PodQOSClass]CgroupName{
+        v1.PodQOSBurstable:  NewCgroupName(rootContainer, strings.ToLower(string(v1.PodQOSBurstable))),
+        v1.PodQOSBestEffort: NewCgroupName(rootContainer, strings.ToLower(string(v1.PodQOSBestEffort))),
+    }
+
+    // 3&#x3001;&#x4E3A; Qos &#x521B;&#x5EFA; top level cgroups
+    for qosClass, containerName := range qosClasses {
+        resourceParameters := &amp;ResourceConfig{}
+        // 4&#x3001;&#x4E3A; BestEffort QoS cpu.shares &#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 2
+        if qosClass == v1.PodQOSBestEffort {
+            minShares := uint64(MinShares)
+            resourceParameters.CpuShares = &amp;minShares
+        }
+
+        containerConfig := &amp;CgroupConfig{
+            Name:               containerName,
+            ResourceParameters: resourceParameters,
+        }
+
+        // 5&#x3001;&#x914D;&#x7F6E; huge page size
+        m.setHugePagesUnbounded(containerConfig)
+
+        // 6&#x3001;&#x4E3A; Qos &#x521B;&#x5EFA; cgroup &#x76EE;&#x5F55;
+        if !cm.Exists(containerName) {
+            if err := cm.Create(containerConfig); err != nil {
+                ......
+            }
+        } else {
+            if err := cm.Update(containerConfig); err != nil {
+                ......
+            }
+        }
+    }
+    ......
+
+    // 7&#x3001;&#x6BCF;&#x5206;&#x949F;&#x5B9A;&#x671F;&#x66F4;&#x65B0; cgroup &#x914D;&#x7F6E;
+    go wait.Until(func() {
+        err := m.UpdateCgroups()
+        if err != nil {
+            klog.Warningf(&quot;[ContainerManager] Failed to reserve QoS requests: %v&quot;, err)
+        }
+    }, periodicQOSCgroupUpdateInterval, wait.NeverStop)
+
+    return nil
+}
+</code></pre><h5 id="mupdatecgroups"><a name="mupdatecgroups" class="anchor-navigation-ex-anchor" href="#mupdatecgroups"><i class="fa fa-link" aria-hidden="true"></i></a>m.UpdateCgroups</h5>
+<p><code>m.UpdateCgroups</code>  &#x662F;&#x7528;&#x6765;&#x66F4;&#x65B0; Qos level cgroup &#x4E2D;&#x7684;&#x503C;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>m.setCPUCgroupConfig</code> &#x8BA1;&#x7B97; node &#x4E0A;&#x7684; activePods &#x7684;&#x8D44;&#x6E90;&#x4EE5;&#x6B64;&#x6765;&#x66F4;&#x65B0; <code>bestEffort</code> &#x548C; <code>burstable</code> Qos level cgroup &#x7684; <code>cpu.shares</code> &#x503C;&#xFF0C;<code>besteffort</code> &#x7684; <code>cpu.shares</code> &#x503C;&#x9ED8;&#x8BA4;&#x4E3A; 2&#xFF0C;<code>burstable cpu.shares</code> &#x7684;&#x8BA1;&#x7B97;&#x65B9;&#x5F0F;&#x4E3A;&#xFF1A;max(sum(Burstable pods cpu requests&#xFF09;* 1024 /1000, 2)&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528;<code>m.setHugePagesConfig</code> &#x66F4;&#x65B0; huge pages&#xFF1B;</li>
+<li>3&#x3001;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86;<code>--qos-reserved</code> &#x53C2;&#x6570;&#xFF0C;&#x82E5;&#x542F;&#x7528;&#x4E86;&#x5219;&#x8C03;&#x7528; <code>m.setMemoryReserve</code> &#x8BA1;&#x7B97;&#x6BCF;&#x4E2A; Qos class &#x4E2D;&#x9700;&#x8981;&#x8BBE;&#x5B9A;&#x7684;&#x503C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>m.cgroupManager.Update</code> &#x66F4;&#x65B0; cgroup &#x4E2D;&#x7684;&#x503C;&#xFF1B;</li>
+<li>4&#x3001;&#x6700;&#x540E;&#x8C03;&#x7528; <code>m.cgroupManager.Update</code> &#x66F4;&#x65B0; cgroup &#x4E2D;&#x7684;&#x503C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/cm/qos_container_manager_linux.go:269</code></p>
+<pre class="language-"><code>func (m *qosContainerManagerImpl) UpdateCgroups() error {
+    m.Lock()
+    defer m.Unlock()
+
+    qosConfigs := map[v1.PodQOSClass]*CgroupConfig{
+        v1.PodQOSBurstable: {
+            Name:               m.qosContainersInfo.Burstable,
+            ResourceParameters: &amp;ResourceConfig{},
+        },
+        v1.PodQOSBestEffort: {
+            Name:               m.qosContainersInfo.BestEffort,
+            ResourceParameters: &amp;ResourceConfig{},
+        },
+    }
+
+    // 1&#x3001;&#x66F4;&#x65B0; bestEffort &#x548C; burstable Qos level cgroup &#x7684; cpu.shares &#x503C;
+    if err := m.setCPUCgroupConfig(qosConfigs); err != nil {
+        return err
+    }
+
+    // 2&#x3001;&#x8C03;&#x7528; m.setHugePagesConfig &#x66F4;&#x65B0; huge pages
+    if err := m.setHugePagesConfig(qosConfigs); err != nil {
+        return err
+    }
+
+    // 3&#x3001;&#x8BBE;&#x7F6E;&#x8D44;&#x6E90;&#x9884;&#x7559;
+    if utilfeature.DefaultFeatureGate.Enabled(kubefeatures.QOSReserved) {
+        for resource, percentReserve := range m.qosReserved {
+            switch resource {
+            case v1.ResourceMemory:
+                m.setMemoryReserve(qosConfigs, percentReserve)
+            }
+        }
+
+        updateSuccess := true
+        for _, config := range qosConfigs {
+            err := m.cgroupManager.Update(config)
+            if err != nil {
+                updateSuccess = false
+            }
+        }
+        if updateSuccess {
+            klog.V(4).Infof(&quot;[ContainerManager]: Updated QoS cgroup configuration&quot;)
+            return nil
+        }
+
+        for resource, percentReserve := range m.qosReserved {
+            switch resource {
+            case v1.ResourceMemory:
+                m.retrySetMemoryReserve(qosConfigs, percentReserve)
+            }
+        }
+    }
+
+    // 4&#x3001;&#x66F4;&#x65B0; cgroup &#x4E2D;&#x7684;&#x503C;
+    for _, config := range qosConfigs {
+        err := m.cgroupManager.Update(config)
+        if err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
+</code></pre><h5 id="mcgroupmanagerupdate"><a name="mcgroupmanagerupdate" class="anchor-navigation-ex-anchor" href="#mcgroupmanagerupdate"><i class="fa fa-link" aria-hidden="true"></i></a>m.cgroupManager.Update</h5>
+<p><code>m.cgroupManager.Update</code> &#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x662F;&#x6839;&#x636E; cgroup &#x914D;&#x7F6E;&#x6765;&#x66F4;&#x65B0; cgroup &#x4E2D;&#x7684;&#x503C;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>m.buildCgroupPaths</code> &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; cgroup &#x76EE;&#x5F55;&#xFF0C;&#x5728;&#x6BCF;&#x4E2A; cgroup &#x5B50;&#x7CFB;&#x7EDF;&#x4E0B;&#x9762;&#x90FD;&#x6709;&#x4E00;&#x4E2A; kubelet &#x5BF9;&#x5E94;&#x7684; root cgroup &#x76EE;&#x5F55;&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528;  <code>setSupportedSubsystems</code> &#x66F4;&#x65B0;&#x7684; cgroup &#x5B50;&#x7CFB;&#x7EDF;&#x4E2D;&#x7684;&#x503C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/cm/cgroup_manager_linux.go:409</code></p>
+<pre class="language-"><code>func (m *cgroupManagerImpl) Update(cgroupConfig *CgroupConfig) error {
+    ......
+    resourceConfig := cgroupConfig.ResourceParameters
+    resources := m.toResources(resourceConfig)
+
+    cgroupPaths := m.buildCgroupPaths(cgroupConfig.Name)
+
+    libcontainerCgroupConfig := &amp;libcontainerconfigs.Cgroup{
+        Resources: resources,
+        Paths:     cgroupPaths,
+    }
+
+    if m.adapter.cgroupManagerType == libcontainerSystemd {
+        updateSystemdCgroupInfo(libcontainerCgroupConfig, cgroupConfig.Name)
+    } else {
+        libcontainerCgroupConfig.Path = cgroupConfig.Name.ToCgroupfs()
+    }
+
+    if utilfeature.DefaultFeatureGate.Enabled(kubefeatures.SupportPodPidsLimit) &amp;&amp; cgroupConfig.ResourceParameters != nil &amp;&amp; cgroupConfig.               ResourceParameters.PidsLimit != nil {
+        libcontainerCgroupConfig.PidsLimit = *cgroupConfig.ResourceParameters.PidsLimit
+    }
+
+    if err := setSupportedSubsystems(libcontainerCgroupConfig); err != nil {
+        return fmt.Errorf(&quot;failed to set supported cgroup subsystems for cgroup %v: %v&quot;, cgroupConfig.Name, err)
+    }
+    return nil
+}
+</code></pre><h6 id="setsupportedsubsystem"><a name="setsupportedsubsystem" class="anchor-navigation-ex-anchor" href="#setsupportedsubsystem"><i class="fa fa-link" aria-hidden="true"></i></a>setSupportedSubsystem</h6>
+<p><code>setSupportedSubsystems</code> &#x9996;&#x5148;&#x901A;&#x8FC7; <code>getSupportedSubsystems</code> &#x83B7;&#x53D6; kubelet &#x652F;&#x6301;&#x54EA;&#x4E9B; cgroup &#x5B50;&#x7CFB;&#x7EDF;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>sys.Set</code> &#x8BBE;&#x7F6E;&#x5BF9;&#x5E94;&#x5B50;&#x7CFB;&#x7EDF;&#x7684;&#x503C;&#xFF0C;<code>sys.Set</code> &#x662F;&#x8C03;&#x7528; <code>runc/libcontainer</code> &#x4E2D;&#x7684;&#x5305;&#x8FDB;&#x884C;&#x8BBE;&#x7F6E;&#x7684;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x662F;&#x5728; cgroup &#x5B50;&#x7CFB;&#x7EDF;&#x5BF9;&#x5E94;&#x7684;&#x6587;&#x4EF6;&#x4E2D;&#x5199;&#x5165;&#x503C;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/cm/cgroup_manager_linux.go:345</code></p>
+<pre class="language-"><code>func setSupportedSubsystems(cgroupConfig *libcontainerconfigs.Cgroup) error {
+    for sys, required := range getSupportedSubsystems() {
+        if _, ok := cgroupConfig.Paths[sys.Name()]; !ok {
+            if required {
+                return fmt.Errorf(&quot;failed to find subsystem mount for required subsystem: %v&quot;, sys.Name())
+            }
+            ......
+            continue
+        }
+        if err := sys.Set(cgroupConfig.Paths[sys.Name()], cgroupConfig); err != nil {
+            return fmt.Errorf(&quot;failed to set config for supported subsystems : %v&quot;, err)
+        }
+    }
+    return nil
+}
+</code></pre><p>&#x4F8B;&#x5982;&#x4E3A; cgroup &#x4E2D; cpu &#x5B50;&#x7CFB;&#x7EDF;&#x8BBE;&#x7F6E;&#x503C;&#x7684;&#x65B9;&#x6CD5;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>func (s *CpuGroup) Set(path string, cgroup *configs.Cgroup) error {
+    if cgroup.Resources.CpuShares != 0 {
+        if err := writeFile(path, &quot;cpu.shares&quot;, strconv.FormatUint(cgroup.Resources.CpuShares, 10)); err != nil {
+            return err
+        }
+    }
+    if cgroup.Resources.CpuPeriod != 0 {
+        if err := writeFile(path, &quot;cpu.cfs_period_us&quot;, strconv.FormatUint(cgroup.Resources.CpuPeriod, 10)); err != nil {
+            return err
+        }
+    }
+    if cgroup.Resources.CpuQuota != 0 {
+        if err := writeFile(path, &quot;cpu.cfs_quota_us&quot;, strconv.FormatInt(cgroup.Resources.CpuQuota, 10)); err != nil {
+            return err
+        }
+    }
+    return s.SetRtSched(path, cgroup)
+}
+</code></pre><h4 id="pod-level-cgroup"><a name="pod-level-cgroup" class="anchor-navigation-ex-anchor" href="#pod-level-cgroup"><i class="fa fa-link" aria-hidden="true"></i></a>Pod Level Cgroup</h4>
+<p>Pod Level cgroup &#x662F; kubelet &#x5728;&#x521B;&#x5EFA; pod &#x65F6;&#x521B;&#x5EFA;&#x7684;&#xFF0C;&#x521B;&#x5EFA; pod &#x662F;&#x5728; kubelet &#x7684; <code>syncPod</code> &#x65B9;&#x6CD5;&#x4E2D;&#x8FDB;&#x884C;&#x7684;&#xFF0C;&#x5728; <code>syncPod</code> &#x65B9;&#x6CD5;&#x4E2D;&#x9996;&#x5148;&#x4F1A;&#x8C03;&#x7528; <code>kl.containerManager.UpdateQOSCgroups</code> &#x66F4;&#x65B0; Qos Level cgroup&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>pcm.EnsureExists</code> &#x521B;&#x5EFA; pod level cgroup&#x3002;</p>
+<pre class="language-"><code>func (kl *Kubelet) syncPod(o syncPodOptions) error {
+        ......
+        if !kl.podIsTerminated(pod) {
+            ......
+            if !(podKilled &amp;&amp; pod.Spec.RestartPolicy == v1.RestartPolicyNever) {
+                if !pcm.Exists(pod) {
+                    if err := kl.containerManager.UpdateQOSCgroups(); err != nil {
+                        ......
+                    }
+                    if err := pcm.EnsureExists(pod); err != nil {
+                        ......
+                    }
+                }
+            }
+        }
+        ......
+}
+</code></pre><p><code>EnsureExists</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x662F;&#x68C0;&#x67E5; pod &#x7684; cgroup &#x662F;&#x5426;&#x5B58;&#x5728;&#xFF0C;&#x82E5;&#x4E0D;&#x5B58;&#x5728;&#x5219;&#x8C03;&#x7528; <code>m.cgroupManager.Create</code> &#x8FDB;&#x884C;&#x521B;&#x5EFA;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/cm/pod_container_manager_linux.go:79</code></p>
+<pre class="language-"><code>func (m *podContainerManagerImpl) EnsureExists(pod *v1.Pod) error {
+    podContainerName, _ := m.GetPodContainerName(pod)
+
+    alreadyExists := m.Exists(pod)
+    if !alreadyExists {
+        containerConfig := &amp;CgroupConfig{
+            Name:               podContainerName,
+            ResourceParameters: ResourceConfigForPod(pod, m.enforceCPULimits, m.cpuCFSQuotaPeriod),
+        }
+        if utilfeature.DefaultFeatureGate.Enabled(kubefeatures.SupportPodPidsLimit) &amp;&amp; m.podPidsLimit &gt; 0 {
+            containerConfig.ResourceParameters.PidsLimit = &amp;m.podPidsLimit
+        }
+        if err := m.cgroupManager.Create(containerConfig); err != nil {
+            return fmt.Errorf(&quot;failed to create container for %v : %v&quot;, podContainerName, err)
+        }
+    }
+    ......
+    return nil
+}
+</code></pre><h4 id="container-level-cgroup"><a name="container-level-cgroup" class="anchor-navigation-ex-anchor" href="#container-level-cgroup"><i class="fa fa-link" aria-hidden="true"></i></a>Container Level Cgroup</h4>
+<p>Container Level Cgroup &#x662F;&#x901A;&#x8FC7; runtime &#x8FDB;&#x884C;&#x521B;&#x5EFA;&#x7684;&#xFF0C;&#x82E5;&#x4F7F;&#x7528; runc  &#x5176;&#x4F1A;&#x8C03;&#x7528; runc &#x7684; <code>InitProcess.start</code>  &#x65B9;&#x6CD5;&#x5BF9; cgroup &#x8D44;&#x6E90;&#x7EC4;&#x8FDB;&#x884C;&#x914D;&#x7F6E;&#x4E0E;&#x5E94;&#x7528;&#x3002;</p>
+<p><code>k8s.io/kubernetes/vendor/github.com/opencontainers/runc/libcontainer/process_linux.go:282</code></p>
+<pre class="language-"><code>func (p *initProcess) start() error {
+    ......
+
+    // &#x8C03;&#x7528; p.manager.Apply &#x4E3A;&#x8FDB;&#x7A0B;&#x914D;&#x7F6E; cgroup
+    if err := p.manager.Apply(p.pid()); err != nil {
+        return newSystemErrorWithCause(err, &quot;applying cgroup configuration for process&quot;)
+    }
+    if p.intelRdtManager != nil {
+        if err := p.intelRdtManager.Apply(p.pid()); err != nil {
+            return newSystemErrorWithCause(err, &quot;applying Intel RDT configuration for process&quot;)
+        }
+    }
+    ......
+}
+</code></pre><h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>kubernetes &#x4E2D;&#x6709;&#x4E09;&#x79CD; Qos&#xFF0C;&#x5206;&#x522B;&#x4E3A; Guaranteed&#x3001;Burstable&#x3001;BestEffort&#xFF0C;&#x4E09;&#x79CD; Qos &#x4EE5; node &#x4E0A; allocatable &#x8D44;&#x6E90;&#x91CF;&#x4E3A;&#x57FA;&#x4E8E;&#x4E3A; pod &#x8FDB;&#x884C;&#x5206;&#x914D;&#xFF0C;&#x5E76;&#x901A;&#x8FC7;&#x591A;&#x4E2A; level cgroup &#x8FDB;&#x884C;&#x5C42;&#x5C42;&#x9650;&#x5236;&#xFF0C;&#x5BF9; cgroup &#x7684;&#x914D;&#x7F6E;&#x90FD;&#x662F;&#x901A;&#x8FC7;&#x8C03;&#x7528; <code>runc/libcontainer/cgroups/fs</code> &#x4E2D;&#x7684;&#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x8D44;&#x6E90;&#x66F4;&#x65B0;&#x7684;&#x3002;&#x5BF9;&#x4E8E; Qos level cgroup&#xFF0C;kubelet &#x4F1A;&#x6839;&#x636E;&#x4EE5;&#x4E0B;&#x4E8B;&#x4EF6;&#x52A8;&#x6001;&#x66F4;&#x65B0;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;kubelet &#x670D;&#x52A1;&#x542F;&#x52A8;&#x65F6;&#xFF1B;</li>
+<li>2&#x3001;&#x5728;&#x521B;&#x5EFA; pod level cgroup &#x4E4B;&#x524D;&#xFF0C;&#x5373;&#x521B;&#x5EFA; pod &#x524D;&#xFF1B;</li>
+<li>3&#x3001;&#x5728;&#x5220;&#x9664; pod level cgroup &#x540E;&#xFF1B;</li>
+<li>4&#x3001;&#x5B9A;&#x671F;&#x68C0;&#x6D4B;&#x662F;&#x5426;&#x9700;&#x8981;&#x4E3A; qos level cgroup &#x9884;&#x7559;&#x8D44;&#x6E90;&#xFF1B;</li>
+</ul>
+<p>&#x53C2;&#x8003;&#xFF1A;</p>
+<p><a href="https://kubernetes.io/docs/setup/production-environment/container-runtimes/#cgroup-drivers" target="_blank">https://kubernetes.io/docs/setup/production-environment/container-runtimes/#cgroup-drivers</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/38359775" target="_blank">https://zhuanlan.zhihu.com/p/38359775</a></p>
+<p><a href="https://github.com/kubernetes/community/blob/master/contributors/design-proposals/node/pod-resource-management.md" target="_blank">https://github.com/kubernetes/community/blob/master/contributors/design-proposals/node/pod-resource-management.md</a></p>
+<p><a href="https://github.com/cri-o/cri-o/issues/842" target="_blank">https://github.com/cri-o/cri-o/issues/842</a></p>
+<p><a href="https://yq.aliyun.com/articles/737784?spm=a2c4e.11153940.0.0.577f6149mYFkTR" target="_blank">https://yq.aliyun.com/articles/737784?spm=a2c4e.11153940.0.0.577f6149mYFkTR</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2020-01-21 16:59:14
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="kubelet_status_manager.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: kubelet statusManager 源码分析">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"kubernetes 中 Qos 的设计与实现","date":"2020-01-21T16:28:30.000Z","tags":["kubelet","qos","cgroup"],"type":"kubelet","level":"1.2.21","depth":2,"previous":{"title":"kubelet statusManager 源码分析","level":"1.2.20","depth":2,"path":"kubernetes/kubelet_status_manager.md","ref":"kubernetes/kubelet_status_manager.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/kubelet_qos.md","mtime":"2020-01-21T08:59:14.468Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-01-21T09:00:04.822Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

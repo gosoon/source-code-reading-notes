@@ -23,3 +23,4 @@
     * [kubelet 状态上报的方式](kubernetes/node_status.md)
     * [kubelet 中事件处理机制](kubernetes/k8s_events.md)
     * [kubelet statusManager 源码分析](kubernetes/kubelet_status_manager.md)
+    * [kubernetes 中 Qos 的设计与实现](kubernetes/kubelet_qos.md)
