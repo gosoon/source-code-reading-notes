@@ -1,0 +1,1229 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>kubelet 中垃圾回收机制的设计与实现 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="kubelet_qos.html" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="nodelifecycle_controller.html">
+            
+                <a href="nodelifecycle_controller.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    node controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="job_controller.html">
+            
+                <a href="job_controller.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    job controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="garbagecollector_controller.html">
+            
+                <a href="garbagecollector_controller.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    garbage collector controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="daemonset_controller.html">
+            
+                <a href="daemonset_controller.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    daemonset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="statefulset_controller.html">
+            
+                <a href="statefulset_controller.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    statefulset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="replicaset_controller.html">
+            
+                <a href="replicaset_controller.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    replicaset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.12" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.12.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.13" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.13.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.14" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.14.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.15" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.15.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.16" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.16.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.17" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.17.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.18" data-path="node_status.html">
+            
+                <a href="node_status.html">
+            
+                    
+                        <b>1.2.18.</b>
+                    
+                    kubelet 状态上报的方式
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.19" data-path="k8s_events.html">
+            
+                <a href="k8s_events.html">
+            
+                    
+                        <b>1.2.19.</b>
+                    
+                    kubelet 中事件处理机制
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.20" data-path="kubelet_status_manager.html">
+            
+                <a href="kubelet_status_manager.html">
+            
+                    
+                        <b>1.2.20.</b>
+                    
+                    kubelet statusManager 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.21" data-path="kubelet_qos.html">
+            
+                <a href="kubelet_qos.html">
+            
+                    
+                        <b>1.2.21.</b>
+                    
+                    kubernetes 中 Qos 的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.22" data-path="kubelet_garbage_collect.html">
+            
+                <a href="kubelet_garbage_collect.html">
+            
+                    
+                        <b>1.2.22.</b>
+                    
+                    kubelet 中垃圾回收机制的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >kubelet 中垃圾回收机制的设计与实现</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <ul>
+<li><a href="#kubelet-garbagecollect-&#x6E90;&#x7801;&#x5206;&#x6790;">kubelet GarbageCollect &#x6E90;&#x7801;&#x5206;&#x6790;</a><ul>
+<li><a href="#kstartgarbagecollection">k.StartGarbageCollection</a></li>
+<li><a href="#klcontainergcgarbagecollect">kl.containerGC.GarbageCollect</a><ul>
+<li><a href="#cgcruntimegarbagecollect">cgc.runtime.GarbageCollect</a></li>
+<li><a href="#cgcevictcontainers">cgc.evictContainers</a></li>
+<li><a href="#cgcevictsandboxes">cgc.evictSandboxes</a></li>
+<li><a href="#cgcevictpodlogsdirectories">cgc.evictPodLogsDirectories</a></li>
+</ul>
+</li>
+<li><a href="#klimagemanagergarbagecollect">kl.imageManager.GarbageCollect</a><ul>
+<li><a href="#imfreespace">im.freeSpace</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#&#x603B;&#x7ED3;">&#x603B;&#x7ED3;</a></li>
+</ul>
+<p>kubernetes &#x4E2D;&#x7684;&#x5783;&#x573E;&#x56DE;&#x6536;&#x673A;&#x5236;&#x4E3B;&#x8981;&#x6709;&#x4E24;&#x90E8;&#x5206;&#x7EC4;&#x6210;&#xFF1A;</p>
+<ul>
+<li>&#x4E00;&#x662F;&#x7531; kube-controller-manager &#x4E2D;&#x7684; gc controller &#x81EA;&#x52A8;&#x56DE;&#x6536; kubernetes &#x4E2D;&#x88AB;&#x5220;&#x9664;&#x7684;&#x5BF9;&#x8C61;&#x4EE5;&#x53CA;&#x5176;&#x4F9D;&#x8D56;&#x7684;&#x5BF9;&#x8C61;&#xFF1B;</li>
+<li>&#x4E8C;&#x662F;&#x5728;&#x6BCF;&#x4E2A;&#x8282;&#x70B9;&#x4E0A;&#x9700;&#x8981;&#x56DE;&#x6536;&#x5DF2;&#x9000;&#x51FA;&#x7684;&#x5BB9;&#x5668;&#x4EE5;&#x53CA;&#x5F53; node &#x4E0A;&#x78C1;&#x76D8;&#x8D44;&#x6E90;&#x4E0D;&#x8DB3;&#x65F6;&#x56DE;&#x6536;&#x5DF2;&#x4E0D;&#x518D;&#x4F7F;&#x7528;&#x7684;&#x5BB9;&#x5668;&#x955C;&#x50CF;&#xFF1B;</li>
+</ul>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x5206;&#x6790; kubelet &#x4E2D;&#x7684;&#x5783;&#x573E;&#x56DE;&#x6536;&#x673A;&#x5236;&#xFF0C;&#x5783;&#x573E;&#x56DE;&#x6536;&#x7684;&#x4E3B;&#x8981;&#x76EE;&#x7684;&#x662F;&#x4E3A;&#x4E86;&#x8282;&#x7EA6;&#x5BBF;&#x4E3B;&#x4E0A;&#x7684;&#x8D44;&#x6E90;&#xFF0C;gc controller &#x7684;&#x56DE;&#x6536;&#x673A;&#x5236;&#x53EF;&#x4EE5;&#x53C2;&#x8003;&#x4EE5;&#x524D;&#x7684;&#x6587;&#x7AE0; <a href="https://mp.weixin.qq.com/s?__biz=MzAwNzcyMDY5Mg==&amp;mid=2648900249&amp;idx=1&amp;sn=16456e1156b781e57c00fdfae74f2e3f&amp;chksm=836e7902b419f0140d03c37d4e5f9970c8f8bd665437970348fd64d0ff29f64ecc796600da8b&amp;token=674969506&amp;lang=zh_CN#rd" target="_blank">garbage collector controller &#x6E90;&#x7801;&#x5206;&#x6790;</a>&#x3002;</p>
+<p>kubelet &#x4E2D;&#x4E0E;&#x5BB9;&#x5668;&#x5783;&#x573E;&#x56DE;&#x6536;&#x6709;&#x5173;&#x7684;&#x4E3B;&#x8981;&#x6709;&#x4EE5;&#x4E0B;&#x4E09;&#x4E2A;&#x53C2;&#x6570;:</p>
+<ul>
+<li><code>--maximum-dead-containers-per-container</code>: &#x8868;&#x793A;&#x4E00;&#x4E2A; pod &#x6700;&#x591A;&#x53EF;&#x4EE5;&#x4FDD;&#x5B58;&#x591A;&#x5C11;&#x4E2A;&#x5DF2;&#x7ECF;&#x505C;&#x6B62;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A;1&#xFF1B;&#xFF08;maxPerPodContainerCount&#xFF09;</li>
+<li><code>--maximum-dead-containers</code>&#xFF1A;&#x4E00;&#x4E2A; node &#x4E0A;&#x6700;&#x591A;&#x53EF;&#x4EE5;&#x4FDD;&#x7559;&#x591A;&#x5C11;&#x4E2A;&#x5DF2;&#x7ECF;&#x505C;&#x6B62;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; -1&#xFF0C;&#x8868;&#x793A;&#x6CA1;&#x6709;&#x9650;&#x5236;&#xFF1B;</li>
+<li><code>--minimum-container-ttl-duration</code>&#xFF1A;&#x5DF2;&#x7ECF;&#x9000;&#x51FA;&#x7684;&#x5BB9;&#x5668;&#x53EF;&#x4EE5;&#x5B58;&#x6D3B;&#x7684;&#x6700;&#x5C0F;&#x65F6;&#x95F4;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 0s&#xFF1B;</li>
+</ul>
+<p>&#x4E0E;&#x955C;&#x50CF;&#x56DE;&#x6536;&#x6709;&#x5173;&#x7684;&#x4E3B;&#x8981;&#x6709;&#x4EE5;&#x4E0B;&#x4E09;&#x4E2A;&#x53C2;&#x6570;&#xFF1A;</p>
+<ul>
+<li><code>--image-gc-high-threshold</code>&#xFF1A;&#x5F53; kubelet &#x78C1;&#x76D8;&#x8FBE;&#x5230;&#x591A;&#x5C11;&#x65F6;&#xFF0C;kubelet &#x5F00;&#x59CB;&#x56DE;&#x6536;&#x955C;&#x50CF;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 85% &#x5F00;&#x59CB;&#x56DE;&#x6536;&#xFF0C;&#x6839;&#x76EE;&#x5F55;&#x4EE5;&#x53CA;&#x6570;&#x636E;&#x76D8;&#xFF1B;</li>
+<li><code>--image-gc-low-threshold</code>&#xFF1A;&#x56DE;&#x6536;&#x955C;&#x50CF;&#x65F6;&#x5F53;&#x78C1;&#x76D8;&#x4F7F;&#x7528;&#x7387;&#x51CF;&#x5C11;&#x81F3;&#x591A;&#x5C11;&#x65F6;&#x505C;&#x6B62;&#x56DE;&#x6536;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 80%&#xFF1B;</li>
+<li><code>--minimum-image-ttl-duration</code>&#xFF1A;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x955C;&#x50CF;&#x5728;&#x88AB;&#x56DE;&#x6536;&#x524D;&#x7684;&#x6700;&#x5C0F;&#x5B58;&#x7559;&#x65F6;&#x95F4;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 2m0s&#xFF1B;</li>
+</ul>
+<p><strong>kubelet &#x4E2D;&#x5BB9;&#x5668;&#x56DE;&#x6536;&#x8FC7;&#x7A0B;&#x5982;&#x4E0B;:</strong>
+pod &#x4E2D;&#x7684;&#x5BB9;&#x5668;&#x9000;&#x51FA;&#x65F6;&#x95F4;&#x8D85;&#x8FC7;<code>--minimum-container-ttl-duration</code>&#x540E;&#x4F1A;&#x88AB;&#x6807;&#x8BB0;&#x4E3A;&#x53EF;&#x56DE;&#x6536;&#xFF0C;&#x4E00;&#x4E2A; pod &#x4E2D;&#x6700;&#x591A;&#x53EF;&#x4EE5;&#x4FDD;&#x7559;<code>--maximum-dead-containers-per-container</code>&#x4E2A;&#x5DF2;&#x7ECF;&#x505C;&#x6B62;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x4E00;&#x4E2A; node &#x4E0A;&#x6700;&#x591A;&#x53EF;&#x4EE5;&#x4FDD;&#x7559;<code>--maximum-dead-containers</code>&#x4E2A;&#x5DF2;&#x505C;&#x6B62;&#x7684;&#x5BB9;&#x5668;&#x3002;&#x5728;&#x56DE;&#x6536;&#x5BB9;&#x5668;&#x65F6;&#xFF0C;kubelet &#x4F1A;&#x6309;&#x7167;&#x5BB9;&#x5668;&#x7684;&#x9000;&#x51FA;&#x65F6;&#x95F4;&#x6392;&#x5E8F;&#xFF0C;&#x6700;&#x5148;&#x56DE;&#x6536;&#x9000;&#x51FA;&#x65F6;&#x95F4;&#x6700;&#x4E45;&#x7684;&#x5BB9;&#x5668;&#x3002;&#x9700;&#x8981;&#x6CE8;&#x610F;&#x7684;&#x662F;&#xFF0C;kubelet &#x5728;&#x56DE;&#x6536;&#x65F6;&#x4F1A;&#x5C06; pod &#x4E2D;&#x7684; container &#x4E0E; sandboxes &#x5206;&#x522B;&#x8FDB;&#x884C;&#x56DE;&#x6536;&#xFF0C;&#x4E14;&#x5728;&#x56DE;&#x6536;&#x5BB9;&#x5668;&#x540E;&#x4F1A;&#x5C06;&#x5176;&#x5BF9;&#x5E94;&#x7684; log dir &#x4E5F;&#x8FDB;&#x884C;&#x56DE;&#x6536;&#xFF1B;</p>
+<p><strong>kubelet &#x4E2D;&#x955C;&#x50CF;&#x56DE;&#x6536;&#x8FC7;&#x7A0B;&#x5982;&#x4E0B;:</strong>
+&#x5F53;&#x5BB9;&#x5668;&#x955C;&#x50CF;&#x6302;&#x8F7D;&#x70B9;&#x6587;&#x4EF6;&#x7CFB;&#x7EDF;&#x7684;&#x78C1;&#x76D8;&#x4F7F;&#x7528;&#x7387;&#x5927;&#x4E8E;<code>--image-gc-high-threshold</code>&#x65F6;&#xFF08;containerRuntime &#x4E3A; docker &#x65F6;&#xFF0C;&#x955C;&#x50CF;&#x5B58;&#x653E;&#x76EE;&#x5F55;&#x9ED8;&#x8BA4;&#x4E3A; <code>/var/lib/docker</code>&#xFF09;&#xFF0C;kubelet &#x5F00;&#x59CB;&#x5220;&#x9664;&#x8282;&#x70B9;&#x4E2D;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x5BB9;&#x5668;&#x955C;&#x50CF;&#xFF0C;&#x76F4;&#x5230;&#x78C1;&#x76D8;&#x4F7F;&#x7528;&#x7387;&#x964D;&#x4F4E;&#x81F3;<code>--image-gc-low-threshold</code> &#x65F6;&#x505C;&#x6B62;&#x955C;&#x50CF;&#x7684;&#x5783;&#x573E;&#x56DE;&#x6536;&#x3002;</p>
+<h3 id="kubelet-garbagecollect-&#x6E90;&#x7801;&#x5206;&#x6790;"><a name="kubelet-garbagecollect-&#x6E90;&#x7801;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#kubelet-garbagecollect-&#x6E90;&#x7801;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>kubelet GarbageCollect &#x6E90;&#x7801;&#x5206;&#x6790;</h3>
+<blockquote>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
+</blockquote>
+<p>GarbageCollect &#x662F;&#x5728; kubelet &#x5BF9;&#x8C61;&#x521D;&#x59CB;&#x5316;&#x5B8C;&#x6210;&#x540E;&#x542F;&#x52A8;&#x7684;&#xFF0C;&#x5728; <code>createAndInitKubelet</code> &#x65B9;&#x6CD5;&#x4E2D;&#x9996;&#x5148;&#x8C03;&#x7528; <code>kubelet.NewMainKubelet</code> &#x521D;&#x59CB;&#x5316;&#x4E86; kubelet &#x5BF9;&#x8C61;&#xFF0C;&#x968F;&#x540E;&#x8C03;&#x7528; <code>k.StartGarbageCollection</code> &#x542F;&#x52A8;&#x4E86; GarbageCollect&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kubelet/app/server.go:1089</code></p>
+<pre class="language-"><code>func createAndInitKubelet(......) {
+    k, err = kubelet.NewMainKubelet(
+        ......
+    )
+    if err != nil {
+        return nil, err
+    }
+
+    k.BirthCry()
+
+    k.StartGarbageCollection()
+
+    return k, nil
+}
+</code></pre><h4 id="kstartgarbagecollection"><a name="kstartgarbagecollection" class="anchor-navigation-ex-anchor" href="#kstartgarbagecollection"><i class="fa fa-link" aria-hidden="true"></i></a>k.StartGarbageCollection</h4>
+<p>&#x5728; kubelet &#x4E2D;&#x955C;&#x50CF;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#x548C;&#x5BB9;&#x5668;&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;&#x662F;&#x901A;&#x8FC7; imageManager &#x548C; containerGC &#x7BA1;&#x7406;&#x7684;&#x3002;&#x5728; <code>StartGarbageCollection</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x542F;&#x52A8;&#x5BB9;&#x5668;&#x548C;&#x955C;&#x50CF;&#x5783;&#x573E;&#x56DE;&#x6536;&#x4E24;&#x4E2A;&#x4EFB;&#x52A1;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x542F;&#x52A8; containerGC goroutine&#xFF0C;ContainerGC &#x95F4;&#x9694;&#x65F6;&#x95F4;&#x9ED8;&#x8BA4;&#x4E3A; 1 &#x5206;&#x949F;&#xFF1B;</li>
+<li>2&#x3001;&#x68C0;&#x67E5; <code>--image-gc-high-threshold</code> &#x53C2;&#x6570;&#x7684;&#x503C;&#xFF0C;&#x82E5;&#x4E3A; 100 &#x5219;&#x7981;&#x7528; imageGC&#xFF1B;</li>
+<li>3&#x3001;&#x542F;&#x52A8; imageGC goroutine&#xFF0C;imageGC &#x95F4;&#x9694;&#x65F6;&#x95F4;&#x9ED8;&#x8BA4;&#x4E3A; 5 &#x5206;&#x949F;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go:1270</code></p>
+<pre class="language-"><code>func (kl *Kubelet) StartGarbageCollection() {
+    loggedContainerGCFailure := false
+
+    // 1&#x3001;&#x542F;&#x52A8;&#x5BB9;&#x5668;&#x5783;&#x573E;&#x56DE;&#x6536;&#x670D;&#x52A1;
+    go wait.Until(func() {
+        if err := kl.containerGC.GarbageCollect(); err != nil {
+            loggedContainerGCFailure = true
+        } else {
+            var vLevel klog.Level = 4
+            if loggedContainerGCFailure {
+                vLevel = 1
+                loggedContainerGCFailure = false
+            }
+
+            klog.V(vLevel).Infof(&quot;Container garbage collection succeeded&quot;)
+        }
+    }, ContainerGCPeriod, wait.NeverStop)
+
+    // 2&#x3001;&#x68C0;&#x67E5; ImageGCHighThresholdPercent &#x53C2;&#x6570;&#x7684;&#x503C;
+    if kl.kubeletConfiguration.ImageGCHighThresholdPercent == 100 {
+        return
+    }
+
+    // 3&#x3001;&#x542F;&#x52A8;&#x955C;&#x50CF;&#x5783;&#x573E;&#x56DE;&#x6536;&#x670D;&#x52A1;
+    prevImageGCFailed := false
+    go wait.Until(func() {
+        if err := kl.imageManager.GarbageCollect(); err != nil {
+            ......
+            prevImageGCFailed = true
+        } else {
+            var vLevel klog.Level = 4
+            if prevImageGCFailed {
+                vLevel = 1
+                prevImageGCFailed = false
+            }
+        }
+    }, ImageGCPeriod, wait.NeverStop)
+}
+</code></pre><h4 id="klcontainergcgarbagecollect"><a name="klcontainergcgarbagecollect" class="anchor-navigation-ex-anchor" href="#klcontainergcgarbagecollect"><i class="fa fa-link" aria-hidden="true"></i></a>kl.containerGC.GarbageCollect</h4>
+<p><code>kl.containerGC.GarbageCollect</code> &#x8C03;&#x7528;&#x7684;&#x662F; ContainerGC manager &#x4E2D;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;ContainerGC &#x662F;&#x5728; <code>NewMainKubelet</code> &#x4E2D;&#x521D;&#x59CB;&#x5316;&#x7684;&#xFF0C;ContainerGC &#x5728;&#x521D;&#x59CB;&#x5316;&#x65F6;&#x9700;&#x8981;&#x6307;&#x5B9A;&#x4E00;&#x4E2A; runtime&#xFF0C;&#x8BE5; runtime &#x5373; ContainerRuntime&#xFF0C;&#x5728; kubelet &#x4E2D;&#x5373; kubeGenericRuntimeManager&#xFF0C;&#x4E5F;&#x662F;&#x5728; <code>NewMainKubelet</code> &#x4E2D;&#x521D;&#x59CB;&#x5316;&#x7684;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go</code></p>
+<pre class="language-"><code>func NewMainKubelet(){
+    ......
+    // MinAge&#x3001;MaxPerPodContainer&#x3001;MaxContainers &#x5206;&#x522B;&#x4E0A;&#x6587;&#x7AE0;&#x5F00;&#x5934;&#x63D0;&#x5230;&#x7684;&#x4E0E;&#x5BB9;&#x5668;&#x5783;&#x573E;&#x56DE;&#x6536;&#x6709;&#x5173;&#x7684;
+    // &#x4E09;&#x4E2A;&#x53C2;&#x6570;
+    containerGCPolicy := kubecontainer.ContainerGCPolicy{
+        MinAge:             minimumGCAge.Duration,
+        MaxPerPodContainer: int(maxPerPodContainerCount),
+        MaxContainers:      int(maxContainerCount),
+    }
+
+    // &#x521D;&#x59CB;&#x5316; containerGC &#x6A21;&#x5757;
+    containerGC, err := kubecontainer.NewContainerGC(klet.containerRuntime, containerGCPolicy, klet.sourcesReady)
+    if err != nil {
+        return nil, err
+    }
+    ......
+}
+</code></pre><p>&#x4EE5;&#x4E0B;&#x662F; ContainerGC &#x7684;&#x521D;&#x59CB;&#x5316;&#x4EE5;&#x53CA; GarbageCollect &#x7684;&#x542F;&#x52A8;&#xFF1A;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/container/container_gc.go:68</code></p>
+<pre class="language-"><code>func NewContainerGC(runtime Runtime, policy ContainerGCPolicy, sourcesReadyProvider SourcesReadyProvider) (ContainerGC, error) {
+    if policy.MinAge &lt; 0 {
+        return nil, fmt.Errorf(&quot;invalid minimum garbage collection age: %v&quot;, policy.MinAge)
+    }
+
+    return &amp;realContainerGC{
+        runtime:              runtime,
+        policy:               policy,
+        sourcesReadyProvider: sourcesReadyProvider,
+    }, nil
+}
+
+func (cgc *realContainerGC) GarbageCollect() error {
+    return cgc.runtime.GarbageCollect(cgc.policy, cgc.sourcesReadyProvider.AllReady(), false)
+}
+</code></pre><p>&#x53EF;&#x4EE5;&#x770B;&#x5230;&#xFF0C;ContainerGC &#x4E2D;&#x7684; GarbageCollect &#x6700;&#x7EC8;&#x662F;&#x8C03;&#x7528; runtime &#x4E2D;&#x7684; GarbageCollect &#x65B9;&#x6CD5;&#xFF0C;runtime &#x5373; kubeGenericRuntimeManager&#x3002;</p>
+<h5 id="cgcruntimegarbagecollect"><a name="cgcruntimegarbagecollect" class="anchor-navigation-ex-anchor" href="#cgcruntimegarbagecollect"><i class="fa fa-link" aria-hidden="true"></i></a>cgc.runtime.GarbageCollect</h5>
+<p>cgc.runtime.GarbageCollect &#x7684;&#x5B9E;&#x73B0;&#x662F;&#x5728; kubeGenericRuntimeManager &#x4E2D;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x56DE;&#x6536; pod &#x4E2D;&#x7684; container&#xFF1B;</li>
+<li>2&#x3001;&#x56DE;&#x6536; pod &#x4E2D;&#x7684; sandboxes&#xFF1B;</li>
+<li>3&#x3001;&#x56DE;&#x6536; pod &#x4EE5;&#x53CA; container &#x7684; log dir&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kuberuntime/kuberuntime_gc.go:378</code></p>
+<pre class="language-"><code>func (cgc *containerGC) GarbageCollect(gcPolicy kubecontainer.ContainerGCPolicy, allSourcesReady bool, evictTerminatedPods bool) error {
+    errors := []error{}
+    // 1&#x3001;&#x56DE;&#x6536; pod &#x4E2D;&#x7684; container
+    if err := cgc.evictContainers(gcPolicy, allSourcesReady, evictTerminatedPods); err != nil {
+        errors = append(errors, err)
+    }
+
+    // 2&#x3001;&#x56DE;&#x6536; pod &#x4E2D;&#x7684; sandboxes
+    if err := cgc.evictSandboxes(evictTerminatedPods); err != nil {
+        errors = append(errors, err)
+    }
+
+    // 3&#x3001;&#x56DE;&#x6536; pod &#x4EE5;&#x53CA; container &#x7684; log dir
+    if err := cgc.evictPodLogsDirectories(allSourcesReady); err != nil {
+        errors = append(errors, err)
+    }
+    return utilerrors.NewAggregate(errors)
+}
+</code></pre><h5 id="cgcevictcontainers"><a name="cgcevictcontainers" class="anchor-navigation-ex-anchor" href="#cgcevictcontainers"><i class="fa fa-link" aria-hidden="true"></i></a>cgc.evictContainers</h5>
+<p>&#x5728; <code>cgc.evictContainers</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x56DE;&#x6536;&#x6240;&#x6709;&#x53EF;&#x88AB;&#x56DE;&#x6536;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x9996;&#x5148;&#x8C03;&#x7528; <code>cgc.evictableContainers</code> &#x83B7;&#x53D6;&#x53EF;&#x88AB;&#x56DE;&#x6536;&#x7684;&#x5BB9;&#x5668;&#x4F5C;&#x4E3A; evictUnits&#xFF0C;&#x53EF;&#x88AB;&#x56DE;&#x6536;&#x7684;&#x5BB9;&#x5668;&#x6307;&#x975E; running &#x72B6;&#x6001;&#x4E14;&#x521B;&#x5EFA;&#x65F6;&#x95F4;&#x8D85;&#x8FC7; MinAge&#xFF0C;evictUnits &#x6570;&#x7EC4;&#x4E2D;&#x5305;&#x542B; pod &#x4E0E; container &#x7684;&#x5BF9;&#x5E94;&#x5173;&#x7CFB;&#xFF1B;</li>
+<li>2&#x3001;&#x56DE;&#x6536; deleted &#x72B6;&#x6001;&#x4EE5;&#x53CA; terminated &#x72B6;&#x6001;&#x7684; pod&#xFF0C;&#x904D;&#x5386; evictUnits&#xFF0C;&#x82E5; pod &#x662F;&#x5426;&#x5904;&#x4E8E; deleted &#x6216;&#x8005; terminated &#x72B6;&#x6001;&#xFF0C;&#x5219;&#x8C03;&#x7528; <code>cgc.removeOldestN</code> &#x56DE;&#x6536; pod &#x4E2D;&#x7684;&#x6240;&#x6709;&#x5BB9;&#x5668;&#x3002;deleted &#x72B6;&#x6001;&#x6307; pod &#x5DF2;&#x7ECF;&#x88AB;&#x5220;&#x9664;&#x6216;&#x8005;&#x5176; <code>status.phase</code> &#x4E3A; failed &#x4E14;&#x5176; <code>status.reason</code> &#x4E3A; evicted &#x6216;&#x8005; pod.deletionTimestamp != nil &#x4E14; pod &#x4E2D;&#x6240;&#x6709;&#x5BB9;&#x5668;&#x7684; status &#x4E3A; terminated &#x6216;&#x8005; waiting &#x72B6;&#x6001;&#xFF0C;terminated &#x72B6;&#x6001;&#x6307; pod &#x5904;&#x4E8E; Failed &#x6216;&#x8005; succeeded &#x72B6;&#x6001;&#xFF1B;</li>
+<li>3&#x3001;&#x5BF9;&#x4E8E;&#x975E; deleted &#x6216;&#x8005; terminated &#x72B6;&#x6001;&#x7684; pod&#xFF0C;&#x8C03;&#x7528; <code>cgc.enforceMaxContainersPerEvictUnit</code> &#x4E3A;&#x5176;&#x4FDD;&#x7559; <code>MaxPerPodContainer</code> &#x4E2A;&#x5DF2;&#x7ECF;&#x9000;&#x51FA;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x6309;&#x7167;&#x5BB9;&#x5668;&#x9000;&#x51FA;&#x7684;&#x65F6;&#x95F4;&#x8FDB;&#x884C;&#x6392;&#x5E8F;&#x4F18;&#x5148;&#x5220;&#x9664;&#x9000;&#x51FA;&#x65F6;&#x95F4;&#x6700;&#x4E45;&#x7684;&#xFF0C;<code>MaxPerPodContainer</code> &#x5728;&#x4E0A;&#x6587;&#x5DF2;&#x7ECF;&#x63D0;&#x8FC7;&#xFF0C;&#x8868;&#x793A;&#x4E00;&#x4E2A; pod &#x6700;&#x591A;&#x53EF;&#x4EE5;&#x4FDD;&#x5B58;&#x591A;&#x5C11;&#x4E2A;&#x5DF2;&#x7ECF;&#x505C;&#x6B62;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A;1&#xFF0C;&#x53EF;&#x4EE5;&#x4F7F;&#x7528; <code>--maximum-dead-containers-per-container</code> &#x5728;&#x542F;&#x52A8;&#x65F6;&#x6307;&#x5B9A;&#xFF1B;</li>
+<li>4&#x3001;&#x82E5; kubelet &#x542F;&#x52A8;&#x65F6;&#x6307;&#x5B9A;&#x4E86;<code>--maximum-dead-containers</code>&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A; -1 &#x5373;&#x4E0D;&#x9650;&#x5236;&#xFF09;&#xFF0C;&#x5373;&#x9700;&#x8981;&#x4E3A; node &#x4FDD;&#x7559;&#x9000;&#x51FA;&#x7684;&#x5BB9;&#x5668;&#x6570;&#xFF0C;&#x82E5; node &#x4E0A;&#x4FDD;&#x7559;&#x5DF2;&#x7ECF;&#x505C;&#x6B62;&#x7684;&#x5BB9;&#x5668;&#x6570;&#x8D85;&#x8FC7; <code>--maximum-dead-containers</code>&#xFF0C;&#x9996;&#x5148;&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x4E3A;&#x6BCF;&#x4E2A; pod &#x4FDD;&#x7559;&#x591A;&#x5C11;&#x4E2A;&#x5DF2;&#x9000;&#x51FA;&#x7684;&#x5BB9;&#x5668;&#x4FDD;&#x8BC1;&#x5176;&#x603B;&#x6570;&#x4E0D;&#x8D85;&#x8FC7; <code>--maximum-dead-containers</code> &#x7684;&#x503C;&#xFF0C;&#x82E5;&#x8BA1;&#x7B97;&#x7ED3;&#x679C;&#x5C0F;&#x4E8E; 1 &#x5219;&#x53D6; 1&#xFF0C;&#x5373;&#x81F3;&#x5C11;&#x4FDD;&#x7559;&#x4E00;&#x4E2A;&#xFF0C;&#x7136;&#x540E;&#x5220;&#x9664;&#x6BCF;&#x4E2A; pod &#x4E2D;&#x4E0D;&#x9700;&#x8981;&#x4FDD;&#x7559;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x6B64;&#x65F6;&#x82E5; node &#x4E0A;&#x4FDD;&#x7559;&#x5DF2;&#x7ECF;&#x505C;&#x6B62;&#x7684;&#x5BB9;&#x5668;&#x6570;&#x4F9D;&#x7136;&#x8D85;&#x8FC7;&#x9700;&#x8981;&#x4FDD;&#x7559;&#x7684;&#x6700;&#x5927;&#x503C;&#xFF0C;&#x5219;&#x5C06; evictUnits &#x4E2D;&#x7684;&#x5BB9;&#x5668;&#x6309;&#x7167;&#x9000;&#x51FA;&#x65F6;&#x95F4;&#x8FDB;&#x884C;&#x6392;&#x5E8F;&#x5220;&#x9664;&#x9000;&#x51FA;&#x65F6;&#x95F4;&#x6700;&#x4E45;&#x7684;&#x5BB9;&#x5668;&#xFF0C;&#x4F7F; node &#x4E0A;&#x4FDD;&#x7559;&#x5DF2;&#x7ECF;&#x505C;&#x6B62;&#x7684;&#x5BB9;&#x5668;&#x6570;&#x6EE1;&#x8DB3; <code>--maximum-dead-containers</code> &#x503C;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kuberuntime/kuberuntime_gc.go:222</code></p>
+<pre class="language-"><code>func (cgc *containerGC) evictContainers(gcPolicy kubecontainer.ContainerGCPolicy, allSourcesReady bool, evictTerminatedPods bool) error {
+    // 1&#x3001;&#x83B7;&#x53D6;&#x53EF;&#x88AB;&#x56DE;&#x6536;&#x7684;&#x5BB9;&#x5668;&#x5217;&#x8868;
+    evictUnits, err := cgc.evictableContainers(gcPolicy.MinAge)
+    if err != nil {
+        return err
+    }
+
+    // 2&#x3001;&#x56DE;&#x6536; Deleted &#x72B6;&#x6001;&#x4EE5;&#x53CA; Terminated &#x72B6;&#x6001;&#x7684; pod&#xFF0C;&#x6B64;&#x5904; allSourcesReady &#x6307; kubelet 
+    //    &#x652F;&#x6301;&#x7684;&#x4E09;&#x79CD; podSource &#x662F;&#x5426;&#x90FD;&#x53EF;&#x7528;
+    if allSourcesReady {
+        for key, unit := range evictUnits {
+            if cgc.podStateProvider.IsPodDeleted(key.uid) || (cgc.podStateProvider.IsPodTerminated(key.uid) &amp;&amp; evictTerminatedPods) {
+                cgc.removeOldestN(unit, len(unit)) 
+                delete(evictUnits, key)
+            }
+        }
+    }
+
+    // 3&#x3001;&#x4E3A;&#x975E; Deleted &#x72B6;&#x6001;&#x4EE5;&#x53CA; Terminated &#x72B6;&#x6001;&#x7684; pod &#x4FDD;&#x7559; MaxPerPodContainer &#x4E2A;&#x5DF2;&#x7ECF;&#x9000;&#x51FA;&#x7684;&#x5BB9;&#x5668;
+    if gcPolicy.MaxPerPodContainer &gt;= 0 {
+        cgc.enforceMaxContainersPerEvictUnit(evictUnits, gcPolicy.MaxPerPodContainer)
+    }
+
+    // 4&#x3001;&#x82E5; kubelet &#x542F;&#x52A8;&#x65F6;&#x6307;&#x5B9A;&#x4E86; --maximum-dead-containers&#xFF08;&#x9ED8;&#x8BA4;&#x4E3A; -1 &#x5373;&#x4E0D;&#x9650;&#x5236;&#xFF09;&#x53C2;&#x6570;&#xFF0C;
+    //   &#x6B64;&#x65F6;&#x9700;&#x8981;&#x4E3A; node &#x4FDD;&#x7559;&#x9000;&#x51FA;&#x7684;&#x5BB9;&#x5668;&#x6570;&#x4E0D;&#x80FD;&#x8D85;&#x8FC7; --maximum-dead-containers &#x4E2A;
+    if gcPolicy.MaxContainers &gt;= 0 &amp;&amp; evictUnits.NumContainers() &gt; gcPolicy.MaxContainers {
+        numContainersPerEvictUnit := gcPolicy.MaxContainers / evictUnits.NumEvictUnits()
+        if numContainersPerEvictUnit &lt; 1 {
+            numContainersPerEvictUnit = 1
+        }
+        cgc.enforceMaxContainersPerEvictUnit(evictUnits, numContainersPerEvictUnit)
+
+        numContainers := evictUnits.NumContainers()
+        if numContainers &gt; gcPolicy.MaxContainers {
+            flattened := make([]containerGCInfo, 0, numContainers)
+            for key := range evictUnits {
+                flattened = append(flattened, evictUnits[key]...)
+            }
+            sort.Sort(byCreated(flattened))
+
+            cgc.removeOldestN(flattened, numContainers-gcPolicy.MaxContainers)
+        }
+    }
+    return nil
+}
+</code></pre><h5 id="cgcevictsandboxes"><a name="cgcevictsandboxes" class="anchor-navigation-ex-anchor" href="#cgcevictsandboxes"><i class="fa fa-link" aria-hidden="true"></i></a>cgc.evictSandboxes</h5>
+<p><code>cgc.evictSandboxes</code> &#x65B9;&#x6CD5;&#x4F1A;&#x56DE;&#x6536;&#x6240;&#x6709;&#x53EF;&#x56DE;&#x6536;&#x7684; sandboxes&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x9996;&#x5148;&#x83B7;&#x53D6; node &#x4E0A;&#x6240;&#x6709;&#x7684; containers &#x548C; sandboxes&#xFF1B;</li>
+<li>2&#x3001;&#x6784;&#x5EFA; sandboxes &#x4E0E; pod &#x7684;&#x5BF9;&#x5E94;&#x5173;&#x7CFB;&#x5E76;&#x5C06;&#x5176;&#x4FDD;&#x5B58;&#x5728; sandboxesByPodUID &#x4E2D;&#xFF1B;</li>
+<li>3&#x3001;&#x5BF9; sandboxesByPodUID &#x5217;&#x8868;&#x6309;&#x521B;&#x5EFA;&#x65F6;&#x95F4;&#x8FDB;&#x884C;&#x6392;&#x5E8F;&#xFF1B;</li>
+<li>4&#x3001;&#x82E5; sandboxes &#x6240;&#x5728;&#x7684; pod &#x5904;&#x4E8E; deleted &#x72B6;&#x6001;&#xFF0C;&#x5219;&#x5220;&#x9664;&#x8BE5; pod &#x4E2D;&#x6240;&#x6709;&#x7684; sandboxes &#x5426;&#x5219;&#x53EA;&#x4FDD;&#x7559;&#x9000;&#x51FA;&#x65F6;&#x95F4;&#x6700;&#x77ED;&#x7684;&#x4E00;&#x4E2A; sandboxes&#xFF0C;deleted &#x72B6;&#x6001;&#x5728;&#x4E0A;&#x6587; <code>cgc.evictContainers</code> &#x65B9;&#x6CD5;&#x4E2D;&#x5DF2;&#x7ECF;&#x89E3;&#x91CA;&#x8FC7;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kuberuntime/kuberuntime_gc.go:274</code></p>
+<pre class="language-"><code>func (cgc *containerGC) evictSandboxes(evictTerminatedPods bool) error {
+    // 1&#x3001;&#x83B7;&#x53D6; node &#x4E0A;&#x6240;&#x6709;&#x7684; container
+    containers, err := cgc.manager.getKubeletContainers(true)
+    if err != nil {
+        return err
+    }
+    // 2&#x3001;&#x83B7;&#x53D6; node &#x4E0A;&#x6240;&#x6709;&#x7684; sandboxes
+    sandboxes, err := cgc.manager.getKubeletSandboxes(true)
+    if err != nil {
+        return err
+    }
+
+    // 3&#x3001;&#x6536;&#x96C6;&#x6240;&#x6709; container &#x7684; PodSandboxId 
+    sandboxIDs := sets.NewString()
+    for _, container := range containers {
+        sandboxIDs.Insert(container.PodSandboxId)
+    }
+
+    // 4&#x3001;&#x6784;&#x5EFA; sandboxes &#x4E0E; pod &#x7684;&#x5BF9;&#x5E94;&#x5173;&#x7CFB;&#x5E76;&#x5C06;&#x5176;&#x4FDD;&#x5B58;&#x5728; sandboxesByPodUID &#x4E2D;
+    sandboxesByPod := make(sandboxesByPodUID)
+    for _, sandbox := range sandboxes {
+        podUID := types.UID(sandbox.Metadata.Uid)
+        sandboxInfo := sandboxGCInfo{
+            id:         sandbox.Id,
+            createTime: time.Unix(0, sandbox.CreatedAt),
+        }
+
+        if sandbox.State == runtimeapi.PodSandboxState_SANDBOX_READY {
+            sandboxInfo.active = true
+        }
+
+        if sandboxIDs.Has(sandbox.Id) {
+            sandboxInfo.active = true
+        }
+
+        sandboxesByPod[podUID] = append(sandboxesByPod[podUID], sandboxInfo)
+    }
+
+    // 5&#x3001;&#x5BF9; sandboxesByPod &#x8FDB;&#x884C;&#x6392;&#x5E8F;
+    for uid := range sandboxesByPod {
+        sort.Sort(sandboxByCreated(sandboxesByPod[uid]))
+    }
+
+    // 6&#x3001;&#x904D;&#x5386; sandboxesByPod&#xFF0C;&#x82E5; sandboxes &#x6240;&#x5728;&#x7684; pod &#x5904;&#x4E8E; deleted &#x72B6;&#x6001;&#xFF0C;
+    // &#x5219;&#x5220;&#x9664;&#x8BE5; pod &#x4E2D;&#x6240;&#x6709;&#x7684; sandboxes &#x5426;&#x5219;&#x53EA;&#x4FDD;&#x7559;&#x9000;&#x51FA;&#x65F6;&#x95F4;&#x6700;&#x77ED;&#x7684;&#x4E00;&#x4E2A; sandboxes
+    for podUID, sandboxes := range sandboxesByPod {
+        if cgc.podStateProvider.IsPodDeleted(podUID) || (cgc.podStateProvider.IsPodTerminated(podUID) &amp;&amp; evictTerminatedPods) {
+            cgc.removeOldestNSandboxes(sandboxes, len(sandboxes))
+        } else {
+            cgc.removeOldestNSandboxes(sandboxes, len(sandboxes)-1)
+        }
+    }
+    return nil
+}
+</code></pre><h5 id="cgcevictpodlogsdirectories"><a name="cgcevictpodlogsdirectories" class="anchor-navigation-ex-anchor" href="#cgcevictpodlogsdirectories"><i class="fa fa-link" aria-hidden="true"></i></a>cgc.evictPodLogsDirectories</h5>
+<p><code>cgc.evictPodLogsDirectories</code> &#x65B9;&#x6CD5;&#x4F1A;&#x56DE;&#x6536;&#x6240;&#x6709;&#x53EF;&#x56DE;&#x6536; pod &#x4EE5;&#x53CA; container &#x7684; log dir&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x9996;&#x5148;&#x56DE;&#x6536; deleted &#x72B6;&#x6001; pod logs dir&#xFF0C;&#x904D;&#x5386; pod logs dir <code>/var/log/pods</code>&#xFF0C;<code>/var/log/pods</code> &#x4E3A; pod logs &#x7684;&#x9ED8;&#x8BA4;&#x76EE;&#x5F55;&#xFF0C;pod logs dir &#x7684;&#x683C;&#x5F0F;&#x4E3A; <code>/var/log/pods/NAMESPACE_NAME_UID</code>&#xFF0C;&#x89E3;&#x6790; pod logs dir &#x83B7;&#x53D6; pod uid&#xFF0C;&#x5224;&#x65AD; pod &#x662F;&#x5426;&#x5904;&#x4E8E; deleted &#x72B6;&#x6001;&#xFF0C;&#x82E5;&#x5904;&#x4E8E; deleted &#x72B6;&#x6001;&#x5219;&#x5220;&#x9664;&#x5176; logs dir&#xFF1B;</li>
+<li><p>2&#x3001;&#x56DE;&#x6536; deleted &#x72B6;&#x6001; container logs &#x94FE;&#x63A5;&#x76EE;&#x5F55;&#xFF0C;<code>/var/log/containers</code> &#x4E3A; container log &#x7684;&#x9ED8;&#x8BA4;&#x76EE;&#x5F55;&#xFF0C;&#x5176;&#x4F1A;&#x8F6F;&#x94FE;&#x63A5;&#x5230; pod &#x7684; log dir &#x4E0B;&#xFF0C;&#x4F8B;&#x5982;&#xFF1A;</p>
+<pre class="language-"><code>/var/log/containers/storage-provisioner_kube-system_storage-provisioner-acc8386e409dfb3cc01618cbd14c373d8ac6d7f0aaad9ced018746f31d0081e2.log -&gt; /var/log/pods/kube-system_storage-provisioner_b448e496-eb5d-4d71-b93f-ff7ff77d2348/storage-provisioner/0.log
+</code></pre></li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kuberuntime/kuberuntime_gc.go:333</code></p>
+<pre class="language-"><code>func (cgc *containerGC) evictPodLogsDirectories(allSourcesReady bool) error {
+    osInterface := cgc.manager.osInterface
+    // 1&#x3001;&#x56DE;&#x6536; deleted &#x72B6;&#x6001; pod logs dir
+    if allSourcesReady {
+        dirs, err := osInterface.ReadDir(podLogsRootDirectory)
+        if err != nil {
+            return fmt.Errorf(&quot;failed to read podLogsRootDirectory %q: %v&quot;, podLogsRootDirectory, err)
+        }
+        for _, dir := range dirs {
+            name := dir.Name()
+            podUID := parsePodUIDFromLogsDirectory(name)
+            if !cgc.podStateProvider.IsPodDeleted(podUID) {
+                continue
+            }
+            err := osInterface.RemoveAll(filepath.Join(podLogsRootDirectory, name))
+            if err != nil {
+                klog.Errorf(&quot;Failed to remove pod logs directory %q: %v&quot;, name, err)
+            }
+        }
+    }
+    // 2&#x3001;&#x56DE;&#x6536; deleted &#x72B6;&#x6001; container logs &#x94FE;&#x63A5;&#x76EE;&#x5F55;
+    logSymlinks, _ := osInterface.Glob(filepath.Join(legacyContainerLogsDir, fmt.Sprintf(&quot;*.%s&quot;, legacyLogSuffix)))
+    for _, logSymlink := range logSymlinks {
+        if _, err := osInterface.Stat(logSymlink); os.IsNotExist(err) {
+            err := osInterface.Remove(logSymlink)
+            if err != nil {
+                klog.Errorf(&quot;Failed to remove container log dead symlink %q: %v&quot;, logSymlink, err)
+            }
+        }
+    }
+    return nil
+}
+</code></pre><h4 id="klimagemanagergarbagecollect"><a name="klimagemanagergarbagecollect" class="anchor-navigation-ex-anchor" href="#klimagemanagergarbagecollect"><i class="fa fa-link" aria-hidden="true"></i></a>kl.imageManager.GarbageCollect</h4>
+<p>&#x4E0A;&#x9762;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x4E86;&#x5BB9;&#x5668;&#x56DE;&#x6536;&#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#xFF0C;&#x4E0B;&#x9762;&#x4F1A;&#x7EE7;&#x7EED;&#x5206;&#x6790;&#x955C;&#x50CF;&#x56DE;&#x6536;&#x7684;&#x6D41;&#x7A0B;&#xFF0C;<code>kl.imageManager.GarbageCollect</code> &#x662F;&#x955C;&#x50CF;&#x56DE;&#x6536;&#x4EFB;&#x52A1;&#x542F;&#x52A8;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x955C;&#x50CF;&#x56DE;&#x6536;&#x6D41;&#x7A0B;&#x662F;&#x5728; imageManager &#x4E2D;&#x8FDB;&#x884C;&#x7684;&#xFF0C;&#x9996;&#x5148;&#x4E86;&#x89E3;&#x4E0B; imageManager &#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;imageManager &#x4E5F;&#x662F;&#x5728; <code>NewMainKubelet</code> &#x65B9;&#x6CD5;&#x4E2D;&#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;&#x7684;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/kubelet/kubelet.go</code></p>
+<pre class="language-"><code>func NewMainKubelet(){
+    ......    
+    // &#x521D;&#x59CB;&#x5316;&#x65F6;&#x9700;&#x8981;&#x6307;&#x5B9A;&#x4E09;&#x4E2A;&#x53C2;&#x6570;&#xFF0C;&#x4E09;&#x4E2A;&#x53C2;&#x6570;&#x5DF2;&#x7ECF;&#x5728;&#x4E0A;&#x6587;&#x4E2D;&#x63D0;&#x5230;&#x8FC7;
+    imageGCPolicy := images.ImageGCPolicy{
+        MinAge:               kubeCfg.ImageMinimumGCAge.Duration,
+        HighThresholdPercent: int(kubeCfg.ImageGCHighThresholdPercent),
+        LowThresholdPercent:  int(kubeCfg.ImageGCLowThresholdPercent),
+    }
+    ......
+    imageManager, err := images.NewImageGCManager(klet.containerRuntime, klet.StatsProvider, kubeDeps.Recorder, nodeRef, imageGCPolicy, crOptions.PodSandboxImage)
+    if err != nil {
+        return nil, fmt.Errorf(&quot;failed to initialize image manager: %v&quot;, err)
+    }
+    klet.imageManager = imageManager
+    ......
+}
+</code></pre><p><code>kl.imageManager.GarbageCollect</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x9996;&#x5148;&#x8C03;&#x7528; <code>im.statsProvider.ImageFsStats</code> &#x83B7;&#x53D6;&#x5BB9;&#x5668;&#x955C;&#x50CF;&#x5B58;&#x50A8;&#x76EE;&#x5F55;&#x6302;&#x8F7D;&#x70B9;&#x6587;&#x4EF6;&#x7CFB;&#x7EDF;&#x7684;&#x78C1;&#x76D8;&#x4FE1;&#x606F;&#xFF1B;</li>
+<li>2&#x3001;&#x83B7;&#x53D6;&#x6302;&#x8F7D;&#x70B9;&#x7684; available &#x548C; capacity &#x4FE1;&#x606F;&#x5E76;&#x8BA1;&#x7B97;&#x5176;&#x4F7F;&#x7528;&#x7387;&#xFF1B;</li>
+<li>3&#x3001;&#x82E5;&#x4F7F;&#x7528;&#x7387;&#x5927;&#x4E8E; <code>HighThresholdPercent</code>&#xFF0C;&#x9996;&#x5148;&#x6839;&#x636E; <code>LowThresholdPercent</code> &#x503C;&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x91CA;&#x653E;&#x7684;&#x78C1;&#x76D8;&#x91CF;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>im.freeSpace</code> &#x91CA;&#x653E;&#x672A;&#x4F7F;&#x7528;&#x7684; image &#x76F4;&#x5230;&#x6EE1;&#x8DB3;&#x78C1;&#x76D8;&#x7A7A;&#x95F2;&#x7387;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/images/image_gc_manager.go:269</code></p>
+<pre class="language-"><code>func (im *realImageGCManager) GarbageCollect() error {
+    // 1&#x3001;&#x83B7;&#x53D6;&#x5BB9;&#x5668;&#x955C;&#x50CF;&#x5B58;&#x50A8;&#x76EE;&#x5F55;&#x6302;&#x8F7D;&#x70B9;&#x6587;&#x4EF6;&#x7CFB;&#x7EDF;&#x7684;&#x78C1;&#x76D8;&#x4FE1;&#x606F;
+    fsStats, err := im.statsProvider.ImageFsStats()
+    if err != nil {
+        return err
+    }
+
+    var capacity, available int64
+    if fsStats.CapacityBytes != nil {
+        capacity = int64(*fsStats.CapacityBytes)
+    }
+    if fsStats.AvailableBytes != nil {
+        available = int64(*fsStats.AvailableBytes)
+    }
+
+    if available &gt; capacity {
+        available = capacity
+    }
+
+    if capacity == 0 {
+        err := goerrors.New(&quot;invalid capacity 0 on image filesystem&quot;)
+        im.recorder.Eventf(im.nodeRef, v1.EventTypeWarning, events.InvalidDiskCapacity, err.Error())
+        return err
+    }
+    // 2&#x3001;&#x82E5;&#x4F7F;&#x7528;&#x7387;&#x5927;&#x4E8E; HighThresholdPercent&#xFF0C;&#x6B64;&#x65F6;&#x9700;&#x8981;&#x56DE;&#x6536;&#x955C;&#x50CF;
+    usagePercent := 100 - int(available*100/capacity)
+    if usagePercent &gt;= im.policy.HighThresholdPercent {
+        // 3&#x3001;&#x8BA1;&#x7B97;&#x9700;&#x8981;&#x91CA;&#x653E;&#x7684;&#x78C1;&#x76D8;&#x91CF;
+        amountToFree := capacity*int64(100-im.policy.LowThresholdPercent)/100 - available
+
+        // 4&#x3001;&#x8C03;&#x7528; im.freeSpace &#x56DE;&#x6536;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x955C;&#x50CF;&#x4FE1;&#x606F;
+        freed, err := im.freeSpace(amountToFree, time.Now())
+        if err != nil {
+            return err
+        }
+
+        if freed &lt; amountToFree {
+            err := fmt.Errorf(&quot;failed to garbage collect required amount of images. Wanted to free %d bytes, but freed %d bytes&quot;, amountToFree, freed)
+            im.recorder.Eventf(im.nodeRef, v1.EventTypeWarning, events.FreeDiskSpaceFailed, err.Error())
+            return err
+        }
+    }
+
+    return nil
+}
+</code></pre><h5 id="imfreespace"><a name="imfreespace" class="anchor-navigation-ex-anchor" href="#imfreespace"><i class="fa fa-link" aria-hidden="true"></i></a>im.freeSpace</h5>
+<p><code>im.freeSpace</code> &#x662F;&#x56DE;&#x6536;&#x672A;&#x4F7F;&#x7528;&#x955C;&#x50CF;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x9996;&#x5148;&#x8C03;&#x7528; <code>im.detectImages</code> &#x83B7;&#x53D6;&#x5DF2;&#x7ECF;&#x4F7F;&#x7528;&#x7684; images &#x5217;&#x8868;&#x4F5C;&#x4E3A; imagesInUse&#xFF1B;</li>
+<li>2&#x3001;&#x904D;&#x5386; <code>im.imageRecords</code> &#x6839;&#x636E; imagesInUse &#x83B7;&#x53D6;&#x6240;&#x6709;&#x672A;&#x4F7F;&#x7528;&#x7684; images &#x4FE1;&#x606F;&#xFF0C;<code>im.imageRecords</code> &#x8BB0;&#x5F55; node &#x4E0A;&#x6240;&#x6709; images &#x7684;&#x4FE1;&#x606F;&#xFF1B;</li>
+<li>3&#x3001;&#x6839;&#x636E;&#x4F7F;&#x7528;&#x65F6;&#x95F4;&#x5BF9;&#x672A;&#x4F7F;&#x7528;&#x7684; images &#x5217;&#x8868;&#x8FDB;&#x884C;&#x6392;&#x5E8F;&#xFF1B;</li>
+<li>4&#x3001;&#x904D;&#x5386;&#x672A;&#x4F7F;&#x7528;&#x7684; images &#x5217;&#x8868;&#x7136;&#x540E;&#x8C03;&#x7528; <code>im.runtime.RemoveImage</code> &#x5220;&#x9664;&#x955C;&#x50CF;&#xFF0C;&#x76F4;&#x5230;&#x56DE;&#x6536;&#x5B8C;&#x6240;&#x6709;&#x672A;&#x4F7F;&#x7528; images &#x6216;&#x8005;&#x6EE1;&#x8DB3;&#x7A7A;&#x95F2;&#x7387;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/pkg/kubelet/images/image_gc_manager.go:328</code></p>
+<pre class="language-"><code>func (im *realImageGCManager) freeSpace(bytesToFree int64, freeTime time.Time) (int64, error) {
+    // 1&#x3001;&#x83B7;&#x53D6;&#x5DF2;&#x7ECF;&#x4F7F;&#x7528;&#x7684; images &#x5217;&#x8868;
+    imagesInUse, err := im.detectImages(freeTime)
+    if err != nil {
+        return 0, err
+    }
+
+    im.imageRecordsLock.Lock()
+    defer im.imageRecordsLock.Unlock()
+
+    // 2&#x3001;&#x83B7;&#x53D6;&#x6240;&#x6709;&#x672A;&#x4F7F;&#x7528;&#x7684; images &#x4FE1;&#x606F;
+    images := make([]evictionInfo, 0, len(im.imageRecords))
+    for image, record := range im.imageRecords {
+        if isImageUsed(image, imagesInUse) {
+            klog.V(5).Infof(&quot;Image ID %s is being used&quot;, image)
+            continue
+        }
+        images = append(images, evictionInfo{
+            id:          image,
+            imageRecord: *record,
+        })
+    }
+    // 3&#x3001;&#x6309;&#x955C;&#x50CF;&#x4F7F;&#x7528;&#x65F6;&#x95F4;&#x8FDB;&#x884C;&#x6392;&#x5E8F;
+    sort.Sort(byLastUsedAndDetected(images))
+    // 4&#x3001;&#x56DE;&#x6536;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x955C;&#x50CF;
+    var deletionErrors []error
+    spaceFreed := int64(0)
+    for _, image := range images {
+        if image.lastUsed.Equal(freeTime) || image.lastUsed.After(freeTime) {
+            continue
+        }
+
+        if freeTime.Sub(image.firstDetected) &lt; im.policy.MinAge {
+            continue
+        }
+
+        // 5&#x3001;&#x8C03;&#x7528; im.runtime.RemoveImage &#x5220;&#x9664;&#x955C;&#x50CF;
+        err := im.runtime.RemoveImage(container.ImageSpec{Image: image.id})
+        if err != nil {
+            deletionErrors = append(deletionErrors, err)
+            continue
+        }
+        delete(im.imageRecords, image.id)
+        spaceFreed += image.size
+        if spaceFreed &gt;= bytesToFree {
+            break
+        }
+    }
+
+    if len(deletionErrors) &gt; 0 {
+        return spaceFreed, fmt.Errorf(&quot;wanted to free %d bytes, but freed %d bytes space with errors in image deletion: %v&quot;, bytesToFree, spaceFreed,   errors.NewAggregate(deletionErrors))
+    }
+    return spaceFreed, nil
+}
+</code></pre><h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x5206;&#x6790;&#x4E86; kubelet &#x4E2D;&#x5783;&#x573E;&#x56DE;&#x6536;&#x673A;&#x5236;&#x7684;&#x5B9E;&#x73B0;&#xFF0C;kubelet &#x4E2D;&#x4F1A;&#x5B9A;&#x671F;&#x56DE;&#x6536; node &#x4E0A;&#x5DF2;&#x7ECF;&#x9000;&#x51FA;&#x7684;&#x5BB9;&#x5668;&#x5DF2;&#x7ECF;&#x5F53; node &#x78C1;&#x76D8;&#x8D44;&#x6E90;&#x4E0D;&#x8DB3;&#x65F6;&#x56DE;&#x6536;&#x4E0D;&#x518D;&#x4F7F;&#x7528;&#x7684;&#x955C;&#x50CF;&#x6765;&#x91CA;&#x653E;&#x78C1;&#x76D8;&#x8D44;&#x6E90;&#xFF0C;&#x5BB9;&#x5668;&#x4EE5;&#x53CA;&#x955C;&#x50CF;&#x56DE;&#x6536;&#x7B56;&#x7565;&#x4E3B;&#x8981;&#x662F;&#x901A;&#x8FC7; kubelet &#x4E2D;&#x51E0;&#x4E2A;&#x53C2;&#x6570;&#x7684;&#x9608;&#x503C;&#x8FDB;&#x884C;&#x63A7;&#x5236;&#x7684;&#x3002;</p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2020-02-06 16:21:10
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="kubelet_qos.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: kubernetes 中 Qos 的设计与实现">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"kubelet 中垃圾回收机制的设计与实现","date":"2020-02-06T16:03:00.000Z","tags":["kubelet","GarbageCollect"],"type":"kubelet","level":"1.2.22","depth":2,"previous":{"title":"kubernetes 中 Qos 的设计与实现","level":"1.2.21","depth":2,"path":"kubernetes/kubelet_qos.md","ref":"kubernetes/kubelet_qos.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/kubelet_garbage_collect.md","mtime":"2020-02-06T08:21:10.935Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-02-06T08:24:19.069Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+
