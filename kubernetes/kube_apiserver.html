@@ -1,0 +1,2123 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>kube-apiserver 的设计与实现 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="nodelifecycle_controller.html" />
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.2.1" data-path="kube_apiserver.html">
+            
+                <a href="kube_apiserver.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    kube-apiserver 的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="nodelifecycle_controller.html">
+            
+                <a href="nodelifecycle_controller.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    node controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="job_controller.html">
+            
+                <a href="job_controller.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    job controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="garbagecollector_controller.html">
+            
+                <a href="garbagecollector_controller.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    garbage collector controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="daemonset_controller.html">
+            
+                <a href="daemonset_controller.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    daemonset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="statefulset_controller.html">
+            
+                <a href="statefulset_controller.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    statefulset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="deployment_controller.html">
+            
+                <a href="deployment_controller.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="replicaset_controller.html">
+            
+                <a href="replicaset_controller.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    replicaset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="kube_scheduler_process.html">
+            
+                <a href="kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="kube_scheduler_algorithm.html">
+            
+                <a href="kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="kube_scheduler_preempt.html">
+            
+                <a href="kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.12" data-path="k8s_service_theory.html">
+            
+                <a href="k8s_service_theory.html">
+            
+                    
+                        <b>1.2.12.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.13" data-path="kube_proxy_process.html">
+            
+                <a href="kube_proxy_process.html">
+            
+                    
+                        <b>1.2.13.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.14" data-path="kube_proxy_iptables.html">
+            
+                <a href="kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.14.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.15" data-path="kube_proxy_ipvs.html">
+            
+                <a href="kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.15.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.16" data-path="kubelet-modules.html">
+            
+                <a href="kubelet-modules.html">
+            
+                    
+                        <b>1.2.16.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.17" data-path="kubelet_init.html">
+            
+                <a href="kubelet_init.html">
+            
+                    
+                        <b>1.2.17.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.18" data-path="kubelet_create_pod.html">
+            
+                <a href="kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.18.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.19" data-path="node_status.html">
+            
+                <a href="node_status.html">
+            
+                    
+                        <b>1.2.19.</b>
+                    
+                    kubelet 状态上报的方式
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.20" data-path="k8s_events.html">
+            
+                <a href="k8s_events.html">
+            
+                    
+                        <b>1.2.20.</b>
+                    
+                    kubelet 中事件处理机制
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.21" data-path="kubelet_status_manager.html">
+            
+                <a href="kubelet_status_manager.html">
+            
+                    
+                        <b>1.2.21.</b>
+                    
+                    kubelet statusManager 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.22" data-path="kubelet_qos.html">
+            
+                <a href="kubelet_qos.html">
+            
+                    
+                        <b>1.2.22.</b>
+                    
+                    kubernetes 中 Qos 的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.23" data-path="kubelet_garbage_collect.html">
+            
+                <a href="kubelet_garbage_collect.html">
+            
+                    
+                        <b>1.2.23.</b>
+                    
+                    kubelet 中垃圾回收机制的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >kube-apiserver 的设计与实现</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <ul>
+<li><a href="#kube-apiserver-&#x5904;&#x7406;&#x6D41;&#x7A0B;">kube-apiserver &#x5904;&#x7406;&#x6D41;&#x7A0B;</a></li>
+<li><a href="#kube-apiserver--&#x4E2D;&#x7684;&#x7EC4;&#x4EF6;">kube-apiserver  &#x4E2D;&#x7684;&#x7EC4;&#x4EF6;</a><ul>
+<li><a href="#aggregator">Aggregator</a><ul>
+<li><a href="#&#x542F;&#x7528;-api-aggregation">&#x542F;&#x7528; API Aggregation</a></li>
+</ul>
+</li>
+<li><a href="#kubeapiserver">KubeAPIServer</a></li>
+<li><a href="#apiextensionserver">APIExtensionServer</a></li>
+</ul>
+</li>
+<li><a href="#kube-apiserver-&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5206;&#x6790;">kube-apiserver &#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5206;&#x6790;</a><ul>
+<li><a href="#run">Run</a></li>
+<li><a href="#createserverchain">CreateServerChain</a><ul>
+<li><a href="#createkubeapiserverconfig">CreateKubeAPIServerConfig</a></li>
+<li><a href="#buildgenericconfig">buildGenericConfig</a></li>
+<li><a href="#createapiextensionsserver">createAPIExtensionsServer</a></li>
+<li><a href="#createkubeapiserver">CreateKubeAPIServer</a></li>
+<li><a href="#kubeapiserverconfigcompletenew">kubeAPIServerConfig.Complete().New</a></li>
+<li><a href="#minstalllegacyapi">m.InstallLegacyAPI</a></li>
+</ul>
+</li>
+<li><a href="#createaggregatorserver">createAggregatorServer</a><ul>
+<li><a href="#aggregatorconfigcompletenewwithdelegate">aggregatorConfig.Complete().NewWithDelegate</a></li>
+</ul>
+</li>
+<li><a href="#preparedrun">prepared.Run</a><ul>
+<li><a href="#snonblockingrun">s.NonBlockingRun</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#storagefactory-&#x7684;&#x6784;&#x5EFA;">storageFactory &#x7684;&#x6784;&#x5EFA;</a><ul>
+<li><a href="#newlegacyreststorage">NewLegacyRESTStorage</a><ul>
+<li><a href="#podstorenewstorage">podstore.NewStorage</a></li>
+<li><a href="#storecompletewithoptions">store.CompleteWithOptions</a><ul>
+<li><a href="#newetcd3storage">newETCD3Storage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#&#x8DEF;&#x7531;&#x6CE8;&#x518C;">&#x8DEF;&#x7531;&#x6CE8;&#x518C;</a><ul>
+<li><a href="#aregisterresourcehandlers">a.registerResourceHandlers</a></li>
+<li><a href="#restfulcreatenamedresource">restfulCreateNamedResource</a></li>
+<li><a href="#createhandler">createHandler</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#&#x603B;&#x7ED3;">&#x603B;&#x7ED3;</a></li>
+</ul>
+<p>kube-apiserver &#x662F; kubernetes &#x4E2D;&#x4E0E; etcd &#x76F4;&#x63A5;&#x4EA4;&#x4E92;&#x7684;&#x4E00;&#x4E2A;&#x7EC4;&#x4EF6;&#xFF0C;&#x5176;&#x63A7;&#x5236;&#x7740; kubernetes &#x4E2D;&#x6838;&#x5FC3;&#x8D44;&#x6E90;&#x7684;&#x53D8;&#x5316;&#x3002;&#x5B83;&#x4E3B;&#x8981;&#x63D0;&#x4F9B;&#x4E86;&#x4EE5;&#x4E0B;&#x51E0;&#x4E2A;&#x529F;&#x80FD;&#xFF1A;</p>
+<ul>
+<li>&#x63D0;&#x4F9B; <a href="https://kubernetes.io/docs/concepts/overview/kubernetes-api/" target="_blank">Kubernetes API</a>&#xFF0C;&#x5305;&#x62EC;&#x8BA4;&#x8BC1;&#x6388;&#x6743;&#x3001;&#x6570;&#x636E;&#x6821;&#x9A8C;&#x4EE5;&#x53CA;&#x96C6;&#x7FA4;&#x72B6;&#x6001;&#x53D8;&#x66F4;&#x7B49;&#xFF0C;&#x4F9B;&#x5BA2;&#x6237;&#x7AEF;&#x53CA;&#x5176;&#x4ED6;&#x7EC4;&#x4EF6;&#x8C03;&#x7528;&#xFF1B;</li>
+<li>&#x4EE3;&#x7406;&#x96C6;&#x7FA4;&#x4E2D;&#x7684;&#x4E00;&#x4E9B;&#x9644;&#x52A0;&#x7EC4;&#x4EF6;&#x7EC4;&#x4EF6;&#xFF0C;&#x5982; Kubernetes UI&#x3001;metrics-server&#x3001;npd &#x7B49;&#xFF1B;</li>
+<li>&#x521B;&#x5EFA; kubernetes &#x670D;&#x52A1;&#xFF0C;&#x5373;&#x63D0;&#x4F9B; apiserver &#x7684; Service&#xFF0C;kubernetes Service&#xFF1B;</li>
+<li>&#x8D44;&#x6E90;&#x5728;&#x4E0D;&#x540C;&#x7248;&#x672C;&#x4E4B;&#x95F4;&#x7684;&#x8F6C;&#x6362;&#xFF1B;</li>
+</ul>
+<h3 id="kube-apiserver-&#x5904;&#x7406;&#x6D41;&#x7A0B;"><a name="kube-apiserver-&#x5904;&#x7406;&#x6D41;&#x7A0B;" class="anchor-navigation-ex-anchor" href="#kube-apiserver-&#x5904;&#x7406;&#x6D41;&#x7A0B;"><i class="fa fa-link" aria-hidden="true"></i></a>kube-apiserver &#x5904;&#x7406;&#x6D41;&#x7A0B;</h3>
+<p>kube-apiserver &#x4E3B;&#x8981;&#x901A;&#x8FC7;&#x5BF9;&#x5916;&#x63D0;&#x4F9B; API &#x7684;&#x65B9;&#x5F0F;&#x4E0E;&#x5176;&#x4ED6;&#x7EC4;&#x4EF6;&#x8FDB;&#x884C;&#x4EA4;&#x4E92;&#xFF0C;&#x53EF;&#x4EE5;&#x8C03;&#x7528; kube-apiserver &#x7684;&#x63A5;&#x53E3; <code>$ curl -k  https://<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>masterIP</span><span class="token punctuation">&gt;</span></span>:6443</code>&#x6216;&#x8005;&#x901A;&#x8FC7;&#x5176;&#x63D0;&#x4F9B;&#x7684; <strong>swagger-ui</strong> &#x83B7;&#x53D6;&#x5230;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x6709;&#x4EE5;&#x4E0B;&#x4E09;&#x79CD; API&#xFF1A;</p>
+<ul>
+<li>core group&#xFF1A;&#x4E3B;&#x8981;&#x5728; <code>/api/v1</code> &#x4E0B;&#xFF1B;</li>
+<li>named groups&#xFF1A;&#x5176; path &#x4E3A; <code>/apis/$NAME/$VERSION</code>&#xFF1B;</li>
+<li>&#x66B4;&#x9732;&#x7CFB;&#x7EDF;&#x72B6;&#x6001;&#x7684;&#x4E00;&#x4E9B; API&#xFF1A;&#x5982;<code>/metrics</code> &#x3001;<code>/healthz</code> &#x7B49;&#xFF1B;</li>
+</ul>
+<p>API &#x7684; URL &#x5927;&#x81F4;&#x4EE5; <code>/apis/group/version/namespaces/my-ns/myresource</code> &#x7EC4;&#x6210;&#xFF0C;&#x5176;&#x4E2D; API &#x7684;&#x7ED3;&#x6784;&#x5927;&#x81F4;&#x5982;&#x4E0B;&#x56FE;&#x6240;&#x793A;&#xFF1A;</p>
+<p><img src="http://cdn.tianfeiyu.com/API-server-space-1.png" alt=""></p>
+<p>&#x4E86;&#x89E3;&#x4E86; kube-apiserver &#x7684; API &#x540E;&#xFF0C;&#x4E0B;&#x9762;&#x4F1A;&#x4ECB;&#x7ECD; kube-apiserver &#x5982;&#x4F55;&#x5904;&#x7406;&#x4E00;&#x4E2A; API &#x8BF7;&#x6C42;&#xFF0C;&#x4E00;&#x4E2A;&#x8BF7;&#x6C42;&#x5B8C;&#x6574;&#x7684;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;&#x56FE;&#x6240;&#x793A;&#xFF1A;</p>
+<p><img src="http://cdn.tianfeiyu.com/API-server-flow-2.png" alt=""></p>
+<p>&#x6B64;&#x5904;&#x4EE5;&#x4E00;&#x6B21; POST &#x8BF7;&#x6C42;&#x793A;&#x4F8B;&#x8BF4;&#x660E;&#xFF0C;&#x5F53;&#x8BF7;&#x6C42;&#x5230;&#x8FBE; kube-apiserver &#x65F6;&#xFF0C;kube-apiserver &#x9996;&#x5148;&#x4F1A;&#x6267;&#x884C;&#x5728; http filter chain &#x4E2D;&#x6CE8;&#x518C;&#x7684;&#x8FC7;&#x6EE4;&#x5668;&#x94FE;&#xFF0C;&#x8BE5;&#x8FC7;&#x6EE4;&#x5668;&#x5BF9;&#x5176;&#x6267;&#x884C;&#x4E00;&#x7CFB;&#x5217;&#x8FC7;&#x6EE4;&#x64CD;&#x4F5C;&#xFF0C;&#x4E3B;&#x8981;&#x6709;&#x8BA4;&#x8BC1;&#x3001;&#x9274;&#x6743;&#x7B49;&#x68C0;&#x67E5;&#x64CD;&#x4F5C;&#x3002;&#x5F53; filter chain &#x5904;&#x7406;&#x5B8C;&#x6210;&#x540E;&#xFF0C;&#x8BF7;&#x6C42;&#x4F1A;&#x901A;&#x8FC7; route &#x8FDB;&#x5165;&#x5230;&#x5BF9;&#x5E94;&#x7684; handler &#x4E2D;&#xFF0C;handler &#x4E2D;&#x7684;&#x64CD;&#x4F5C;&#x4E3B;&#x8981;&#x662F;&#x4E0E; etcd &#x7684;&#x4EA4;&#x4E92;&#xFF0C;&#x5728; handler &#x4E2D;&#x7684;&#x4E3B;&#x8981;&#x7684;&#x64CD;&#x4F5C;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><img src="http://cdn.tianfeiyu.com/API-server-storage-flow-2.png" alt="API-server-storage-flow-2"></p>
+<p><strong>Decoder</strong></p>
+<p>kubernetes &#x4E2D;&#x7684;&#x591A;&#x6570; resource &#x90FD;&#x4F1A;&#x6709;&#x4E00;&#x4E2A; <code>internal version</code>&#xFF0C;&#x56E0;&#x4E3A;&#x5728;&#x6574;&#x4E2A;&#x5F00;&#x53D1;&#x8FC7;&#x7A0B;&#x4E2D;&#x4E00;&#x4E2A; resource &#x53EF;&#x80FD;&#x4F1A;&#x5BF9;&#x5E94;&#x591A;&#x4E2A; version&#xFF0C;&#x6BD4;&#x5982; deployment &#x4F1A;&#x6709; <code>extensions/v1beta1</code>&#xFF0C;<code>apps/v1</code>&#x3002; &#x4E3A;&#x4E86;&#x907F;&#x514D;&#x51FA;&#x73B0;&#x95EE;&#x9898;&#xFF0C;kube-apiserver &#x5FC5;&#x987B;&#x8981;&#x77E5;&#x9053;&#x5982;&#x4F55;&#x5728;&#x6BCF;&#x4E00;&#x5BF9;&#x7248;&#x672C;&#x4E4B;&#x95F4;&#x8FDB;&#x884C;&#x8F6C;&#x6362;&#xFF08;&#x4F8B;&#x5982;&#xFF0C;v1&#x21D4;v1alpha1&#xFF0C;v1&#x21D4;v1beta1&#xFF0C;v1beta1&#x21D4;v1alpha1&#xFF09;&#xFF0C;&#x56E0;&#x6B64;&#x5176;&#x4F7F;&#x7528;&#x4E86;&#x4E00;&#x4E2A;&#x7279;&#x6B8A;&#x7684;<code>internal version</code>&#xFF0C;<code>internal version</code> &#x4F5C;&#x4E3A;&#x4E00;&#x4E2A;&#x901A;&#x7528;&#x7684; version &#x4F1A;&#x5305;&#x542B;&#x6240;&#x6709; version &#x7684;&#x5B57;&#x6BB5;&#xFF0C;&#x5B83;&#x5177;&#x6709;&#x6240;&#x6709; version &#x7684;&#x529F;&#x80FD;&#x3002; Decoder &#x4F1A;&#x9996;&#x5148;&#x628A; creater object &#x8F6C;&#x6362;&#x5230; <code>internal version</code>&#xFF0C;&#x7136;&#x540E;&#x5C06;&#x5176;&#x8F6C;&#x6362;&#x4E3A; <code>storage version</code>&#xFF0C;<code>storage version</code> &#x662F;&#x5728; etcd &#x4E2D;&#x5B58;&#x50A8;&#x65F6;&#x7684;&#x53E6;&#x4E00;&#x4E2A; version&#x3002;</p>
+<p>&#x5728;&#x89E3;&#x7801;&#x65F6;&#xFF0C;&#x9996;&#x5148;&#x4ECE; HTTP path &#x4E2D;&#x83B7;&#x53D6;&#x671F;&#x5F85;&#x7684; version&#xFF0C;&#x7136;&#x540E;&#x4F7F;&#x7528; scheme &#x4EE5;&#x6B63;&#x786E;&#x7684; version &#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x4E0E;&#x4E4B;&#x5339;&#x914D;&#x7684;&#x7A7A;&#x5BF9;&#x8C61;&#xFF0C;&#x5E76;&#x4F7F;&#x7528; JSON &#x6216; protobuf &#x89E3;&#x7801;&#x5668;&#x8FDB;&#x884C;&#x8F6C;&#x6362;&#xFF0C;&#x5728;&#x8F6C;&#x6362;&#x7684;&#x7B2C;&#x4E00;&#x6B65;&#x4E2D;&#xFF0C;&#x5982;&#x679C;&#x7528;&#x6237;&#x7701;&#x7565;&#x4E86;&#x67D0;&#x4E9B;&#x5B57;&#x6BB5;&#xFF0C;Decoder &#x4F1A;&#x628A;&#x5176;&#x8BBE;&#x7F6E;&#x4E3A;&#x9ED8;&#x8BA4;&#x503C;&#x3002;</p>
+<p><strong>Admission</strong></p>
+<p>&#x5728;&#x89E3;&#x7801;&#x5B8C;&#x6210;&#x540E;&#xFF0C;&#x9700;&#x8981;&#x901A;&#x8FC7;&#x9A8C;&#x8BC1;&#x96C6;&#x7FA4;&#x7684;&#x5168;&#x5C40;&#x7EA6;&#x675F;&#x6765;&#x68C0;&#x67E5;&#x662F;&#x5426;&#x53EF;&#x4EE5;&#x521B;&#x5EFA;&#x6216;&#x66F4;&#x65B0;&#x5BF9;&#x8C61;&#xFF0C;&#x5E76;&#x6839;&#x636E;&#x96C6;&#x7FA4;&#x914D;&#x7F6E;&#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;&#x3002;&#x5728;  <code>k8s.io/kubernetes/plugin/pkg/admission</code> &#x76EE;&#x5F55;&#x4E0B;&#x53EF;&#x4EE5;&#x770B;&#x5230; kube-apiserver &#x53EF;&#x4EE5;&#x4F7F;&#x7528;&#x7684;&#x6240;&#x6709;&#x5168;&#x5C40;&#x7EA6;&#x675F;&#x63D2;&#x4EF6;&#xFF0C;kube-apiserver &#x5728;&#x542F;&#x52A8;&#x65F6;&#x901A;&#x8FC7;&#x8BBE;&#x7F6E; <code>--enable-admission-plugins</code> &#x53C2;&#x6570;&#x6765;&#x5F00;&#x542F;&#x9700;&#x8981;&#x4F7F;&#x7528;&#x7684;&#x63D2;&#x4EF6;&#xFF0C;&#x901A;&#x8FC7; <code>ValidatingAdmissionWebhook</code> &#x6216; <code>MutatingAdmissionWebhook</code> &#x6DFB;&#x52A0;&#x7684;&#x63D2;&#x4EF6;&#x4E5F;&#x90FD;&#x4F1A;&#x5728;&#x6B64;&#x5904;&#x8FDB;&#x884C;&#x5DE5;&#x4F5C;&#x3002;</p>
+<p><strong>Validation</strong></p>
+<p>&#x4E3B;&#x8981;&#x68C0;&#x67E5; object &#x4E2D;&#x5B57;&#x6BB5;&#x7684;&#x5408;&#x6CD5;&#x6027;&#x3002;</p>
+<p>&#x5728; handler &#x4E2D;&#x6267;&#x884C;&#x5B8C;&#x4EE5;&#x4E0A;&#x64CD;&#x4F5C;&#x540E;&#x6700;&#x540E;&#x4F1A;&#x6267;&#x884C;&#x4E0E; etcd &#x76F8;&#x5173;&#x7684;&#x64CD;&#x4F5C;&#xFF0C;POST &#x64CD;&#x4F5C;&#x4F1A;&#x5C06;&#x6570;&#x636E;&#x5199;&#x5165;&#x5230; etcd &#x4E2D;&#xFF0C;&#x4EE5;&#x4E0A;&#x5728; handler &#x4E2D;&#x7684;&#x4E3B;&#x8981;&#x5904;&#x7406;&#x6D41;&#x7A0B;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>v1beta1 &#x21D2; internal &#x21D2;    |    &#x21D2;       |    &#x21D2;  v1  &#x21D2; json/yaml &#x21D2; etcd
+                     admission    validation
+</code></pre><h3 id="kube-apiserver--&#x4E2D;&#x7684;&#x7EC4;&#x4EF6;"><a name="kube-apiserver--&#x4E2D;&#x7684;&#x7EC4;&#x4EF6;" class="anchor-navigation-ex-anchor" href="#kube-apiserver--&#x4E2D;&#x7684;&#x7EC4;&#x4EF6;"><i class="fa fa-link" aria-hidden="true"></i></a>kube-apiserver  &#x4E2D;&#x7684;&#x7EC4;&#x4EF6;</h3>
+<p>kube-apiserver &#x5171;&#x7531; 3 &#x4E2A;&#x7EC4;&#x4EF6;&#x6784;&#x6210;&#xFF08;Aggregator&#x3001;KubeAPIServer&#x3001;APIExtensionServer&#xFF09;&#xFF0C;&#x8FD9;&#x4E9B;&#x7EC4;&#x4EF6;&#x4F9D;&#x6B21;&#x901A;&#x8FC7; Delegation &#x5904;&#x7406;&#x8BF7;&#x6C42;&#xFF1A;</p>
+<ul>
+<li><strong>Aggregator</strong>&#xFF1A;&#x66B4;&#x9732;&#x7684;&#x529F;&#x80FD;&#x7C7B;&#x4F3C;&#x4E8E;&#x4E00;&#x4E2A;&#x4E03;&#x5C42;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#xFF0C;&#x5C06;&#x6765;&#x81EA;&#x7528;&#x6237;&#x7684;&#x8BF7;&#x6C42;&#x62E6;&#x622A;&#x8F6C;&#x53D1;&#x7ED9;&#x5176;&#x4ED6;&#x670D;&#x52A1;&#x5668;&#xFF0C;&#x5E76;&#x4E14;&#x8D1F;&#x8D23;&#x6574;&#x4E2A; APIServer &#x7684; Discovery &#x529F;&#x80FD;&#xFF1B;</li>
+<li><strong>KubeAPIServer</strong> &#xFF1A;&#x8D1F;&#x8D23;&#x5BF9;&#x8BF7;&#x6C42;&#x7684;&#x4E00;&#x4E9B;&#x901A;&#x7528;&#x5904;&#x7406;&#xFF0C;&#x8BA4;&#x8BC1;&#x3001;&#x9274;&#x6743;&#x7B49;&#xFF0C;&#x4EE5;&#x53CA;&#x5904;&#x7406;&#x5404;&#x4E2A;&#x5185;&#x5EFA;&#x8D44;&#x6E90;&#x7684; REST &#x670D;&#x52A1;&#xFF1B;</li>
+<li><strong>APIExtensionServer</strong>&#xFF1A;&#x4E3B;&#x8981;&#x5904;&#x7406; CustomResourceDefinition&#xFF08;CRD&#xFF09;&#x548C; CustomResource&#xFF08;CR&#xFF09;&#x7684; REST &#x8BF7;&#x6C42;&#xFF0C;&#x4E5F;&#x662F; Delegation &#x7684;&#x6700;&#x540E;&#x4E00;&#x73AF;&#xFF0C;&#x5982;&#x679C;&#x5BF9;&#x5E94; CR &#x4E0D;&#x80FD;&#x88AB;&#x5904;&#x7406;&#x7684;&#x8BDD;&#x5219;&#x4F1A;&#x8FD4;&#x56DE; 404&#x3002;</li>
+</ul>
+<p>Aggregator &#x548C; APIExtensionsServer &#x5BF9;&#x5E94;&#x4E24;&#x79CD;&#x4E3B;&#x8981;&#x6269;&#x5C55; APIServer &#x8D44;&#x6E90;&#x7684;&#x65B9;&#x5F0F;&#xFF0C;&#x5373;&#x5206;&#x522B;&#x662F; AA &#x548C; CRD&#x3002;</p>
+<h4 id="aggregator"><a name="aggregator" class="anchor-navigation-ex-anchor" href="#aggregator"><i class="fa fa-link" aria-hidden="true"></i></a>Aggregator</h4>
+<p>Aggregator &#x901A;&#x8FC7; APIServices &#x5BF9;&#x8C61;&#x5173;&#x8054;&#x5230;&#x67D0;&#x4E2A; Service &#x6765;&#x8FDB;&#x884C;&#x8BF7;&#x6C42;&#x7684;&#x8F6C;&#x53D1;&#xFF0C;&#x5176;&#x5173;&#x8054;&#x7684; Service &#x7C7B;&#x578B;&#x8FDB;&#x4E00;&#x6B65;&#x51B3;&#x5B9A;&#x4E86;&#x8BF7;&#x6C42;&#x8F6C;&#x53D1;&#x5F62;&#x5F0F;&#x3002;Aggregator &#x5305;&#x62EC;&#x4E00;&#x4E2A; <code>GenericAPIServer</code> &#x548C;&#x7EF4;&#x62A4;&#x81EA;&#x8EAB;&#x72B6;&#x6001;&#x7684; Controller&#x3002;&#x5176;&#x4E2D; <code>GenericAPIServer</code> &#x4E3B;&#x8981;&#x5904;&#x7406; <code>apiregistration.k8s.io</code> &#x7EC4;&#x4E0B;&#x7684; APIService &#x8D44;&#x6E90;&#x8BF7;&#x6C42;&#x3002;</p>
+<p><strong>Aggregator &#x9664;&#x4E86;&#x5904;&#x7406;&#x8D44;&#x6E90;&#x8BF7;&#x6C42;&#x5916;&#x8FD8;&#x5305;&#x542B;&#x51E0;&#x4E2A; controller&#xFF1A;</strong></p>
+<ul>
+<li>1&#x3001;<code>apiserviceRegistrationController</code>&#xFF1A;&#x8D1F;&#x8D23; APIServices &#x4E2D;&#x8D44;&#x6E90;&#x7684;&#x6CE8;&#x518C;&#x4E0E;&#x5220;&#x9664;&#xFF1B;</li>
+<li>2&#x3001;<code>availableConditionController</code>&#xFF1A;&#x7EF4;&#x62A4; APIServices &#x7684;&#x53EF;&#x7528;&#x72B6;&#x6001;&#xFF0C;&#x5305;&#x62EC;&#x5176;&#x5F15;&#x7528; Service &#x662F;&#x5426;&#x53EF;&#x7528;&#x7B49;&#xFF1B;</li>
+<li>3&#x3001;<code>autoRegistrationController</code>&#xFF1A;&#x7528;&#x4E8E;&#x4FDD;&#x6301; API &#x4E2D;&#x5B58;&#x5728;&#x7684;&#x4E00;&#x7EC4;&#x7279;&#x5B9A;&#x7684; APIServices&#xFF1B;</li>
+<li>4&#x3001;<code>crdRegistrationController</code>&#xFF1A;&#x8D1F;&#x8D23;&#x5C06; CRD GroupVersions &#x81EA;&#x52A8;&#x6CE8;&#x518C;&#x5230; APIServices &#x4E2D;&#xFF1B;</li>
+<li>5&#x3001;<code>openAPIAggregationController</code>&#xFF1A;&#x5C06; APIServices &#x8D44;&#x6E90;&#x7684;&#x53D8;&#x5316;&#x540C;&#x6B65;&#x81F3;&#x63D0;&#x4F9B;&#x7684; OpenAPI &#x6587;&#x6863;&#xFF1B;</li>
+</ul>
+<p>kubernetes &#x4E2D;&#x7684;&#x4E00;&#x4E9B;&#x9644;&#x52A0;&#x7EC4;&#x4EF6;&#xFF0C;&#x6BD4;&#x5982; metrics-server &#x5C31;&#x662F;&#x901A;&#x8FC7; Aggregator &#x7684;&#x65B9;&#x5F0F;&#x8FDB;&#x884C;&#x6269;&#x5C55;&#x7684;&#xFF0C;&#x5B9E;&#x9645;&#x73AF;&#x5883;&#x4E2D;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x4F7F;&#x7528; <a href="https://github.com/kubernetes-sigs/apiserver-builder-alpha" target="_blank">apiserver-builder</a> &#x5DE5;&#x5177;&#x8F7B;&#x677E;&#x4EE5; Aggregator &#x7684;&#x6269;&#x5C55;&#x65B9;&#x5F0F;&#x521B;&#x5EFA;&#x81EA;&#x5B9A;&#x4E49;&#x8D44;&#x6E90;&#x3002;</p>
+<h5 id="&#x542F;&#x7528;-api-aggregation"><a name="&#x542F;&#x7528;-api-aggregation" class="anchor-navigation-ex-anchor" href="#&#x542F;&#x7528;-api-aggregation"><i class="fa fa-link" aria-hidden="true"></i></a>&#x542F;&#x7528; API Aggregation</h5>
+<p>&#x5728; kube-apiserver &#x4E2D;&#x9700;&#x8981;&#x589E;&#x52A0;&#x4EE5;&#x4E0B;&#x914D;&#x7F6E;&#x6765;&#x5F00;&#x542F; API Aggregation&#xFF1A;</p>
+<pre class="language-"><code>--proxy-client-cert-file=/etc/kubernetes/certs/proxy.crt
+--proxy-client-key-file=/etc/kubernetes/certs/proxy.key
+--requestheader-client-ca-file=/etc/kubernetes/certs/proxy-ca.crt
+--requestheader-allowed-names=aggregator
+--requestheader-extra-headers-prefix=X-Remote-Extra-
+--requestheader-group-headers=X-Remote-Group
+--requestheader-username-headers=X-Remote-User
+</code></pre><h4 id="kubeapiserver"><a name="kubeapiserver" class="anchor-navigation-ex-anchor" href="#kubeapiserver"><i class="fa fa-link" aria-hidden="true"></i></a>KubeAPIServer</h4>
+<p>KubeAPIServer &#x4E3B;&#x8981;&#x662F;&#x63D0;&#x4F9B;&#x5BF9; API Resource &#x7684;&#x64CD;&#x4F5C;&#x8BF7;&#x6C42;&#xFF0C;&#x4E3A; kubernetes &#x4E2D;&#x4F17;&#x591A; API &#x6CE8;&#x518C;&#x8DEF;&#x7531;&#x4FE1;&#x606F;&#xFF0C;&#x66B4;&#x9732; RESTful API &#x5E76;&#x4E14;&#x5BF9;&#x5916;&#x63D0;&#x4F9B; kubernetes service&#xFF0C;&#x4F7F;&#x96C6;&#x7FA4;&#x4E2D;&#x4EE5;&#x53CA;&#x96C6;&#x7FA4;&#x5916;&#x7684;&#x670D;&#x52A1;&#x90FD;&#x53EF;&#x4EE5;&#x901A;&#x8FC7; RESTful API &#x64CD;&#x4F5C; kubernetes &#x4E2D;&#x7684;&#x8D44;&#x6E90;&#x3002;</p>
+<h4 id="apiextensionserver"><a name="apiextensionserver" class="anchor-navigation-ex-anchor" href="#apiextensionserver"><i class="fa fa-link" aria-hidden="true"></i></a>APIExtensionServer</h4>
+<p>APIExtensionServer &#x4F5C;&#x4E3A; Delegation &#x94FE;&#x7684;&#x6700;&#x540E;&#x4E00;&#x5C42;&#xFF0C;&#x662F;&#x5904;&#x7406;&#x6240;&#x6709;&#x7528;&#x6237;&#x901A;&#x8FC7; Custom Resource Definition &#x5B9A;&#x4E49;&#x7684;&#x8D44;&#x6E90;&#x670D;&#x52A1;&#x5668;&#x3002;</p>
+<p>&#x5176;&#x4E2D;&#x5305;&#x542B;&#x7684; controller &#x4EE5;&#x53CA;&#x529F;&#x80FD;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;<code>openapiController</code>&#xFF1A;&#x5C06; crd &#x8D44;&#x6E90;&#x7684;&#x53D8;&#x5316;&#x540C;&#x6B65;&#x81F3;&#x63D0;&#x4F9B;&#x7684; OpenAPI &#x6587;&#x6863;&#xFF0C;&#x53EF;&#x901A;&#x8FC7;&#x8BBF;&#x95EE; <code>/openapi/v2</code> &#x8FDB;&#x884C;&#x67E5;&#x770B;&#xFF1B;</li>
+<li>2&#x3001;<code>crdController</code>&#xFF1A;&#x8D1F;&#x8D23;&#x5C06; crd &#x4FE1;&#x606F;&#x6CE8;&#x518C;&#x5230; apiVersions &#x548C; apiResources &#x4E2D;&#xFF0C;&#x4E24;&#x8005;&#x7684;&#x4FE1;&#x606F;&#x53EF;&#x901A;&#x8FC7; <code>$ kubectl api-versions</code> &#x548C;  <code>$ kubectl api-resources</code> &#x67E5;&#x770B;&#xFF1B;</li>
+<li>3&#x3001;<code>namingController</code>&#xFF1A;&#x68C0;&#x67E5; crd obj &#x4E2D;&#x662F;&#x5426;&#x6709;&#x547D;&#x540D;&#x51B2;&#x7A81;&#xFF0C;&#x53EF;&#x5728; crd <code>.status.conditions</code> &#x4E2D;&#x67E5;&#x770B;&#xFF1B;</li>
+<li>4&#x3001;<code>establishingController</code>&#xFF1A;&#x68C0;&#x67E5; crd &#x662F;&#x5426;&#x5904;&#x4E8E;&#x6B63;&#x5E38;&#x72B6;&#x6001;&#xFF0C;&#x53EF;&#x5728; crd <code>.status.conditions</code> &#x4E2D;&#x67E5;&#x770B;&#xFF1B;</li>
+<li>5&#x3001;<code>nonStructuralSchemaController</code>&#xFF1A;&#x68C0;&#x67E5; crd obj  &#x7ED3;&#x6784;&#x662F;&#x5426;&#x6B63;&#x5E38;&#xFF0C;&#x53EF;&#x5728; crd <code>.status.conditions</code> &#x4E2D;&#x67E5;&#x770B;&#xFF1B;</li>
+<li>6&#x3001;<code>apiApprovalController</code>&#xFF1A;&#x68C0;&#x67E5; crd &#x662F;&#x5426;&#x9075;&#x5FAA; kubernetes API &#x58F0;&#x660E;&#x7B56;&#x7565;&#xFF0C;&#x53EF;&#x5728; crd <code>.status.conditions</code> &#x4E2D;&#x67E5;&#x770B;&#xFF1B;</li>
+<li>7&#x3001;<code>finalizingController</code>&#xFF1A;&#x7C7B;&#x4F3C;&#x4E8E; finalizes &#x7684;&#x529F;&#x80FD;&#xFF0C;&#x4E0E; CRs &#x7684;&#x5220;&#x9664;&#x6709;&#x5173;&#xFF1B;</li>
+</ul>
+<h3 id="kube-apiserver-&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5206;&#x6790;"><a name="kube-apiserver-&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#kube-apiserver-&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>kube-apiserver &#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x5206;&#x6790;</h3>
+<blockquote>
+<p>kubernetes &#x7248;&#x672C;&#xFF1A;v1.16</p>
+</blockquote>
+<p>&#x9996;&#x5148;&#x5206;&#x6790; kube-apiserver &#x7684;&#x542F;&#x52A8;&#x65B9;&#x5F0F;&#xFF0C;kube-apiserver &#x4E5F;&#x662F;&#x901A;&#x8FC7;&#x5176; <code>Run</code> &#x65B9;&#x6CD5;&#x542F;&#x52A8;&#x4E3B;&#x903B;&#x8F91;&#x7684;&#xFF0C;&#x5728;<code>Run</code> &#x65B9;&#x6CD5;&#x8C03;&#x7528;&#x4E4B;&#x524D;&#x4F1A;&#x8FDB;&#x884C;&#x89E3;&#x6790;&#x547D;&#x4EE4;&#x884C;&#x53C2;&#x6570;&#x3001;&#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;&#x7B49;&#x3002;</p>
+<h4 id="run"><a name="run" class="anchor-navigation-ex-anchor" href="#run"><i class="fa fa-link" aria-hidden="true"></i></a>Run</h4>
+<p><code>Run</code> &#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>CreateServerChain</code> &#x6784;&#x5EFA;&#x670D;&#x52A1;&#x8C03;&#x7528;&#x94FE;&#x5E76;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x52A8;&#x975E;&#x5B89;&#x5168;&#x7684; http server&#xFF0C;http server &#x94FE;&#x4E2D;&#x5305;&#x542B; apiserver &#x8981;&#x542F;&#x52A8;&#x7684;&#x4E09;&#x4E2A; server&#xFF0C;&#x4EE5;&#x53CA;&#x4E3A;&#x6BCF;&#x4E2A; server &#x6CE8;&#x518C;&#x5BF9;&#x5E94;&#x8D44;&#x6E90;&#x7684;&#x8DEF;&#x7531;&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>server.PrepareRun</code> &#x8FDB;&#x884C;&#x670D;&#x52A1;&#x8FD0;&#x884C;&#x524D;&#x7684;&#x51C6;&#x5907;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x5B8C;&#x6210;&#x4E86;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x3001;&#x5B58;&#x6D3B;&#x68C0;&#x67E5;&#x548C;<code>OpenAPI</code>&#x8DEF;&#x7531;&#x7684;&#x6CE8;&#x518C;&#x5DE5;&#x4F5C;&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>prepared.Run</code> &#x542F;&#x52A8; https server&#xFF1B;</li>
+</ul>
+<p>server &#x7684;&#x521D;&#x59CB;&#x5316;&#x4F7F;&#x7528;&#x59D4;&#x6258;&#x6A21;&#x5F0F;&#xFF0C;&#x901A;&#x8FC7; DelegationTarget &#x63A5;&#x53E3;&#xFF0C;&#x628A;&#x57FA;&#x672C;&#x7684; API Server&#x3001;CustomResource&#x3001;Aggregator &#x8FD9;&#x4E09;&#x79CD;&#x670D;&#x52A1;&#x91C7;&#x7528;&#x94FE;&#x5F0F;&#x7ED3;&#x6784;&#x4E32;&#x8054;&#x8D77;&#x6765;&#xFF0C;&#x5BF9;&#x5916;&#x63D0;&#x4F9B;&#x670D;&#x52A1;&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kube-apiserver/app/server.go:147</code></p>
+<pre class="language-"><code>func Run(completeOptions completedServerRunOptions, stopCh &lt;-chan struct{}) error {
+    server, err := CreateServerChain(completeOptions, stopCh)
+    if err != nil {
+        return err
+    }
+
+    prepared, err := server.PrepareRun()
+    if err != nil {
+        return err
+    }
+
+    return prepared.Run(stopCh)
+}
+</code></pre><h4 id="createserverchain"><a name="createserverchain" class="anchor-navigation-ex-anchor" href="#createserverchain"><i class="fa fa-link" aria-hidden="true"></i></a>CreateServerChain</h4>
+<p><code>CreateServerChain</code> &#x662F;&#x5B8C;&#x6210; server &#x521D;&#x59CB;&#x5316;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x91CC;&#x9762;&#x5305;&#x542B; <code>APIExtensionsServer</code>&#x3001;<code>KubeAPIServer</code>&#x3001;<code>AggregatorServer</code> &#x521D;&#x59CB;&#x5316;&#x7684;&#x6240;&#x6709;&#x6D41;&#x7A0B;&#xFF0C;&#x6700;&#x7EC8;&#x8FD4;&#x56DE; <code>aggregatorapiserver.APIAggregator</code> &#x5B9E;&#x4F8B;&#xFF0C;&#x521D;&#x59CB;&#x5316;&#x6D41;&#x7A0B;&#x4E3B;&#x8981;&#x6709;&#xFF1A;http filter chain &#x7684;&#x914D;&#x7F6E;&#x3001;API Group &#x7684;&#x6CE8;&#x518C;&#x3001;http path &#x4E0E; handler &#x7684;&#x5173;&#x8054;&#x4EE5;&#x53CA; handler &#x540E;&#x7AEF;&#x5B58;&#x50A8; etcd &#x7684;&#x914D;&#x7F6E;&#x3002;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>CreateKubeAPIServerConfig</code> &#x521B;&#x5EFA; KubeAPIServer &#x6240;&#x9700;&#x8981;&#x7684;&#x914D;&#x7F6E;&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x521B;&#x5EFA; <code>master.Config</code>&#xFF0C;&#x5176;&#x4E2D;&#x4F1A;&#x8C03;&#x7528; <code>buildGenericConfig</code> &#x751F;&#x6210; genericConfig&#xFF0C;genericConfig &#x4E2D;&#x5305;&#x542B; apiserver &#x7684;&#x6838;&#x5FC3;&#x914D;&#x7F6E;&#xFF1B;</li>
+<li>2&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x7528;&#x4E86;&#x6269;&#x5C55;&#x7684; API server &#x5E76;&#x8C03;&#x7528; <code>createAPIExtensionsConfig</code> &#x4E3A;&#x5176;&#x521B;&#x5EFA;&#x914D;&#x7F6E;&#xFF0C;apiExtensions server &#x662F;&#x4E00;&#x4E2A;&#x4EE3;&#x7406;&#x670D;&#x52A1;&#xFF0C;&#x7528;&#x4E8E;&#x4EE3;&#x7406; kubeapiserver &#x4E2D;&#x7684;&#x5176;&#x4ED6; server&#xFF0C;&#x6BD4;&#x5982; metric-server&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>createAPIExtensionsServer</code> &#x521B;&#x5EFA; apiExtensionsServer &#x5B9E;&#x4F8B;&#xFF1B;</li>
+<li>4&#x3001;&#x8C03;&#x7528; <code>CreateKubeAPIServer</code>&#x521D;&#x59CB;&#x5316; kubeAPIServer&#xFF1B;</li>
+<li>5&#x3001;&#x8C03;&#x7528; <code>createAggregatorConfig</code> &#x4E3A; aggregatorServer &#x521B;&#x5EFA;&#x914D;&#x7F6E;&#x5E76;&#x8C03;&#x7528; <code>createAggregatorServer</code> &#x521D;&#x59CB;&#x5316; aggregatorServer&#xFF1B;</li>
+<li>6&#x3001;&#x914D;&#x7F6E;&#x5E76;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x52A8;&#x975E;&#x5B89;&#x5168;&#x7684; http server&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kube-apiserver/app/server.go:165</code></p>
+<pre class="language-"><code>func CreateServerChain(completedOptions completedServerRunOptions, stopCh &lt;-chan struct{}) (*aggregatorapiserver.APIAggregator, error) {
+    nodeTunneler, proxyTransport, err := CreateNodeDialer(completedOptions)
+    if err != nil {
+        return nil, err
+    }
+    // 1&#x3001;&#x4E3A; kubeAPIServer &#x521B;&#x5EFA;&#x914D;&#x7F6E;
+    kubeAPIServerConfig, insecureServingInfo, serviceResolver, pluginInitializer, admissionPostStartHook, err :=                                         CreateKubeAPIServerConfig(completedOptions, nodeTunneler, proxyTransport)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x914D;&#x7F6E;&#x4E86; APIExtensionsServer&#xFF0C;&#x521B;&#x5EFA; apiExtensionsConfig 
+    apiExtensionsConfig, err := createAPIExtensionsConfig(*kubeAPIServerConfig.GenericConfig, kubeAPIServerConfig.ExtraConfig.VersionedInformers,        pluginInitializer, completedOptions.ServerRunOptions, completedOptions.MasterCount,
+        serviceResolver, webhook.NewDefaultAuthenticationInfoResolverWrapper(proxyTransport, kubeAPIServerConfig.GenericConfig.LoopbackClientConfig))
+    if err != nil {
+        return nil, err
+    }
+
+    // 3&#x3001;&#x521D;&#x59CB;&#x5316; APIExtensionsServer
+    apiExtensionsServer, err := createAPIExtensionsServer(apiExtensionsConfig, genericapiserver.NewEmptyDelegate())
+    if err != nil {
+        return nil, err
+    }
+
+    // 4&#x3001;&#x521D;&#x59CB;&#x5316; KubeAPIServer
+    kubeAPIServer, err := CreateKubeAPIServer(kubeAPIServerConfig, apiExtensionsServer.GenericAPIServer, admissionPostStartHook)
+    if err != nil {
+        return nil, err
+    }
+
+    // 5&#x3001;&#x521B;&#x5EFA; AggregatorConfig
+    aggregatorConfig, err := createAggregatorConfig(*kubeAPIServerConfig.GenericConfig, completedOptions.ServerRunOptions, kubeAPIServerConfig.          ExtraConfig.VersionedInformers, serviceResolver, proxyTransport, pluginInitializer)
+    if err != nil {
+        return nil, err
+    }
+
+    // 6&#x3001;&#x521D;&#x59CB;&#x5316; AggregatorServer
+    aggregatorServer, err := createAggregatorServer(aggregatorConfig, kubeAPIServer.GenericAPIServer, apiExtensionsServer.Informers)
+    if err != nil {
+        return nil, err
+    }
+
+    // 7&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x542F;&#x52A8;&#x975E;&#x5B89;&#x5168;&#x7AEF;&#x53E3;&#x7684; http server
+    if insecureServingInfo != nil {
+        insecureHandlerChain := kubeserver.BuildInsecureHandlerChain(aggregatorServer.GenericAPIServer.UnprotectedHandler(), kubeAPIServerConfig.GenericConfig)
+        if err := insecureServingInfo.Serve(insecureHandlerChain, kubeAPIServerConfig.GenericConfig.RequestTimeout, stopCh); err != nil {
+            return nil, err
+        }
+    }
+    return aggregatorServer, nil
+}
+</code></pre><h5 id="createkubeapiserverconfig"><a name="createkubeapiserverconfig" class="anchor-navigation-ex-anchor" href="#createkubeapiserverconfig"><i class="fa fa-link" aria-hidden="true"></i></a>CreateKubeAPIServerConfig</h5>
+<p>&#x5728; <code>CreateKubeAPIServerConfig</code> &#x4E2D;&#x4E3B;&#x8981;&#x662F;&#x8C03;&#x7528; <code>buildGenericConfig</code> &#x521B;&#x5EFA; genericConfig &#x4EE5;&#x53CA;&#x6784;&#x5EFA; master.Config &#x5BF9;&#x8C61;&#x3002;</p>
+<p><code>k8s.io/kubernetes/cmd/kube-apiserver/app/server.go:271</code></p>
+<pre class="language-"><code>func CreateKubeAPIServerConfig(
+    s completedServerRunOptions,
+    nodeTunneler tunneler.Tunneler,
+    proxyTransport *http.Transport,
+) (......) {
+
+    // 1&#x3001;&#x6784;&#x5EFA; genericConfig
+    genericConfig, versionedInformers, insecureServingInfo, serviceResolver, pluginInitializers, admissionPostStartHook, storageFactory,    lastErr = buildGenericConfig(s.ServerRunOptions, proxyTransport)
+    if lastErr != nil {
+        return
+    }
+
+    ......
+
+    // 2&#x3001;&#x521D;&#x59CB;&#x5316;&#x6240;&#x652F;&#x6301;&#x7684; capabilities
+    capabilities.Initialize(capabilities.Capabilities{
+        AllowPrivileged: s.AllowPrivileged,
+        PrivilegedSources: capabilities.PrivilegedSources{
+            HostNetworkSources: []string{},
+            HostPIDSources:     []string{},
+            HostIPCSources:     []string{},
+        },
+        PerConnectionBandwidthLimitBytesPerSec: s.MaxConnectionBytesPerSec,
+    })
+
+    // 3&#x3001;&#x83B7;&#x53D6; service ip range &#x4EE5;&#x53CA; api server service IP
+    serviceIPRange, apiServerServiceIP, lastErr := master.DefaultServiceIPRange(s.PrimaryServiceClusterIPRange)
+    if lastErr != nil {
+        return
+    }
+
+    ......
+
+    // 4&#x3001;&#x6784;&#x5EFA; master.Config &#x5BF9;&#x8C61;
+    config = &amp;master.Config{......}
+
+    if nodeTunneler != nil {
+        config.ExtraConfig.KubeletClientConfig.Dial = nodeTunneler.Dial
+    }
+    if config.GenericConfig.EgressSelector != nil {
+        config.ExtraConfig.KubeletClientConfig.Lookup = config.GenericConfig.EgressSelector.Lookup
+    }
+
+    return
+}
+</code></pre><h5 id="buildgenericconfig"><a name="buildgenericconfig" class="anchor-navigation-ex-anchor" href="#buildgenericconfig"><i class="fa fa-link" aria-hidden="true"></i></a>buildGenericConfig</h5>
+<p>&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>genericapiserver.NewConfig</code> &#x751F;&#x6210;&#x9ED8;&#x8BA4;&#x7684; genericConfig&#xFF0C;genericConfig &#x4E2D;&#x4E3B;&#x8981;&#x914D;&#x7F6E;&#x4E86; <code>DefaultBuildHandlerChain</code>&#xFF0C;<code>DefaultBuildHandlerChain</code> &#x4E2D;&#x5305;&#x542B;&#x4E86;&#x8BA4;&#x8BC1;&#x3001;&#x9274;&#x6743;&#x7B49;&#x4E00;&#x7CFB;&#x5217; http filter chain&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>master.DefaultAPIResourceConfigSource</code> &#x52A0;&#x8F7D;&#x9700;&#x8981;&#x542F;&#x7528;&#x7684; API Resource&#xFF0C;&#x96C6;&#x7FA4;&#x4E2D;&#x6240;&#x6709;&#x7684; API Resource &#x53EF;&#x4EE5;&#x5728;&#x4EE3;&#x7801;&#x7684; <code>k8s.io/api</code> &#x76EE;&#x5F55;&#x4E2D;&#x770B;&#x5230;&#xFF0C;&#x968F;&#x7740;&#x7248;&#x672C;&#x7684;&#x8FED;&#x4EE3;&#x4E5F;&#x4F1A;&#x4E0D;&#x65AD;&#x53D8;&#x5316;&#xFF1B;</li>
+<li>3&#x3001;&#x4E3A; genericConfig &#x4E2D;&#x7684;&#x90E8;&#x5206;&#x5B57;&#x6BB5;&#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;&#xFF1B;</li>
+<li>4&#x3001;&#x8C03;&#x7528; <code>completedStorageFactoryConfig.New</code> &#x521B;&#x5EFA; storageFactory&#xFF0C;&#x540E;&#x9762;&#x4F1A;&#x4F7F;&#x7528; storageFactory &#x4E3A;&#x6BCF;&#x79CD;API Resource &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; RESTStorage&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kube-apiserver/app/server.go:386</code></p>
+<pre class="language-"><code>func buildGenericConfig(
+    s *options.ServerRunOptions,
+    proxyTransport *http.Transport,
+) (......) {
+    // 1&#x3001;&#x4E3A; genericConfig &#x8BBE;&#x7F6E;&#x9ED8;&#x8BA4;&#x503C;
+    genericConfig = genericapiserver.NewConfig(legacyscheme.Codecs)
+    genericConfig.MergedResourceConfig = master.DefaultAPIResourceConfigSource()
+
+    if lastErr = s.GenericServerRunOptions.ApplyTo(genericConfig); lastErr != nil {
+        return
+    }
+    ......
+
+    genericConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(......)
+    genericConfig.OpenAPIConfig.Info.Title = &quot;Kubernetes&quot;
+    genericConfig.LongRunningFunc = filters.BasicLongRunningRequestCheck(
+        sets.NewString(&quot;watch&quot;, &quot;proxy&quot;),
+        sets.NewString(&quot;attach&quot;, &quot;exec&quot;, &quot;proxy&quot;, &quot;log&quot;, &quot;portforward&quot;),
+    )
+
+    kubeVersion := version.Get()
+    genericConfig.Version = &amp;kubeVersion
+
+    storageFactoryConfig := kubeapiserver.NewStorageFactoryConfig()
+    storageFactoryConfig.ApiResourceConfig = genericConfig.MergedResourceConfig
+    completedStorageFactoryConfig, err := storageFactoryConfig.Complete(s.Etcd)
+    if err != nil {
+        lastErr = err
+        return
+    }
+    // &#x521D;&#x59CB;&#x5316; storageFactory
+    storageFactory, lastErr = completedStorageFactoryConfig.New()
+    if lastErr != nil {
+        return
+    }
+    if genericConfig.EgressSelector != nil {
+        storageFactory.StorageConfig.Transport.EgressLookup = genericConfig.EgressSelector.Lookup
+    }
+
+    // 2&#x3001;&#x521D;&#x59CB;&#x5316; RESTOptionsGetter&#xFF0C;&#x540E;&#x671F;&#x6839;&#x636E;&#x5176;&#x83B7;&#x53D6;&#x64CD;&#x4F5C; Etcd &#x7684;&#x53E5;&#x67C4;&#xFF0C;&#x540C;&#x65F6;&#x6DFB;&#x52A0; etcd &#x7684;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x65B9;&#x6CD5;
+    if lastErr = s.Etcd.ApplyWithStorageFactoryTo(storageFactory, genericConfig); lastErr != nil {
+        return
+    }
+
+    // 3&#x3001;&#x8BBE;&#x7F6E;&#x4F7F;&#x7528; protobufs &#x7528;&#x6765;&#x5185;&#x90E8;&#x4EA4;&#x4E92;&#xFF0C;&#x5E76;&#x4E14;&#x7981;&#x7528;&#x538B;&#x7F29;&#x529F;&#x80FD;
+    genericConfig.LoopbackClientConfig.ContentConfig.ContentType = &quot;application/vnd.kubernetes.protobuf&quot;
+
+    genericConfig.LoopbackClientConfig.DisableCompression = true
+
+    // 4&#x3001;&#x521B;&#x5EFA; clientset
+    kubeClientConfig := genericConfig.LoopbackClientConfig
+    clientgoExternalClient, err := clientgoclientset.NewForConfig(kubeClientConfig)
+    if err != nil {
+        lastErr = fmt.Errorf(&quot;failed to create real external clientset: %v&quot;, err)
+        return
+    }
+    versionedInformers = clientgoinformers.NewSharedInformerFactory(clientgoExternalClient, 10*time.Minute)
+
+    // 5&#x3001;&#x521B;&#x5EFA;&#x8BA4;&#x8BC1;&#x5B9E;&#x4F8B;&#xFF0C;&#x652F;&#x6301;&#x591A;&#x79CD;&#x8BA4;&#x8BC1;&#x65B9;&#x5F0F;&#xFF1A;&#x8BF7;&#x6C42; Header &#x8BA4;&#x8BC1;&#x3001;Auth &#x6587;&#x4EF6;&#x8BA4;&#x8BC1;&#x3001;CA &#x8BC1;&#x4E66;&#x8BA4;&#x8BC1;&#x3001;Bearer token &#x8BA4;&#x8BC1;&#x3001;
+    // ServiceAccount &#x8BA4;&#x8BC1;&#x3001;BootstrapToken &#x8BA4;&#x8BC1;&#x3001;WebhookToken &#x8BA4;&#x8BC1;&#x7B49;
+    genericConfig.Authentication.Authenticator, genericConfig.OpenAPIConfig.SecurityDefinitions, err = BuildAuthenticator(s,                 clientgoExternalClient, versionedInformers)
+    if err != nil {
+        lastErr = fmt.Errorf(&quot;invalid authentication config: %v&quot;, err)
+        return
+    }
+
+    // 6&#x3001;&#x521B;&#x5EFA;&#x9274;&#x6743;&#x5B9E;&#x4F8B;&#xFF0C;&#x5305;&#x542B;&#xFF1A;Node&#x3001;RBAC&#x3001;Webhook&#x3001;ABAC&#x3001;AlwaysAllow&#x3001;AlwaysDeny
+    genericConfig.Authorization.Authorizer, genericConfig.RuleResolver, err = BuildAuthorizer(s, versionedInformers)
+    ......
+
+    serviceResolver = buildServiceResolver(s.EnableAggregatorRouting, genericConfig.LoopbackClientConfig.Host, versionedInformers)
+
+    authInfoResolverWrapper := webhook.NewDefaultAuthenticationInfoResolverWrapper(proxyTransport, genericConfig.LoopbackClientConfig)
+
+    // 7&#x3001;&#x5BA1;&#x8BA1;&#x63D2;&#x4EF6;&#x7684;&#x521D;&#x59CB;&#x5316;
+    lastErr = s.Audit.ApplyTo(......)
+    if lastErr != nil {
+        return
+    }
+
+    // 8&#x3001;&#x51C6;&#x5165;&#x63D2;&#x4EF6;&#x7684;&#x521D;&#x59CB;&#x5316;
+    pluginInitializers, admissionPostStartHook, err = admissionConfig.New(proxyTransport, serviceResolver)
+    if err != nil {
+        lastErr = fmt.Errorf(&quot;failed to create admission plugin initializer: %v&quot;, err)
+        return
+    }
+    err = s.Admission.ApplyTo(......)
+    if err != nil {
+        lastErr = fmt.Errorf(&quot;failed to initialize admission: %v&quot;, err)
+    }
+
+    return
+}
+</code></pre><p>&#x4EE5;&#x4E0A;&#x4E3B;&#x8981;&#x5206;&#x6790; KubeAPIServerConfig &#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x5176;&#x4ED6;&#x4E24;&#x4E2A; server config &#x7684;&#x521D;&#x59CB;&#x5316;&#x6682;&#x4E14;&#x4E0D;&#x8BE6;&#x7EC6;&#x5206;&#x6790;&#xFF0C;&#x4E0B;&#x9762;&#x63A5;&#x7740;&#x7EE7;&#x7EED;&#x5206;&#x6790; server &#x7684;&#x521D;&#x59CB;&#x5316;&#x3002;</p>
+<h5 id="createapiextensionsserver"><a name="createapiextensionsserver" class="anchor-navigation-ex-anchor" href="#createapiextensionsserver"><i class="fa fa-link" aria-hidden="true"></i></a>createAPIExtensionsServer</h5>
+<p>APIExtensionsServer &#x662F;&#x6700;&#x5148;&#x88AB;&#x521D;&#x59CB;&#x5316;&#x7684;&#xFF0C;&#x5728; <code>createAPIExtensionsServer</code> &#x4E2D;&#x8C03;&#x7528; <code>apiextensionsConfig.Complete().New</code> &#x6765;&#x5B8C;&#x6210; server &#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x9996;&#x5148;&#x8C03;&#x7528; <code>c.GenericConfig.New</code> &#x6309;&#x7167;<code>go-restful</code>&#x7684;&#x6A21;&#x5F0F;&#x521D;&#x59CB;&#x5316; Container&#xFF0C;&#x5728; <code>c.GenericConfig.New</code> &#x4E2D;&#x4F1A;&#x8C03;&#x7528; <code>NewAPIServerHandler</code> &#x521D;&#x59CB;&#x5316; handler&#xFF0C;APIServerHandler &#x5305;&#x542B;&#x4E86; API Server &#x4F7F;&#x7528;&#x7684;&#x591A;&#x79CD;http.Handler &#x7C7B;&#x578B;&#xFF0C;&#x5305;&#x62EC; <code>go-restful</code> &#x4EE5;&#x53CA; <code>non-go-restful</code>&#xFF0C;&#x4EE5;&#x53CA;&#x5728;&#x4EE5;&#x4E0A;&#x4E24;&#x8005;&#x4E4B;&#x95F4;&#x9009;&#x62E9;&#x7684; Director &#x5BF9;&#x8C61;&#xFF0C;<code>go-restful</code> &#x7528;&#x4E8E;&#x5904;&#x7406;&#x5DF2;&#x7ECF;&#x6CE8;&#x518C;&#x7684; handler&#xFF0C;<code>non-go-restful</code> &#x7528;&#x6765;&#x5904;&#x7406;&#x4E0D;&#x5B58;&#x5728;&#x7684; handler&#xFF0C;API URI &#x5904;&#x7406;&#x7684;&#x9009;&#x62E9;&#x8FC7;&#x7A0B;&#x4E3A;&#xFF1A;<code>FullHandlerChain-&gt; Director -&gt;{GoRestfulContainer&#xFF0C; NonGoRestfulMux}</code>&#x3002;&#x5728; <code>c.GenericConfig.New</code> &#x4E2D;&#x8FD8;&#x4F1A;&#x8C03;&#x7528; <code>installAPI</code>&#x6765;&#x6DFB;&#x52A0;&#x5305;&#x62EC; <code>/</code>&#x3001;<code>/debug/*</code>&#x3001;<code>/metrics</code>&#x3001;<code>/version</code> &#x7B49;&#x8DEF;&#x7531;&#x4FE1;&#x606F;&#x3002;&#x4E09;&#x79CD; server &#x5728;&#x521D;&#x59CB;&#x5316;&#x65F6;&#x9996;&#x5148;&#x90FD;&#x4F1A;&#x8C03;&#x7528; <code>c.GenericConfig.New</code> &#x6765;&#x521D;&#x59CB;&#x5316;&#x4E00;&#x4E2A; genericServer&#xFF0C;&#x7136;&#x540E;&#x8FDB;&#x884C; API &#x7684;&#x6CE8;&#x518C;&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>s.GenericAPIServer.InstallAPIGroup</code> &#x5728;&#x8DEF;&#x7531;&#x4E2D;&#x6CE8;&#x518C; API Resources&#xFF0C;&#x6B64;&#x65B9;&#x6CD5;&#x7684;&#x8C03;&#x7528;&#x94FE;&#x975E;&#x5E38;&#x6DF1;&#xFF0C;&#x4E3B;&#x8981;&#x662F;&#x4E3A;&#x4E86;&#x5C06;&#x9700;&#x8981;&#x66B4;&#x9732;&#x7684; API Resource &#x6CE8;&#x518C;&#x5230; server &#x4E2D;&#xFF0C;&#x4EE5;&#x4FBF;&#x80FD;&#x901A;&#x8FC7; http &#x63A5;&#x53E3;&#x8FDB;&#x884C; resource &#x7684; REST &#x64CD;&#x4F5C;&#xFF0C;&#x5176;&#x4ED6;&#x51E0;&#x79CD; server &#x5728;&#x521D;&#x59CB;&#x5316;&#x65F6;&#x4E5F;&#x90FD;&#x4F1A;&#x6267;&#x884C;&#x5BF9;&#x5E94;&#x7684; <code>InstallAPI</code>&#xFF1B;</li>
+<li>3&#x3001;&#x521D;&#x59CB;&#x5316; server &#x4E2D;&#x9700;&#x8981;&#x4F7F;&#x7528;&#x7684; controller&#xFF0C;&#x4E3B;&#x8981;&#x6709; <code>openapiController</code>&#x3001;<code>crdController</code>&#x3001;<code>namingController</code>&#x3001;<code>establishingController</code>&#x3001;<code>nonStructuralSchemaController</code>&#x3001;<code>apiApprovalController</code>&#x3001;<code>finalizingControlle</code>r&#xFF1B;</li>
+<li>4&#x3001;&#x5C06;&#x9700;&#x8981;&#x542F;&#x52A8;&#x7684; controller &#x4EE5;&#x53CA; informer &#x6DFB;&#x52A0;&#x5230; PostStartHook &#x4E2D;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kube-apiserver/app/apiextensions.go:94</code></p>
+<pre class="language-"><code>func createAPIExtensionsServer(apiextensionsConfig *apiextensionsapiserver.Config, delegateAPIServer genericapiserver.DelegationTarget) (*  apiextensionsapiserver.CustomResourceDefinitions, error) {
+    return apiextensionsConfig.Complete().New(delegateAPIServer)
+}
+</code></pre><p><code>k8s.io/kubernetes/staging/src/k8s.io/apiextensions-apiserver/pkg/apiserver/apiserver.go:132</code></p>
+<pre class="language-"><code>func (c completedConfig) New(delegationTarget genericapiserver.DelegationTarget) (*CustomResourceDefinitions, error) {
+    // 1&#x3001;&#x521D;&#x59CB;&#x5316; genericServer
+    genericServer, err := c.GenericConfig.New(&quot;apiextensions-apiserver&quot;, delegationTarget)
+    if err != nil {
+        return nil, err
+    }
+
+    s := &amp;CustomResourceDefinitions{
+        GenericAPIServer: genericServer,
+    }
+
+    // 2&#x3001;&#x521D;&#x59CB;&#x5316; APIGroup Info&#xFF0C;APIGroup &#x6307;&#x8BE5; server &#x9700;&#x8981;&#x66B4;&#x9732;&#x7684; API
+    apiResourceConfig := c.GenericConfig.MergedResourceConfig
+    apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(apiextensions.GroupName, Scheme, metav1.ParameterCodec, Codecs)
+    if apiResourceConfig.VersionEnabled(v1beta1.SchemeGroupVersion) {
+        storage := map[string]rest.Storage{}
+        customResourceDefintionStorage := customresourcedefinition.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter)
+        storage[&quot;customresourcedefinitions&quot;] = customResourceDefintionStorage
+        storage[&quot;customresourcedefinitions/status&quot;] = customresourcedefinition.NewStatusREST(Scheme, customResourceDefintionStorage)
+
+        apiGroupInfo.VersionedResourcesStorageMap[v1beta1.SchemeGroupVersion.Version] = storage
+    }
+    if apiResourceConfig.VersionEnabled(v1.SchemeGroupVersion) {
+        ......
+    }
+
+    // 3&#x3001;&#x6CE8;&#x518C; APIGroup
+    if err := s.GenericAPIServer.InstallAPIGroup(&amp;apiGroupInfo); err != nil {
+        return nil, err
+    }
+
+    // 4&#x3001;&#x521D;&#x59CB;&#x5316;&#x9700;&#x8981;&#x4F7F;&#x7528;&#x7684; controller
+    crdClient, err := internalclientset.NewForConfig(s.GenericAPIServer.LoopbackClientConfig)
+    if err != nil {
+        return nil, fmt.Errorf(&quot;failed to create clientset: %v&quot;, err)
+    }
+    s.Informers = internalinformers.NewSharedInformerFactory(crdClient, 5*time.Minute)
+
+    ......
+    establishingController := establish.NewEstablishingController(s.Informers.Apiextensions().InternalVersion().                    CustomResourceDefinitions(), crdClient.Apiextensions())
+    crdHandler, err := NewCustomResourceDefinitionHandler(......)
+    if err != nil {
+        return nil, err
+    }
+    s.GenericAPIServer.Handler.NonGoRestfulMux.Handle(&quot;/apis&quot;, crdHandler)
+    s.GenericAPIServer.Handler.NonGoRestfulMux.HandlePrefix(&quot;/apis/&quot;, crdHandler)
+
+    crdController := NewDiscoveryController(s.Informers.Apiextensions().InternalVersion().CustomResourceDefinitions(),                 versionDiscoveryHandler, groupDiscoveryHandler)
+    namingController := status.NewNamingConditionController(s.Informers.Apiextensions().InternalVersion().CustomResourceDefinitions(), crdClient.Apiextensions())
+    nonStructuralSchemaController := nonstructuralschema.NewConditionController(s.Informers.Apiextensions().InternalVersion().         CustomResourceDefinitions(), crdClient.Apiextensions())
+    apiApprovalController := apiapproval.NewKubernetesAPIApprovalPolicyConformantConditionController(s.Informers.Apiextensions().      InternalVersion().CustomResourceDefinitions(), crdClient.Apiextensions())
+    finalizingController := finalizer.NewCRDFinalizer(
+        s.Informers.Apiextensions().InternalVersion().CustomResourceDefinitions(),
+        crdClient.Apiextensions(),
+        crdHandler,
+    )
+    var openapiController *openapicontroller.Controller
+    if utilfeature.DefaultFeatureGate.Enabled(apiextensionsfeatures.CustomResourcePublishOpenAPI) {
+        openapiController = openapicontroller.NewController(s.Informers.Apiextensions().InternalVersion().CustomResourceDefinitions())
+    }
+
+    // 5&#x3001;&#x5C06; informer &#x4EE5;&#x53CA; controller &#x6DFB;&#x52A0;&#x5230; PostStartHook &#x4E2D;
+    s.GenericAPIServer.AddPostStartHookOrDie(&quot;start-apiextensions-informers&quot;, func(context genericapiserver.PostStartHookContext) error {
+        s.Informers.Start(context.StopCh)
+        return nil
+    })
+    s.GenericAPIServer.AddPostStartHookOrDie(&quot;start-apiextensions-controllers&quot;, func(context genericapiserver.PostStartHookContext) error {
+        ......
+        go crdController.Run(context.StopCh)
+        go namingController.Run(context.StopCh)
+        go establishingController.Run(context.StopCh)
+        go nonStructuralSchemaController.Run(5, context.StopCh)
+        go apiApprovalController.Run(5, context.StopCh)
+        go finalizingController.Run(5, context.StopCh)
+        return nil
+    })
+
+    s.GenericAPIServer.AddPostStartHookOrDie(&quot;crd-informer-synced&quot;, func(context genericapiserver.PostStartHookContext) error {
+        return wait.PollImmediateUntil(100*time.Millisecond, func() (bool, error) {
+            return s.Informers.Apiextensions().InternalVersion().CustomResourceDefinitions().Informer().HasSynced(), nil
+        }, context.StopCh)
+    })
+
+    return s, nil
+}
+</code></pre><p>&#x4EE5;&#x4E0A;&#x662F; APIExtensionsServer &#x7684;&#x521D;&#x59CB;&#x5316;&#x6D41;&#x7A0B;&#xFF0C;&#x5176;&#x4E2D;&#x6700;&#x6838;&#x5FC3;&#x65B9;&#x6CD5;&#x662F; <code>s.GenericAPIServer.InstallAPIGroup</code>&#xFF0C;&#x4E5F;&#x5C31;&#x662F; API &#x7684;&#x6CE8;&#x518C;&#x8FC7;&#x7A0B;&#xFF0C;&#x4E09;&#x79CD; server &#x4E2D; API &#x7684;&#x6CE8;&#x518C;&#x8FC7;&#x7A0B;&#x90FD;&#x662F;&#x5176;&#x6838;&#x5FC3;&#x3002;</p>
+<h5 id="createkubeapiserver"><a name="createkubeapiserver" class="anchor-navigation-ex-anchor" href="#createkubeapiserver"><i class="fa fa-link" aria-hidden="true"></i></a>CreateKubeAPIServer</h5>
+<p>&#x672C;&#x8282;&#x7EE7;&#x7EED;&#x5206;&#x6790; KubeAPIServer &#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x5728;<code>CreateKubeAPIServer</code> &#x4E2D;&#x8C03;&#x7528;&#x4E86; <code>kubeAPIServerConfig.Complete().New</code> &#x6765;&#x5B8C;&#x6210;&#x76F8;&#x5173;&#x7684;&#x521D;&#x59CB;&#x5316;&#x64CD;&#x4F5C;&#x3002;</p>
+<h5 id="kubeapiserverconfigcompletenew"><a name="kubeapiserverconfigcompletenew" class="anchor-navigation-ex-anchor" href="#kubeapiserverconfigcompletenew"><i class="fa fa-link" aria-hidden="true"></i></a>kubeAPIServerConfig.Complete().New</h5>
+<p>&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>c.GenericConfig.New</code> &#x521D;&#x59CB;&#x5316; GenericAPIServer&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x5B9E;&#x73B0;&#x5728;&#x4E0A;&#x6587;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x8FC7;&#xFF1B;</li>
+<li>2&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x652F;&#x6301; logs &#x76F8;&#x5173;&#x7684;&#x8DEF;&#x7531;&#xFF0C;&#x5982;&#x679C;&#x652F;&#x6301;&#xFF0C;&#x5219;&#x6DFB;&#x52A0; <code>/logs</code> &#x8DEF;&#x7531;&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>m.InstallLegacyAPI</code> &#x5C06;&#x6838;&#x5FC3; API Resource &#x6DFB;&#x52A0;&#x5230;&#x8DEF;&#x7531;&#x4E2D;&#xFF0C;&#x5BF9;&#x5E94;&#x5230; apiserver &#x5C31;&#x662F;&#x4EE5; <code>/api</code> &#x5F00;&#x5934;&#x7684; resource&#xFF1B;</li>
+<li>4&#x3001;&#x8C03;&#x7528; <code>m.InstallAPIs</code> &#x5C06;&#x6269;&#x5C55;&#x7684; API Resource &#x6DFB;&#x52A0;&#x5230;&#x8DEF;&#x7531;&#x4E2D;&#xFF0C;&#x5728; apiserver &#x4E2D;&#x5373;&#x662F;&#x4EE5; <code>/apis</code> &#x5F00;&#x5934;&#x7684; resource&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kube-apiserver/app/server.go:214</code></p>
+<pre class="language-"><code>func CreateKubeAPIServer(......) (*master.Master, error) {
+    kubeAPIServer, err := kubeAPIServerConfig.Complete().New(delegateAPIServer)
+    if err != nil {
+        return nil, err
+    }
+
+    kubeAPIServer.GenericAPIServer.AddPostStartHookOrDie(&quot;start-kube-apiserver-admission-initializer&quot;, admissionPostStartHook)
+
+    return kubeAPIServer, nil
+}
+</code></pre><p><code>k8s.io/kubernetes/pkg/master/master.go:325</code></p>
+<pre class="language-"><code>func (c completedConfig) New(delegationTarget genericapiserver.DelegationTarget) (*Master, error) {
+    ......
+    // 1&#x3001;&#x521D;&#x59CB;&#x5316; GenericAPIServer
+    s, err := c.GenericConfig.New(&quot;kube-apiserver&quot;, delegationTarget)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2&#x3001;&#x6CE8;&#x518C; logs &#x76F8;&#x5173;&#x7684;&#x8DEF;&#x7531;
+    if c.ExtraConfig.EnableLogsSupport {
+        routes.Logs{}.Install(s.Handler.GoRestfulContainer)
+    }
+
+    m := &amp;Master{
+        GenericAPIServer: s,
+    }
+
+    // 3&#x3001;&#x5B89;&#x88C5; LegacyAPI
+    if c.ExtraConfig.APIResourceConfigSource.VersionEnabled(apiv1.SchemeGroupVersion) {
+        legacyRESTStorageProvider := corerest.LegacyRESTStorageProvider{
+            StorageFactory:              c.ExtraConfig.StorageFactory,
+            ProxyTransport:              c.ExtraConfig.ProxyTransport,
+            ......
+        }
+        if err := m.InstallLegacyAPI(&amp;c, c.GenericConfig.RESTOptionsGetter, legacyRESTStorageProvider); err != nil {
+            return nil, err
+        }
+    }
+    restStorageProviders := []RESTStorageProvider{
+        auditregistrationrest.RESTStorageProvider{},
+        authenticationrest.RESTStorageProvider{Authenticator: c.GenericConfig.Authentication.Authenticator, APIAudiences: c.GenericConfig.  Authentication.APIAudiences},
+        ......
+    }
+    // 4&#x3001;&#x5B89;&#x88C5; APIs
+    if err := m.InstallAPIs(c.ExtraConfig.APIResourceConfigSource, c.GenericConfig.RESTOptionsGetter, restStorageProviders...); err != nil {
+        return nil, err
+    }
+
+    if c.ExtraConfig.Tunneler != nil {
+        m.installTunneler(c.ExtraConfig.Tunneler, corev1client.NewForConfigOrDie(c.GenericConfig.LoopbackClientConfig).Nodes())
+    }
+
+    m.GenericAPIServer.AddPostStartHookOrDie(&quot;ca-registration&quot;, c.ExtraConfig.ClientCARegistrationHook.PostStartHook)
+
+    return m, nil
+}
+</code></pre><h5 id="minstalllegacyapi"><a name="minstalllegacyapi" class="anchor-navigation-ex-anchor" href="#minstalllegacyapi"><i class="fa fa-link" aria-hidden="true"></i></a>m.InstallLegacyAPI</h5>
+<p>&#x6B64;&#x65B9;&#x6CD5;&#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x5C06; core API &#x6CE8;&#x518C;&#x5230;&#x8DEF;&#x7531;&#x4E2D;&#xFF0C;&#x662F; apiserver &#x521D;&#x59CB;&#x5316;&#x6D41;&#x7A0B;&#x4E2D;&#x6700;&#x6838;&#x5FC3;&#x7684;&#x65B9;&#x6CD5;&#x4E4B;&#x4E00;&#xFF0C;&#x4E0D;&#x8FC7;&#x5176;&#x8C03;&#x7528;&#x94FE;&#x975E;&#x5E38;&#x6DF1;&#xFF0C;&#x4E0B;&#x9762;&#x4F1A;&#x8FDB;&#x884C;&#x6DF1;&#x5165;&#x5206;&#x6790;&#x3002;&#x5C06; API &#x6CE8;&#x518C;&#x5230;&#x8DEF;&#x7531;&#x5176;&#x6700;&#x7EC8;&#x7684;&#x76EE;&#x7684;&#x5C31;&#x662F;&#x5BF9;&#x5916;&#x63D0;&#x4F9B; RESTful API &#x6765;&#x64CD;&#x4F5C;&#x5BF9;&#x5E94; resource&#xFF0C;&#x6CE8;&#x518C; API &#x4E3B;&#x8981;&#x5206;&#x4E3A;&#x4E24;&#x6B65;&#xFF0C;&#x7B2C;&#x4E00;&#x6B65;&#x662F;&#x4E3A; API &#x4E2D;&#x7684;&#x6BCF;&#x4E2A; resource &#x521D;&#x59CB;&#x5316; RESTStorage &#x4EE5;&#x6B64;&#x64CD;&#x4F5C;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x4E2D;&#x6570;&#x636E;&#x7684;&#x53D8;&#x66F4;&#xFF0C;&#x7B2C;&#x4E8C;&#x6B65;&#x662F;&#x4E3A;&#x6BCF;&#x4E2A; resource &#x6839;&#x636E;&#x5176; verbs &#x6784;&#x5EFA;&#x5BF9;&#x5E94;&#x7684;&#x8DEF;&#x7531;&#x3002;<code>m.InstallLegacyAPI</code>  &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>legacyRESTStorageProvider.NewLegacyRESTStorage</code> &#x4E3A; LegacyAPI &#x4E2D;&#x5404;&#x4E2A;&#x8D44;&#x6E90;&#x521B;&#x5EFA; RESTStorage&#xFF0C;RESTStorage &#x7684;&#x76EE;&#x7684;&#x662F;&#x5C06;&#x6BCF;&#x79CD;&#x8D44;&#x6E90;&#x7684;&#x8BBF;&#x95EE;&#x8DEF;&#x5F84;&#x53CA;&#x5176;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x7684;&#x64CD;&#x4F5C;&#x5BF9;&#x5E94;&#x8D77;&#x6765;&#xFF1B;</li>
+<li>2&#x3001;&#x521D;&#x59CB;&#x5316; <code>bootstrap-controller</code>&#xFF0C;&#x5E76;&#x5C06;&#x5176;&#x52A0;&#x5165;&#x5230; PostStartHook &#x4E2D;&#xFF0C;<code>bootstrap-controller</code> &#x662F; apiserver &#x4E2D;&#x7684;&#x4E00;&#x4E2A; controller&#xFF0C;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x521B;&#x5EFA;&#x7CFB;&#x7EDF;&#x6240;&#x9700;&#x8981;&#x7684;&#x4E00;&#x4E9B; namespace &#x4EE5;&#x53CA;&#x521B;&#x5EFA; kubernetes service &#x5E76;&#x5B9A;&#x671F;&#x89E6;&#x53D1;&#x5BF9;&#x5E94;&#x7684; sync &#x64CD;&#x4F5C;&#xFF0C;apiserver &#x5728;&#x542F;&#x52A8;&#x540E;&#x4F1A;&#x901A;&#x8FC7;&#x8C03;&#x7528; PostStartHook &#x6765;&#x542F;&#x52A8; <code>bootstrap-controller</code>&#xFF1B;</li>
+<li>3&#x3001;&#x5728;&#x4E3A;&#x8D44;&#x6E90;&#x521B;&#x5EFA;&#x5B8C; RESTStorage &#x540E;&#xFF0C;&#x8C03;&#x7528; <code>m.GenericAPIServer.InstallLegacyAPIGroup</code> &#x4E3A; APIGroup &#x6CE8;&#x518C;&#x8DEF;&#x7531;&#x4FE1;&#x606F;&#xFF0C;<code>InstallLegacyAPIGroup</code>&#x65B9;&#x6CD5;&#x7684;&#x8C03;&#x7528;&#x94FE;&#x975E;&#x5E38;&#x6DF1;&#xFF0C;&#x4E3B;&#x8981;&#x4E3A;<code>InstallLegacyAPIGroup--&gt; installAPIResources --&gt; InstallREST --&gt; Install --&gt; registerResourceHandlers</code>&#xFF0C;&#x6700;&#x7EC8;&#x6838;&#x5FC3;&#x7684;&#x8DEF;&#x7531;&#x6784;&#x9020;&#x5728;<code>registerResourceHandlers</code>&#x65B9;&#x6CD5;&#x5185;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x6BD4;&#x8F83;&#x590D;&#x6742;&#xFF0C;&#x5176;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x901A;&#x8FC7;&#x4E0A;&#x4E00;&#x6B65;&#x9AA4;&#x6784;&#x9020;&#x7684; REST Storage &#x5224;&#x65AD;&#x8BE5;&#x8D44;&#x6E90;&#x53EF;&#x4EE5;&#x6267;&#x884C;&#x54EA;&#x4E9B;&#x64CD;&#x4F5C;&#xFF08;&#x5982; create&#x3001;update&#x7B49;&#xFF09;&#xFF0C;&#x5C06;&#x5176;&#x5BF9;&#x5E94;&#x7684;&#x64CD;&#x4F5C;&#x5B58;&#x5165;&#x5230; action &#x4E2D;&#xFF0C;&#x6BCF;&#x4E00;&#x4E2A; action &#x5BF9;&#x5E94;&#x4E00;&#x4E2A;&#x6807;&#x51C6;&#x7684; REST &#x64CD;&#x4F5C;&#xFF0C;&#x5982; create &#x5BF9;&#x5E94;&#x7684; action &#x64CD;&#x4F5C;&#x4E3A; POST&#x3001;update &#x5BF9;&#x5E94;&#x7684; action &#x64CD;&#x4F5C;&#x4E3A;PUT&#x3002;&#x6700;&#x7EC8;&#x6839;&#x636E; actions &#x6570;&#x7EC4;&#x4F9D;&#x6B21;&#x904D;&#x5386;&#xFF0C;&#x5BF9;&#x6BCF;&#x4E00;&#x4E2A;&#x64CD;&#x4F5C;&#x6DFB;&#x52A0;&#x4E00;&#x4E2A; handler &#x65B9;&#x6CD5;&#xFF0C;&#x6CE8;&#x518C;&#x5230; route &#x4E2D;&#x53BB;&#xFF0C;&#x518D;&#x5C06; route &#x6CE8;&#x518C;&#x5230; webservice &#x4E2D;&#x53BB;&#xFF0C;webservice &#x6700;&#x7EC8;&#x4F1A;&#x6CE8;&#x518C;&#x5230; container &#x4E2D;&#xFF0C;&#x9075;&#x5FAA; go-restful &#x7684;&#x8BBE;&#x8BA1;&#x6A21;&#x5F0F;&#xFF1B;</li>
+</ul>
+<p>&#x5173;&#x4E8E; <code>legacyRESTStorageProvider.NewLegacyRESTStorage</code> &#x4EE5;&#x53CA; <code>m.GenericAPIServer.InstallLegacyAPIGroup</code> &#x65B9;&#x6CD5;&#x7684;&#x8BE6;&#x7EC6;&#x8BF4;&#x660E;&#x5728;&#x540E;&#x6587;&#x4E2D;&#x4F1A;&#x7EE7;&#x7EED;&#x8FDB;&#x884C;&#x8BB2;&#x89E3;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/master/master.go:406</code></p>
+<pre class="language-"><code>func (m *Master) InstallLegacyAPI(......) error {
+    legacyRESTStorage, apiGroupInfo, err := legacyRESTStorageProvider.NewLegacyRESTStorage(restOptionsGetter)
+    if err != nil {
+        return fmt.Errorf(&quot;Error building core storage: %v&quot;, err)
+    }
+
+    controllerName := &quot;bootstrap-controller&quot;
+    coreClient := corev1client.NewForConfigOrDie(c.GenericConfig.LoopbackClientConfig)
+    bootstrapController := c.NewBootstrapController(legacyRESTStorage, coreClient, coreClient, coreClient, coreClient.RESTClient())
+    m.GenericAPIServer.AddPostStartHookOrDie(controllerName, bootstrapController.PostStartHook)
+    m.GenericAPIServer.AddPreShutdownHookOrDie(controllerName, bootstrapController.PreShutdownHook)
+
+    if err := m.GenericAPIServer.InstallLegacyAPIGroup(genericapiserver.DefaultLegacyAPIPrefix, &amp;apiGroupInfo); err != nil {
+        return fmt.Errorf(&quot;Error in registering group versions: %v&quot;, err)
+    }
+    return nil
+}
+</code></pre><p><code>InstallAPIs</code> &#x4E0E; <code>InstallLegacyAPI</code> &#x7684;&#x4E3B;&#x8981;&#x6D41;&#x7A0B;&#x662F;&#x7C7B;&#x4F3C;&#x7684;&#xFF0C;&#x9650;&#x4E8E;&#x7BC7;&#x5E45;&#x6B64;&#x5904;&#x4E0D;&#x518D;&#x6DF1;&#x5165;&#x5206;&#x6790;&#x3002;</p>
+<h4 id="createaggregatorserver"><a name="createaggregatorserver" class="anchor-navigation-ex-anchor" href="#createaggregatorserver"><i class="fa fa-link" aria-hidden="true"></i></a>createAggregatorServer</h4>
+<p><code>AggregatorServer</code> &#x4E3B;&#x8981;&#x7528;&#x4E8E;&#x81EA;&#x5B9A;&#x4E49;&#x7684;&#x805A;&#x5408;&#x63A7;&#x5236;&#x5668;&#x7684;&#xFF0C;&#x4F7F; CRD &#x80FD;&#x591F;&#x81EA;&#x52A8;&#x6CE8;&#x518C;&#x5230;&#x96C6;&#x7FA4;&#x4E2D;&#x3002;</p>
+<p>&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>aggregatorConfig.Complete().NewWithDelegate</code> &#x521B;&#x5EFA; aggregatorServer&#xFF1B;</li>
+<li>2&#x3001;&#x521D;&#x59CB;&#x5316; <code>crdRegistrationController</code> &#x548C; <code>autoRegistrationController</code>&#xFF0C;<code>crdRegistrationController</code> &#x8D1F;&#x8D23;&#x6CE8;&#x518C; CRD&#xFF0C;<code>autoRegistrationController</code> &#x8D1F;&#x8D23;&#x5C06; CRD &#x5BF9;&#x5E94;&#x7684; APIServices &#x81EA;&#x52A8;&#x6CE8;&#x518C;&#x5230; apiserver &#x4E2D;&#xFF0C;CRD &#x521B;&#x5EFA;&#x540E;&#x53EF;&#x901A;&#x8FC7; <code>$ kubectl get apiservices</code> &#x67E5;&#x770B;&#x662F;&#x5426;&#x6CE8;&#x518C;&#x5230; apiservices &#x4E2D;&#xFF1B;</li>
+<li>3&#x3001;&#x5C06; <code>autoRegistrationController</code> &#x548C; <code>crdRegistrationController</code> &#x52A0;&#x5165;&#x5230; PostStartHook &#x4E2D;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/cmd/kube-apiserver/app/aggregator.go:124</code></p>
+<pre class="language-"><code>func createAggregatorServer(......) (*aggregatorapiserver.APIAggregator, error) {
+    // 1&#x3001;&#x521D;&#x59CB;&#x5316; aggregatorServer
+    aggregatorServer, err := aggregatorConfig.Complete().NewWithDelegate(delegateAPIServer)
+    if err != nil {
+        return nil, err
+    }
+
+    // 2&#x3001;&#x521D;&#x59CB;&#x5316; auto-registration controller
+    apiRegistrationClient, err := apiregistrationclient.NewForConfig(aggregatorConfig.GenericConfig.LoopbackClientConfig)
+    if err != nil {
+        return nil, err
+    }
+    autoRegistrationController := autoregister.NewAutoRegisterController(......)
+    apiServices := apiServicesToRegister(delegateAPIServer, autoRegistrationController)
+    crdRegistrationController := crdregistration.NewCRDRegistrationController(......)
+    err = aggregatorServer.GenericAPIServer.AddPostStartHook(&quot;kube-apiserver-autoregistration&quot;, func(context genericapiserver.PostStartHookContext) error {
+        go crdRegistrationController.Run(5, context.StopCh)
+        go func() {
+            if aggregatorConfig.GenericConfig.MergedResourceConfig.AnyVersionForGroupEnabled(&quot;apiextensions.k8s.io&quot;) {
+                crdRegistrationController.WaitForInitialSync()
+            }
+            autoRegistrationController.Run(5, context.StopCh)
+        }()
+        return nil
+    })
+    if err != nil {
+        return nil, err
+    }
+
+    err = aggregatorServer.GenericAPIServer.AddBootSequenceHealthChecks(
+        makeAPIServiceAvailableHealthCheck(
+            &quot;autoregister-completion&quot;,
+            apiServices,
+            aggregatorServer.APIRegistrationInformers.Apiregistration().V1().APIServices(),
+        ),
+    )
+    if err != nil {
+        return nil, err
+    }
+
+    return aggregatorServer, nil
+}
+</code></pre><h5 id="aggregatorconfigcompletenewwithdelegate"><a name="aggregatorconfigcompletenewwithdelegate" class="anchor-navigation-ex-anchor" href="#aggregatorconfigcompletenewwithdelegate"><i class="fa fa-link" aria-hidden="true"></i></a>aggregatorConfig.Complete().NewWithDelegate</h5>
+<p><code>aggregatorConfig.Complete().NewWithDelegate</code> &#x662F;&#x521D;&#x59CB;&#x5316; aggregatorServer &#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x8C03;&#x7528; <code>c.GenericConfig.New</code> &#x521D;&#x59CB;&#x5316; GenericAPIServer&#xFF0C;&#x5176;&#x5185;&#x90E8;&#x7684;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x5728;&#x4E0A;&#x6587;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x8FC7;&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>apiservicerest.NewRESTStorage</code> &#x4E3A; APIServices &#x8D44;&#x6E90;&#x521B;&#x5EFA; RESTStorage&#xFF0C;RESTStorage &#x7684;&#x76EE;&#x7684;&#x662F;&#x5C06;&#x6BCF;&#x79CD;&#x8D44;&#x6E90;&#x7684;&#x8BBF;&#x95EE;&#x8DEF;&#x5F84;&#x53CA;&#x5176;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x7684;&#x64CD;&#x4F5C;&#x5BF9;&#x5E94;&#x8D77;&#x6765;&#xFF1B;</li>
+<li>3&#x3001;&#x8C03;&#x7528; <code>s.GenericAPIServer.InstallAPIGroup</code> &#x4E3A; APIGroup &#x6CE8;&#x518C;&#x8DEF;&#x7531;&#x4FE1;&#x606F;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/kube-aggregator/pkg/apiserver/apiserver.go:158</code></p>
+<pre class="language-"><code>func (c completedConfig) NewWithDelegate(delegationTarget genericapiserver.DelegationTarget) (*APIAggregator, error) {
+    openAPIConfig := c.GenericConfig.OpenAPIConfig
+    c.GenericConfig.OpenAPIConfig = nil
+    // 1&#x3001;&#x521D;&#x59CB;&#x5316; genericServer
+    genericServer, err := c.GenericConfig.New(&quot;kube-aggregator&quot;, delegationTarget)
+    if err != nil {
+        return nil, err
+    }
+
+    apiregistrationClient, err := clientset.NewForConfig(c.GenericConfig.LoopbackClientConfig)
+    if err != nil {
+        return nil, err
+    }
+    informerFactory := informers.NewSharedInformerFactory(
+        apiregistrationClient,
+        5*time.Minute, 
+    )
+    s := &amp;APIAggregator{
+        GenericAPIServer: genericServer,
+        delegateHandler: delegationTarget.UnprotectedHandler(),
+        ......
+    }
+
+    // 2&#x3001;&#x4E3A; API &#x6CE8;&#x518C;&#x8DEF;&#x7531;
+    apiGroupInfo := apiservicerest.NewRESTStorage(c.GenericConfig.MergedResourceConfig, c.GenericConfig.RESTOptionsGetter)
+    if err := s.GenericAPIServer.InstallAPIGroup(&amp;apiGroupInfo); err != nil {
+        return nil, err
+    }
+
+    // 3&#x3001;&#x521D;&#x59CB;&#x5316; apiserviceRegistrationController&#x3001;availableController
+    apisHandler := &amp;apisHandler{
+        codecs: aggregatorscheme.Codecs,
+        lister: s.lister,
+    }
+    s.GenericAPIServer.Handler.NonGoRestfulMux.Handle(&quot;/apis&quot;, apisHandler)
+    s.GenericAPIServer.Handler.NonGoRestfulMux.UnlistedHandle(&quot;/apis/&quot;, apisHandler)
+    apiserviceRegistrationController := NewAPIServiceRegistrationController(informerFactory.Apiregistration().V1().APIServices(), s)
+    availableController, err := statuscontrollers.NewAvailableConditionController(
+       ......
+    )
+    if err != nil {
+        return nil, err
+    }
+
+    // 4&#x3001;&#x6DFB;&#x52A0; PostStartHook
+    s.GenericAPIServer.AddPostStartHookOrDie(&quot;start-kube-aggregator-informers&quot;, func(context genericapiserver.PostStartHookContext) error {
+        informerFactory.Start(context.StopCh)
+        c.GenericConfig.SharedInformerFactory.Start(context.StopCh)
+        return nil
+    })
+    s.GenericAPIServer.AddPostStartHookOrDie(&quot;apiservice-registration-controller&quot;, func(context genericapiserver.PostStartHookContext)      error {
+        go apiserviceRegistrationController.Run(context.StopCh)
+        return nil
+    })
+    s.GenericAPIServer.AddPostStartHookOrDie(&quot;apiservice-status-available-controller&quot;, func(context genericapiserver.PostStartHookContext)  error {
+        go availableController.Run(5, context.StopCh)
+        return nil
+    })
+
+    return s, nil
+}
+</code></pre><p>&#x4EE5;&#x4E0A;&#x662F;&#x5BF9; AggregatorServer &#x521D;&#x59CB;&#x5316;&#x6D41;&#x7A0B;&#x7684;&#x5206;&#x6790;&#xFF0C;&#x53EF;&#x4EE5;&#x770B;&#x51FA;&#xFF0C;&#x5728;&#x521B;&#x5EFA; APIExtensionsServer&#x3001;KubeAPIServer &#x4EE5;&#x53CA; AggregatorServer &#x65F6;&#xFF0C;&#x5176;&#x6A21;&#x5F0F;&#x90FD;&#x662F;&#x7C7B;&#x4F3C;&#x7684;&#xFF0C;&#x9996;&#x5148;&#x8C03;&#x7528; <code>c.GenericConfig.New</code>  &#x6309;&#x7167;<code>go-restful</code>&#x7684;&#x6A21;&#x5F0F;&#x521D;&#x59CB;&#x5316; Container&#xFF0C;&#x7136;&#x540E;&#x4E3A; server &#x4E2D;&#x9700;&#x8981;&#x6CE8;&#x518C;&#x7684;&#x8D44;&#x6E90;&#x521B;&#x5EFA; RESTStorage&#xFF0C;&#x6700;&#x540E;&#x5C06; resource &#x7684; APIGroup &#x4FE1;&#x606F;&#x6CE8;&#x518C;&#x5230;&#x8DEF;&#x7531;&#x4E2D;&#x3002;</p>
+<p>&#x81F3;&#x6B64;&#xFF0C;CreateServerChain &#x4E2D;&#x6D41;&#x7A0B;&#x5DF2;&#x7ECF;&#x5206;&#x6790;&#x5B8C;&#xFF0C;&#x5176;&#x4E2D;&#x7684;&#x8C03;&#x7528;&#x94FE;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>                    |--&gt; CreateNodeDialer
+                    |
+                    |--&gt; CreateKubeAPIServerConfig
+                    |
+CreateServerChain --|--&gt; createAPIExtensionsConfig
+                    |
+                    |                                                                       |--&gt; c.GenericConfig.New
+                    |--&gt; createAPIExtensionsServer --&gt; apiextensionsConfig.Complete().New --|
+                    |                                                                       |--&gt; s.GenericAPIServer.InstallAPIGroup
+                    |
+                    |                                                                 |--&gt; c.GenericConfig.New --&gt; legacyRESTStorageProvider.NewLegacyRESTStorage
+                    |                                                                 |
+                    |--&gt; CreateKubeAPIServer --&gt; kubeAPIServerConfig.Complete().New --|--&gt; m.InstallLegacyAPI
+                    |                                                                 |
+                    |                                                                 |--&gt; m.InstallAPIs
+                    |
+                    |
+                    |--&gt; createAggregatorConfig
+                    |
+                    |                                                                             |--&gt; c.GenericConfig.New
+                    |                                                                             |
+                    |--&gt; createAggregatorServer --&gt; aggregatorConfig.Complete().NewWithDelegate --|--&gt; apiservicerest.NewRESTStorage
+                                                                                                  |
+                                                                                                  |--&gt; s.GenericAPIServer.InstallAPIGroup
+</code></pre><h4 id="preparedrun"><a name="preparedrun" class="anchor-navigation-ex-anchor" href="#preparedrun"><i class="fa fa-link" aria-hidden="true"></i></a>prepared.Run</h4>
+<p>&#x5728; <code>Run</code> &#x65B9;&#x6CD5;&#x4E2D;&#x9996;&#x5148;&#x8C03;&#x7528; <code>CreateServerChain</code> &#x5B8C;&#x6210;&#x5404; server &#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>server.PrepareRun</code> &#x5B8C;&#x6210;&#x670D;&#x52A1;&#x542F;&#x52A8;&#x524D;&#x7684;&#x51C6;&#x5907;&#x5DE5;&#x4F5C;&#xFF0C;&#x6700;&#x540E;&#x8C03;&#x7528; <code>prepared.Run</code> &#x65B9;&#x6CD5;&#x6765;&#x542F;&#x52A8;&#x5B89;&#x5168;&#x7684; http server&#x3002;<code>server.PrepareRun</code> &#x4E3B;&#x8981;&#x5B8C;&#x6210;&#x4E86;&#x5065;&#x5EB7;&#x68C0;&#x67E5;&#x3001;&#x5B58;&#x6D3B;&#x68C0;&#x67E5;&#x548C;<code>OpenAPI</code>&#x8DEF;&#x7531;&#x7684;&#x6CE8;&#x518C;&#x5DE5;&#x4F5C;&#xFF0C;&#x4E0B;&#x9762;&#x7EE7;&#x7EED;&#x5206;&#x6790; <code>prepared.Run</code> &#x7684;&#x6D41;&#x7A0B;&#xFF0C;&#x5728; <code>prepared.Run</code> &#x4E2D;&#x4E3B;&#x8981;&#x8C03;&#x7528; <code>s.NonBlockingRun</code> &#x6765;&#x5B8C;&#x6210;&#x542F;&#x52A8;&#x5DE5;&#x4F5C;&#x3002;</p>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/kube-aggregator/pkg/apiserver/apiserver.go:269</code></p>
+<pre class="language-"><code>func (s preparedAPIAggregator) Run(stopCh &lt;-chan struct{}) error {
+    return s.runnable.Run(stopCh)
+}
+</code></pre><p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/server/genericapiserver.go:316</code></p>
+<pre class="language-"><code>func (s preparedGenericAPIServer) Run(stopCh &lt;-chan struct{}) error {
+    delayedStopCh := make(chan struct{})
+
+    go func() {
+        defer close(delayedStopCh)
+        &lt;-stopCh
+
+        time.Sleep(s.ShutdownDelayDuration)
+    }()
+
+    // &#x8C03;&#x7528; s.NonBlockingRun &#x5B8C;&#x6210;&#x542F;&#x52A8;&#x6D41;&#x7A0B;
+    err := s.NonBlockingRun(delayedStopCh)
+    if err != nil {
+        return err
+    }
+
+    // &#x5F53;&#x6536;&#x5230;&#x9000;&#x51FA;&#x4FE1;&#x53F7;&#x540E;&#x5B8C;&#x6210;&#x4E00;&#x4E9B;&#x6536;&#x5C3E;&#x5DE5;&#x4F5C;
+    &lt;-stopCh
+    err = s.RunPreShutdownHooks()
+    if err != nil {
+        return err
+    }
+
+    &lt;-delayedStopCh
+    s.HandlerChainWaitGroup.Wait()
+    return nil
+}
+</code></pre><h5 id="snonblockingrun"><a name="snonblockingrun" class="anchor-navigation-ex-anchor" href="#snonblockingrun"><i class="fa fa-link" aria-hidden="true"></i></a>s.NonBlockingRun</h5>
+<p><code>s.NonBlockingRun</code> &#x7684;&#x4E3B;&#x8981;&#x903B;&#x8F91;&#x4E3A;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x8981;&#x542F;&#x52A8;&#x5BA1;&#x8BA1;&#x65E5;&#x5FD7;&#x670D;&#x52A1;&#xFF1B;</li>
+<li>2&#x3001;&#x8C03;&#x7528; <code>s.SecureServingInfo.Serve</code> &#x914D;&#x7F6E;&#x5E76;&#x542F;&#x52A8; https server&#xFF1B;</li>
+<li>3&#x3001;&#x6267;&#x884C; postStartHooks&#xFF1B;</li>
+<li>4&#x3001;&#x5411; systemd &#x53D1;&#x9001; ready &#x4FE1;&#x53F7;&#xFF1B;</li>
+</ul>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/server/genericapiserver.go:351</code></p>
+<pre class="language-"><code>func (s preparedGenericAPIServer) NonBlockingRun(stopCh &lt;-chan struct{}) error {
+    auditStopCh := make(chan struct{})
+
+    // 1&#x3001;&#x5224;&#x65AD;&#x662F;&#x5426;&#x8981;&#x542F;&#x52A8;&#x5BA1;&#x8BA1;&#x65E5;&#x5FD7;
+    if s.AuditBackend != nil {
+        if err := s.AuditBackend.Run(auditStopCh); err != nil {
+            return fmt.Errorf(&quot;failed to run the audit backend: %v&quot;, err)
+        }
+    }
+
+    // 2&#x3001;&#x542F;&#x52A8; https server
+    internalStopCh := make(chan struct{})
+    var stoppedCh &lt;-chan struct{}
+    if s.SecureServingInfo != nil &amp;&amp; s.Handler != nil {
+        var err error
+        stoppedCh, err = s.SecureServingInfo.Serve(s.Handler, s.ShutdownTimeout, internalStopCh)
+        if err != nil {
+            close(internalStopCh)
+            close(auditStopCh)
+            return err
+        }
+    }
+
+    go func() {
+        &lt;-stopCh
+        close(s.readinessStopCh)
+        close(internalStopCh)
+        if stoppedCh != nil {
+            &lt;-stoppedCh
+        }
+        s.HandlerChainWaitGroup.Wait()
+        close(auditStopCh)
+    }()
+
+    // 3&#x3001;&#x6267;&#x884C; postStartHooks
+    s.RunPostStartHooks(stopCh)
+
+    // 4&#x3001;&#x5411; systemd &#x53D1;&#x9001; ready &#x4FE1;&#x53F7;
+    if _, err := systemd.SdNotify(true, &quot;READY=1\n&quot;); err != nil {
+        klog.Errorf(&quot;Unable to send systemd daemon successful start message: %v\n&quot;, err)
+    }
+
+    return nil
+}
+</code></pre><p>&#x4EE5;&#x4E0A;&#x5C31;&#x662F; server &#x7684;&#x521D;&#x59CB;&#x5316;&#x4EE5;&#x53CA;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x8FC7;&#x7A0B;&#x7684;&#x5206;&#x6790;&#xFF0C;&#x4E0A;&#x6587;&#x5DF2;&#x7ECF;&#x63D0;&#x5230;&#x5404; server &#x521D;&#x59CB;&#x5316;&#x8FC7;&#x7A0B;&#x4E2D;&#x6700;&#x91CD;&#x8981;&#x7684;&#x5C31;&#x662F; API Resource RESTStorage &#x7684;&#x521D;&#x59CB;&#x5316;&#x4EE5;&#x53CA;&#x8DEF;&#x7531;&#x7684;&#x6CE8;&#x518C;&#xFF0C;&#x7531;&#x4E8E;&#x8BE5;&#x8FC7;&#x7A0B;&#x6BD4;&#x8F83;&#x590D;&#x6742;&#xFF0C;&#x4E0B;&#x6587;&#x4F1A;&#x5355;&#x72EC;&#x8FDB;&#x884C;&#x8BB2;&#x8FF0;&#x3002; </p>
+<h3 id="storagefactory-&#x7684;&#x6784;&#x5EFA;"><a name="storagefactory-&#x7684;&#x6784;&#x5EFA;" class="anchor-navigation-ex-anchor" href="#storagefactory-&#x7684;&#x6784;&#x5EFA;"><i class="fa fa-link" aria-hidden="true"></i></a>storageFactory &#x7684;&#x6784;&#x5EFA;</h3>
+<p>&#x4E0A;&#x6587;&#x5DF2;&#x7ECF;&#x63D0;&#x5230;&#x8FC7;&#xFF0C;apiserver &#x6700;&#x7EC8;&#x5B9E;&#x73B0;&#x7684; handler &#x5BF9;&#x5E94;&#x7684;&#x540E;&#x7AEF;&#x6570;&#x636E;&#x662F;&#x4EE5; <strong>Store</strong> &#x7684;&#x7ED3;&#x6784;&#x4FDD;&#x5B58;&#x7684;&#xFF0C;&#x8FD9;&#x91CC;&#x4EE5; <code>/api</code> &#x5F00;&#x5934;&#x7684;&#x8DEF;&#x7531;&#x4E3E;&#x4F8B;&#xFF0C;&#x901A;&#x8FC7;<code>NewLegacyRESTStorage</code>&#x65B9;&#x6CD5;&#x521B;&#x5EFA;&#x5404;&#x4E2A;&#x8D44;&#x6E90;&#x7684;<strong>RESTStorage</strong>&#x3002;RESTStorage &#x662F;&#x4E00;&#x4E2A;&#x7ED3;&#x6784;&#x4F53;&#xFF0C;&#x5177;&#x4F53;&#x7684;&#x5B9A;&#x4E49;&#x5728;<code>k8s.io/apiserver/pkg/registry/generic/registry/store.go</code>&#x4E0B;&#xFF0C;&#x7ED3;&#x6784;&#x4F53;&#x5185;&#x4E3B;&#x8981;&#x5305;&#x542B;<code>NewFunc</code>&#x8FD4;&#x56DE;&#x7279;&#x5B9A;&#x8D44;&#x6E90;&#x4FE1;&#x606F;&#x3001;<code>NewListFunc</code>&#x8FD4;&#x56DE;&#x7279;&#x5B9A;&#x8D44;&#x6E90;&#x5217;&#x8868;&#x3001;<code>CreateStrategy</code>&#x7279;&#x5B9A;&#x8D44;&#x6E90;&#x521B;&#x5EFA;&#x65F6;&#x7684;&#x7B56;&#x7565;&#x3001;<code>UpdateStrategy</code>&#x66F4;&#x65B0;&#x65F6;&#x7684;&#x7B56;&#x7565;&#x4EE5;&#x53CA;<code>DeleteStrategy</code>&#x5220;&#x9664;&#x65F6;&#x7684;&#x7B56;&#x7565;&#x7B49;&#x91CD;&#x8981;&#x65B9;&#x6CD5;&#x3002;&#x5728;<code>NewLegacyRESTStorage</code>&#x5185;&#x90E8;&#xFF0C;&#x53EF;&#x4EE5;&#x770B;&#x5230;&#x521B;&#x5EFA;&#x4E86;&#x591A;&#x79CD;&#x8D44;&#x6E90;&#x7684; RESTStorage&#x3002;</p>
+<p><code>NewLegacyRESTStorage</code> &#x7684;&#x8C03;&#x7528;&#x94FE;&#x4E3A; <code>CreateKubeAPIServer --&gt; kubeAPIServerConfig.Complete().New --&gt; m.InstallLegacyAPI --&gt; legacyRESTStorageProvider.NewLegacyRESTStorage</code>&#x3002;</p>
+<h4 id="newlegacyreststorage"><a name="newlegacyreststorage" class="anchor-navigation-ex-anchor" href="#newlegacyreststorage"><i class="fa fa-link" aria-hidden="true"></i></a>NewLegacyRESTStorage</h4>
+<p>&#x4E00;&#x4E2A; API Group &#x4E0B;&#x7684;&#x8D44;&#x6E90;&#x90FD;&#x6709;&#x5176; REST &#x5B9E;&#x73B0;&#xFF0C;<code>k8s.io/kubernetes/pkg/registry</code>&#x4E0B;&#x6240;&#x6709;&#x7684; Group &#x90FD;&#x6709;&#x4E00;&#x4E2A;rest&#x76EE;&#x5F55;&#xFF0C;&#x5B58;&#x50A8;&#x7684;&#x5C31;&#x662F;&#x5BF9;&#x5E94;&#x8D44;&#x6E90;&#x7684; RESTStorage&#x3002;&#x5728;<code>NewLegacyRESTStorage</code>&#x65B9;&#x6CD5;&#x4E2D;&#xFF0C;&#x901A;&#x8FC7;<code>NewREST</code>&#x6216;&#x8005;<code>NewStorage</code>&#x4F1A;&#x751F;&#x6210;&#x5404;&#x79CD;&#x8D44;&#x6E90;&#x5BF9;&#x5E94;&#x7684; Storage&#xFF0C;&#x6B64;&#x5904;&#x4EE5; pod &#x4E3A;&#x4F8B;&#x8FDB;&#x884C;&#x8BF4;&#x660E;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/registry/core/rest/storage_core.go:102</code></p>
+<pre class="language-"><code>func (c LegacyRESTStorageProvider) NewLegacyRESTStorage(restOptionsGetter generic.RESTOptionsGetter) (LegacyRESTStorage, genericapiserver.  APIGroupInfo, error) {
+    apiGroupInfo := genericapiserver.APIGroupInfo{
+        PrioritizedVersions:          legacyscheme.Scheme.PrioritizedVersionsForGroup(&quot;&quot;),
+        VersionedResourcesStorageMap: map[string]map[string]rest.Storage{},
+        Scheme:                       legacyscheme.Scheme,
+        ParameterCodec:               legacyscheme.ParameterCodec,
+        NegotiatedSerializer:         legacyscheme.Codecs,
+    }
+
+    var podDisruptionClient policyclient.PodDisruptionBudgetsGetter
+    if policyGroupVersion := (schema.GroupVersion{Group: &quot;policy&quot;, Version: &quot;v1beta1&quot;}); legacyscheme.Scheme.                               IsVersionRegistered(policyGroupVersion) {
+        var err error
+        podDisruptionClient, err = policyclient.NewForConfig(c.LoopbackClientConfig)
+        if err != nil {
+            return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
+        }
+    }
+    // 1&#x3001;LegacyAPI &#x4E0B;&#x7684; resource RESTStorage &#x7684;&#x521D;&#x59CB;&#x5316;
+    restStorage := LegacyRESTStorage{}
+
+    podTemplateStorage, err := podtemplatestore.NewREST(restOptionsGetter)
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
+    }
+    eventStorage, err := eventstore.NewREST(restOptionsGetter, uint64(c.EventTTL.Seconds()))
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
+    }
+    limitRangeStorage, err := limitrangestore.NewREST(restOptionsGetter)
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
+    }
+
+    ......
+
+    endpointsStorage, err := endpointsstore.NewREST(restOptionsGetter)
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
+    }
+
+    nodeStorage, err := nodestore.NewStorage(restOptionsGetter, c.KubeletClientConfig, c.ProxyTransport)
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
+    }
+
+    // 2&#x3001;pod RESTStorage &#x7684;&#x521D;&#x59CB;&#x5316;
+    podStorage, err := podstore.NewStorage(......)
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
+    }
+    ......
+
+    serviceClusterIPAllocator, err := ipallocator.NewAllocatorCIDRRange(&amp;serviceClusterIPRange, func(max int, rangeSpec string) (allocator. Interface, error) {
+        ......
+    })
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, fmt.Errorf(&quot;cannot create cluster IP allocator: %v&quot;, err)
+    }
+    restStorage.ServiceClusterIPAllocator = serviceClusterIPRegistry
+
+    var secondaryServiceClusterIPAllocator ipallocator.Interface
+    if utilfeature.DefaultFeatureGate.Enabled(features.IPv6DualStack) &amp;&amp; c.SecondaryServiceIPRange.IP != nil {
+        ......
+    }
+
+    var serviceNodePortRegistry rangeallocation.RangeRegistry
+    serviceNodePortAllocator, err := portallocator.NewPortAllocatorCustom(c.ServiceNodePortRange, func(max int, rangeSpec string)      (allocator.Interface, error) {
+        ......
+    })
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, fmt.Errorf(&quot;cannot create cluster port allocator: %v&quot;, err)
+    }
+    restStorage.ServiceNodePortAllocator = serviceNodePortRegistry
+
+    controllerStorage, err := controllerstore.NewStorage(restOptionsGetter)
+    if err != nil {
+        return LegacyRESTStorage{}, genericapiserver.APIGroupInfo{}, err
+    }
+
+    serviceRest, serviceRestProxy := servicestore.NewREST(......)
+
+    // 3&#x3001;restStorageMap &#x4FDD;&#x5B58; resource http path &#x4E0E; RESTStorage &#x5BF9;&#x5E94;&#x5173;&#x7CFB;
+    restStorageMap := map[string]rest.Storage{
+        &quot;pods&quot;:             podStorage.Pod,
+        &quot;pods/attach&quot;:      podStorage.Attach,
+        &quot;pods/status&quot;:      podStorage.Status,
+        &quot;pods/log&quot;:         podStorage.Log,
+        &quot;pods/exec&quot;:        podStorage.Exec,
+        &quot;pods/portforward&quot;: podStorage.PortForward,
+        &quot;pods/proxy&quot;:       podStorage.Proxy,
+        ......
+        &quot;componentStatuses&quot;: componentstatus.NewStorage(componentStatusStorage{c.StorageFactory}.serversToValidate),
+    }
+    ......
+}
+</code></pre><h5 id="podstorenewstorage"><a name="podstorenewstorage" class="anchor-navigation-ex-anchor" href="#podstorenewstorage"><i class="fa fa-link" aria-hidden="true"></i></a>podstore.NewStorage</h5>
+<p><code>podstore.NewStorage</code> &#x662F;&#x4E3A; pod &#x751F;&#x6210; storage &#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x8BE5;&#x65B9;&#x6CD5;&#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x4E3A; pod &#x521B;&#x5EFA;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x6700;&#x7EC8;&#x8FD4;&#x56DE;&#x4E00;&#x4E2A; RESTStorage &#x5BF9;&#x8C61;&#xFF0C;&#x5176;&#x4E2D;&#x8C03;&#x7528; <code>store.CompleteWithOptions</code> &#x6765;&#x521B;&#x5EFA;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x7684;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/registry/core/pod/storage/storage.go:71</code></p>
+<pre class="language-"><code>func NewStorage(......) (PodStorage, error) {
+    store := &amp;genericregistry.Store{
+        NewFunc:                  func() runtime.Object { return &amp;api.Pod{} },
+        NewListFunc:              func() runtime.Object { return &amp;api.PodList{} },
+        ......
+    }
+    options := &amp;generic.StoreOptions{
+        RESTOptions: optsGetter,
+        AttrFunc:    pod.GetAttrs,
+        TriggerFunc: map[string]storage.IndexerFunc{&quot;spec.nodeName&quot;: pod.NodeNameTriggerFunc},
+    }
+
+    // &#x8C03;&#x7528; store.CompleteWithOptions
+    if err := store.CompleteWithOptions(options); err != nil {
+        return PodStorage{}, err
+    }
+    statusStore := *store
+    statusStore.UpdateStrategy = pod.StatusStrategy
+    ephemeralContainersStore := *store
+    ephemeralContainersStore.UpdateStrategy = pod.EphemeralContainersStrategy
+
+    bindingREST := &amp;BindingREST{store: store}
+
+    // PodStorage &#x5BF9;&#x8C61;
+    return PodStorage{
+        Pod:                 &amp;REST{store, proxyTransport},
+        Binding:             &amp;BindingREST{store: store},
+        LegacyBinding:       &amp;LegacyBindingREST{bindingREST},
+        Eviction:            newEvictionStorage(store, podDisruptionBudgetClient),
+        Status:              &amp;StatusREST{store: &amp;statusStore},
+        EphemeralContainers: &amp;EphemeralContainersREST{store: &amp;ephemeralContainersStore},
+        Log:                 &amp;podrest.LogREST{Store: store, KubeletConn: k},
+        Proxy:               &amp;podrest.ProxyREST{Store: store, ProxyTransport: proxyTransport},
+        Exec:                &amp;podrest.ExecREST{Store: store, KubeletConn: k},
+        Attach:              &amp;podrest.AttachREST{Store: store, KubeletConn: k},
+        PortForward:         &amp;podrest.PortForwardREST{Store: store, KubeletConn: k},
+    }, nil
+}
+</code></pre><p>&#x53EF;&#x4EE5;&#x770B;&#x5230;&#x6700;&#x7EC8;&#x8FD4;&#x56DE;&#x7684;&#x5BF9;&#x8C61;&#x91CC;&#x5BF9; pod &#x7684;&#x4E0D;&#x540C;&#x64CD;&#x4F5C;&#x90FD;&#x662F;&#x4E00;&#x4E2A; REST &#x5BF9;&#x8C61;&#xFF0C;REST &#x4E2D;&#x81EA;&#x52A8;&#x96C6;&#x6210;&#x4E86; <code>genericregistry.Store</code> &#x5BF9;&#x8C61;&#xFF0C;&#x800C; <code>store.CompleteWithOptions</code> &#x65B9;&#x6CD5;&#x5C31;&#x662F;&#x5BF9; <code>genericregistry.Store</code> &#x5BF9;&#x8C61;&#x4E2D;&#x5B58;&#x50A8;&#x5B9E;&#x4F8B;&#x5C31;&#x884C;&#x521D;&#x59CB;&#x5316;&#x7684;&#x3002;</p>
+<pre class="language-"><code>type REST struct {
+    *genericregistry.Store
+    proxyTransport http.RoundTripper
+}
+
+type BindingREST struct {
+    store *genericregistry.Store
+}
+......
+</code></pre><h5 id="storecompletewithoptions"><a name="storecompletewithoptions" class="anchor-navigation-ex-anchor" href="#storecompletewithoptions"><i class="fa fa-link" aria-hidden="true"></i></a>store.CompleteWithOptions</h5>
+<p><code>store.CompleteWithOptions</code> &#x4E3B;&#x8981;&#x529F;&#x80FD;&#x662F;&#x4E3A; store &#x4E2D;&#x7684;&#x914D;&#x7F6E;&#x8BBE;&#x7F6E;&#x4E00;&#x4E9B;&#x9ED8;&#x8BA4;&#x7684;&#x503C;&#x4EE5;&#x53CA;&#x6839;&#x636E;&#x63D0;&#x4F9B;&#x7684; options &#x66F4;&#x65B0; store&#xFF0C;&#x5176;&#x4E2D;&#x6700;&#x4E3B;&#x8981;&#x7684;&#x5C31;&#x662F;&#x521D;&#x59CB;&#x5316; store &#x7684;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x5B9E;&#x4F8B;&#x3002;</p>
+<p>&#x5728;<code>CompleteWithOptions</code>&#x65B9;&#x6CD5;&#x5185;&#xFF0C;&#x8C03;&#x7528;&#x4E86;<code>options.RESTOptions.GetRESTOptions</code> &#x65B9;&#x6CD5;&#xFF0C;&#x5176;&#x6700;&#x7EC8;&#x8FD4;&#x56DE;<code>generic.RESTOptions</code> &#x5BF9;&#x8C61;&#xFF0C;<code>generic.RESTOptions</code> &#x5BF9;&#x8C61;&#x4E2D;&#x5305;&#x542B;&#x5BF9; etcd &#x521D;&#x59CB;&#x5316;&#x7684;&#x4E00;&#x4E9B;&#x914D;&#x7F6E;&#x3001;&#x6570;&#x636E;&#x5E8F;&#x5217;&#x5316;&#x65B9;&#x6CD5;&#x4EE5;&#x53CA;&#x5BF9; etcd &#x64CD;&#x4F5C;&#x7684; storage.Interface &#x5BF9;&#x8C61;&#x3002;&#x5176;&#x4F1A;&#x4F9D;&#x6B21;&#x8C03;&#x7528;<code>StorageWithCacher--&gt;NewRawStorage--&gt;Create</code>&#x65B9;&#x6CD5;&#x521B;&#x5EFA;&#x6700;&#x7EC8;&#x4F9D;&#x8D56;&#x7684;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x3002;</p>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/registry/generic/registry/store.go:1192</code></p>
+<pre class="language-"><code>func (e *Store) CompleteWithOptions(options *generic.StoreOptions) error {
+    ......
+
+    var isNamespaced bool
+    switch {
+    case e.CreateStrategy != nil:
+        isNamespaced = e.CreateStrategy.NamespaceScoped()
+    case e.UpdateStrategy != nil:
+        isNamespaced = e.UpdateStrategy.NamespaceScoped()
+    default:
+        return fmt.Errorf(&quot;store for %s must have CreateStrategy or UpdateStrategy set&quot;, e.DefaultQualifiedResource.String())
+    }
+    ......
+
+    // 1&#x3001;&#x8C03;&#x7528; options.RESTOptions.GetRESTOptions 
+    opts, err := options.RESTOptions.GetRESTOptions(e.DefaultQualifiedResource)
+    if err != nil {
+        return err
+    }
+
+    // 2&#x3001;&#x8BBE;&#x7F6E; ResourcePrefix 
+    prefix := opts.ResourcePrefix
+    if !strings.HasPrefix(prefix, &quot;/&quot;) {
+        prefix = &quot;/&quot; + prefix
+    }
+
+    if prefix == &quot;/&quot; {
+        return fmt.Errorf(&quot;store for %s has an invalid prefix %q&quot;, e.DefaultQualifiedResource.String(), opts.ResourcePrefix)
+    }
+
+    if e.KeyRootFunc == nil &amp;&amp; e.KeyFunc == nil {
+        ......
+    }
+
+    keyFunc := func(obj runtime.Object) (string, error) {
+        ......
+    }
+
+    // 3&#x3001;&#x4EE5;&#x4E0B;&#x64CD;&#x4F5C;&#x4E3B;&#x8981;&#x662F;&#x5C06; opts &#x5BF9;&#x8C61;&#x4E2D;&#x7684;&#x503C;&#x8D4B;&#x503C;&#x5230; store &#x5BF9;&#x8C61;&#x4E2D;
+    if e.DeleteCollectionWorkers == 0 {
+        e.DeleteCollectionWorkers = opts.DeleteCollectionWorkers
+    }
+
+    e.EnableGarbageCollection = opts.EnableGarbageCollection
+    if e.ObjectNameFunc == nil {
+        ......
+    }
+
+    if e.Storage.Storage == nil {
+        e.Storage.Codec = opts.StorageConfig.Codec
+        var err error
+        e.Storage.Storage, e.DestroyFunc, err = opts.Decorator(
+            opts.StorageConfig,
+            prefix,
+            keyFunc,
+            e.NewFunc,
+            e.NewListFunc,
+            attrFunc,
+            options.TriggerFunc,
+        )
+        if err != nil {
+            return err
+        }
+        e.StorageVersioner = opts.StorageConfig.EncodeVersioner
+
+        if opts.CountMetricPollPeriod &gt; 0 {
+            stopFunc := e.startObservingCount(opts.CountMetricPollPeriod)
+            previousDestroy := e.DestroyFunc
+            e.DestroyFunc = func() {
+                stopFunc()
+                if previousDestroy != nil {
+                    previousDestroy()
+                }
+            }
+        }
+    }
+
+    return nil
+}
+</code></pre><p><code>options.RESTOptions</code> &#x662F;&#x4E00;&#x4E2A; interface&#xFF0C;&#x60F3;&#x8981;&#x627E;&#x5230;&#x5176; <code>GetRESTOptions</code> &#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x5FC5;&#x987B;&#x77E5;&#x9053; <code>options.RESTOptions</code> &#x521D;&#x59CB;&#x5316;&#x65F6;&#x5BF9;&#x5E94;&#x7684;&#x5B9E;&#x4F8B;&#xFF0C;&#x5176;&#x521D;&#x59CB;&#x5316;&#x662F;&#x5728; <code>CreateKubeAPIServerConfig --&gt; buildGenericConfig --&gt; s.Etcd.ApplyWithStorageFactoryTo</code> &#x65B9;&#x6CD5;&#x4E2D;&#x8FDB;&#x884C;&#x521D;&#x59CB;&#x5316;&#x7684;&#xFF0C;<code>RESTOptions</code> &#x5BF9;&#x5E94;&#x7684;&#x5B9E;&#x4F8B;&#x4E3A; <code>StorageFactoryRestOptionsFactory</code>&#xFF0C;&#x6240;&#x4EE5; PodStorage &#x521D;&#x59CB;&#x65F6;&#x6784;&#x5EFA;&#x7684; store &#x5BF9;&#x8C61;&#x4E2D;<code>genericserver.Config.RESTOptionsGetter</code> &#x5B9E;&#x9645;&#x7684;&#x5BF9;&#x8C61;&#x7C7B;&#x578B;&#x4E3A; <code>StorageFactoryRestOptionsFactory</code>&#xFF0C;&#x5176; <code>GetRESTOptions</code> &#x65B9;&#x6CD5;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/server/options/etcd.go:253</code></p>
+<pre class="language-"><code>func (f *StorageFactoryRestOptionsFactory) GetRESTOptions(resource schema.GroupResource) (generic.RESTOptions, error) {
+    storageConfig, err := f.StorageFactory.NewConfig(resource)
+    if err != nil {
+        return generic.RESTOptions{}, fmt.Errorf(&quot;unable to find storage destination for %v, due to %v&quot;, resource, err.Error())
+    }
+
+    ret := generic.RESTOptions{
+        StorageConfig:           storageConfig,
+        Decorator:               generic.UndecoratedStorage,
+        DeleteCollectionWorkers: f.Options.DeleteCollectionWorkers,
+        EnableGarbageCollection: f.Options.EnableGarbageCollection,
+        ResourcePrefix:          f.StorageFactory.ResourcePrefix(resource),
+        CountMetricPollPeriod:   f.Options.StorageConfig.CountMetricPollPeriod,
+    }
+    if f.Options.EnableWatchCache {
+        sizes, err := ParseWatchCacheSizes(f.Options.WatchCacheSizes)
+        if err != nil {
+            return generic.RESTOptions{}, err
+        }
+        cacheSize, ok := sizes[resource]
+        if !ok {
+            cacheSize = f.Options.DefaultWatchCacheSize
+        }
+        // &#x8C03;&#x7528; generic.StorageDecorator
+        ret.Decorator = genericregistry.StorageWithCacher(cacheSize)
+    }
+
+    return ret, nil
+}
+</code></pre><p>&#x5728; <code>genericregistry.StorageWithCacher</code> &#x4E2D;&#x53C8;&#x8C03;&#x7528;&#x4E86;&#x4E0D;&#x540C;&#x7684;&#x65B9;&#x6CD5;&#x6700;&#x7EC8;&#x4F1A;&#x8C03;&#x7528; <code>factory.Create</code> &#x6765;&#x521D;&#x59CB;&#x5316;&#x5B58;&#x50A8;&#x5B9E;&#x4F8B;&#xFF0C;&#x5176;&#x8C03;&#x7528;&#x94FE;&#x4E3A;&#xFF1A;<code>genericregistry.StorageWithCacher --&gt; generic.NewRawStorage --&gt; factory.Create</code>&#x3002;</p>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/storage/storagebackend/factory/factory.go:30</code></p>
+<pre class="language-"><code>func Create(c storagebackend.Config) (storage.Interface, DestroyFunc, error) {
+    switch c.Type {
+    case &quot;etcd2&quot;:
+        return nil, nil, fmt.Errorf(&quot;%v is no longer a supported storage backend&quot;, c.Type)
+    // &#x76EE;&#x524D; k8s &#x53EA;&#x652F;&#x6301;&#x4F7F;&#x7528; etcd v3
+    case storagebackend.StorageTypeUnset, storagebackend.StorageTypeETCD3:
+        return newETCD3Storage(c)
+    default:
+        return nil, nil, fmt.Errorf(&quot;unknown storage type: %s&quot;, c.Type)
+    }
+}
+</code></pre><h6 id="newetcd3storage"><a name="newetcd3storage" class="anchor-navigation-ex-anchor" href="#newetcd3storage"><i class="fa fa-link" aria-hidden="true"></i></a>newETCD3Storage</h6>
+<p>&#x5728; <code>newETCD3Storage</code> &#x4E2D;&#xFF0C;&#x9996;&#x5148;&#x901A;&#x8FC7;&#x8C03;&#x7528; <code>newETCD3Client</code> &#x521B;&#x5EFA; etcd &#x7684; client&#xFF0C;client &#x7684;&#x521B;&#x5EFA;&#x6700;&#x7EC8;&#x662F;&#x901A;&#x8FC7; etcd &#x5B98;&#x65B9;&#x63D0;&#x4F9B;&#x7684;&#x5BA2;&#x6237;&#x7AEF;&#x5DE5;&#x5177; <a href="https://github.com/etcd-io/etcd/tree/master/clientv3" target="_blank">clientv3</a> &#x8FDB;&#x884C;&#x521B;&#x5EFA;&#x7684;&#x3002;</p>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/storage/storagebackend/factory/etcd3.go:209</code></p>
+<pre class="language-"><code>func newETCD3Storage(c storagebackend.Config) (storage.Interface, DestroyFunc, error) {
+    stopCompactor, err := startCompactorOnce(c.Transport, c.CompactionInterval)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    client, err := newETCD3Client(c.Transport)
+    if err != nil {
+        stopCompactor()
+        return nil, nil, err
+    }
+
+    var once sync.Once
+    destroyFunc := func() {
+        once.Do(func() {
+            stopCompactor()
+            client.Close()
+        })
+    }
+    transformer := c.Transformer
+    if transformer == nil {
+        transformer = value.IdentityTransformer
+    }
+    return etcd3.New(client, c.Codec, c.Prefix, transformer, c.Paging), destroyFunc, nil
+}
+</code></pre><p>&#x81F3;&#x6B64;&#x5BF9;&#x4E8E; pod resource &#x4E2D; store &#x7684;&#x6784;&#x5EFA;&#x57FA;&#x672C;&#x5206;&#x6790;&#x5B8C;&#x6210;&#xFF0C;&#x4E0D;&#x540C; resource &#x5BF9;&#x5E94;&#x4E00;&#x4E2A; REST &#x5BF9;&#x8C61;&#xFF0C;&#x5176;&#x4E2D;&#x53C8;&#x5F15;&#x7528;&#x4E86; <code>genericregistry.Store</code> &#x5BF9;&#x8C61;&#xFF0C;&#x6700;&#x7EC8;&#x662F;&#x5BF9; <code>genericregistry.Store</code> &#x7684;&#x521D;&#x59CB;&#x5316;&#x3002;&#x5728;&#x5206;&#x6790;&#x5B8C; store &#x7684;&#x521D;&#x59CB;&#x5316;&#x540E;&#x8FD8;&#x6709;&#x4E00;&#x4E2A;&#x91CD;&#x8981;&#x7684;&#x6B65;&#x9AA4;&#x5C31;&#x662F;&#x8DEF;&#x7531;&#x7684;&#x6CE8;&#x518C;&#xFF0C;&#x8DEF;&#x7531;&#x6CE8;&#x518C;&#x4E3B;&#x8981;&#x7684;&#x6D41;&#x7A0B;&#x662F;&#x4E3A; resource &#x6839;&#x636E;&#x4E0D;&#x540C; verbs &#x6784;&#x5EFA; http path &#x4EE5;&#x53CA;&#x5C06; path &#x4E0E;&#x5BF9;&#x5E94; handler &#x8FDB;&#x884C;&#x7ED1;&#x5B9A;&#x3002;</p>
+<h4 id="&#x8DEF;&#x7531;&#x6CE8;&#x518C;"><a name="&#x8DEF;&#x7531;&#x6CE8;&#x518C;" class="anchor-navigation-ex-anchor" href="#&#x8DEF;&#x7531;&#x6CE8;&#x518C;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x8DEF;&#x7531;&#x6CE8;&#x518C;</h4>
+<p>&#x4E0A;&#x6587; RESTStorage &#x7684;&#x6784;&#x5EFA;&#x5BF9;&#x5E94;&#x7684;&#x662F; <code>InstallLegacyAPI</code> &#x4E2D;&#x7684; <code>legacyRESTStorageProvider.NewLegacyRESTStorage</code> &#x65B9;&#x6CD5;&#xFF0C;&#x4E0B;&#x9762;&#x7EE7;&#x7EED;&#x5206;&#x6790; <code>InstallLegacyAPI</code> &#x4E2D;&#x7684; <code>m.GenericAPIServer.InstallLegacyAPIGroup</code> &#x65B9;&#x6CD5;&#x7684;&#x5B9E;&#x73B0;&#x3002;</p>
+<p><code>k8s.io/kubernetes/pkg/master/master.go:406</code></p>
+<pre class="language-"><code>func (m *Master) InstallLegacyAPI(......) error {
+    legacyRESTStorage, apiGroupInfo, err := legacyRESTStorageProvider.NewLegacyRESTStorage(restOptionsGetter)
+    if err != nil {
+        return fmt.Errorf(&quot;Error building core storage: %v&quot;, err)
+    }
+    ......
+
+    if err := m.GenericAPIServer.InstallLegacyAPIGroup(genericapiserver.DefaultLegacyAPIPrefix, &amp;apiGroupInfo); err != nil {
+        return fmt.Errorf(&quot;Error in registering group versions: %v&quot;, err)
+    }
+    return nil
+}
+</code></pre><p><code>m.GenericAPIServer.InstallLegacyAPIGroup</code> &#x7684;&#x8C03;&#x7528;&#x94FE;&#x975E;&#x5E38;&#x6DF1;&#xFF0C;&#x6700;&#x7EC8;&#x662F;&#x4E3A; Group &#x4E0B;&#x6BCF;&#x4E00;&#x4E2A; API resources &#x6CE8;&#x518C; handler &#x53CA;&#x8DEF;&#x7531;&#x4FE1;&#x606F;&#xFF0C;&#x5176;&#x8C03;&#x7528;&#x94FE;&#x4E3A;&#xFF1A;<code>m.GenericAPIServer.InstallLegacyAPIGroup --&gt; s.installAPIResources --&gt; apiGroupVersion.InstallREST --&gt; installer.Install --&gt; a.registerResourceHandlers</code>&#x3002;&#x5176;&#x4E2D;&#x51E0;&#x4E2A;&#x65B9;&#x6CD5;&#x7684;&#x4F5C;&#x7528;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<ul>
+<li><code>s.installAPIResources</code>&#xFF1A;&#x4E3A;&#x6BCF;&#x4E00;&#x4E2A; API resource &#x8C03;&#x7528; <code>apiGroupVersion.InstallREST</code> &#x6DFB;&#x52A0;&#x8DEF;&#x7531;&#xFF1B;</li>
+<li><code>apiGroupVersion.InstallREST</code>&#xFF1A;&#x5C06; <code>restful.WebServic</code> &#x5BF9;&#x8C61;&#x6DFB;&#x52A0;&#x5230; container &#x4E2D;&#xFF1B;</li>
+<li><code>installer.Install</code>&#xFF1A;&#x8FD4;&#x56DE;&#x6700;&#x7EC8;&#x7684; <code>restful.WebService</code> &#x5BF9;&#x8C61;</li>
+</ul>
+<h5 id="aregisterresourcehandlers"><a name="aregisterresourcehandlers" class="anchor-navigation-ex-anchor" href="#aregisterresourcehandlers"><i class="fa fa-link" aria-hidden="true"></i></a>a.registerResourceHandlers</h5>
+<p>&#x8BE5;&#x65B9;&#x6CD5;&#x5B9E;&#x73B0;&#x4E86; <code>rest.Storage</code> &#x5230; <code>restful.Route</code> &#x7684;&#x8F6C;&#x6362;&#xFF0C;&#x5176;&#x9996;&#x5148;&#x4F1A;&#x5224;&#x65AD; API Resource &#x6240;&#x652F;&#x6301;&#x7684; REST &#x63A5;&#x53E3;&#xFF0C;&#x7136;&#x540E;&#x4E3A; REST &#x63A5;&#x53E3;&#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; handler&#xFF0C;&#x6700;&#x540E;&#x5C06;&#x5176;&#x6CE8;&#x518C;&#x5230;&#x8DEF;&#x7531;&#x4E2D;&#x3002;</p>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/endpoints/installer.go:181</code></p>
+<pre class="language-"><code>func (a *APIInstaller) registerResourceHandlers(path string, storage rest.Storage, ws *restful.WebService) (*metav1.APIResource, error) {       
+    admit := a.group.Admit
+
+    ......
+
+    // 1&#x3001;&#x5224;&#x65AD;&#x8BE5; resource &#x5B9E;&#x73B0;&#x4E86;&#x54EA;&#x4E9B; REST &#x64CD;&#x4F5C;&#x63A5;&#x53E3;&#xFF0C;&#x4EE5;&#x6B64;&#x6765;&#x5224;&#x65AD;&#x5176;&#x652F;&#x6301;&#x7684; verbs &#x4EE5;&#x4FBF;&#x4E3A;&#x5176;&#x6DFB;&#x52A0;&#x8DEF;&#x7531;
+    creater, isCreater := storage.(rest.Creater)
+    namedCreater, isNamedCreater := storage.(rest.NamedCreater)
+    lister, isLister := storage.(rest.Lister)
+    getter, isGetter := storage.(rest.Getter)
+    getterWithOptions, isGetterWithOptions := storage.(rest.GetterWithOptions)
+    gracefulDeleter, isGracefulDeleter := storage.(rest.GracefulDeleter)
+    collectionDeleter, isCollectionDeleter := storage.(rest.CollectionDeleter)
+    updater, isUpdater := storage.(rest.Updater)
+    patcher, isPatcher := storage.(rest.Patcher)
+    watcher, isWatcher := storage.(rest.Watcher)
+    connecter, isConnecter := storage.(rest.Connecter)
+    storageMeta, isMetadata := storage.(rest.StorageMetadata)
+    storageVersionProvider, isStorageVersionProvider := storage.(rest.StorageVersionProvider)
+    if !isMetadata {
+        storageMeta = defaultStorageMetadata{}
+    }
+    exporter, isExporter := storage.(rest.Exporter)
+    if !isExporter {
+        exporter = nil
+    }
+
+    ......
+
+    // 2&#x3001;&#x4E3A; resource &#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; actions &#x5E76;&#x6839;&#x636E;&#x662F;&#x5426;&#x652F;&#x6301; namespace 
+    switch {
+    case !namespaceScoped:
+        ......
+
+        actions = appendIf(actions, action{&quot;LIST&quot;, resourcePath, resourceParams, namer, false}, isLister)
+        actions = appendIf(actions, action{&quot;POST&quot;, resourcePath, resourceParams, namer, false}, isCreater)
+        actions = appendIf(actions, action{&quot;DELETECOLLECTION&quot;, resourcePath, resourceParams, namer, false}, isCollectionDeleter)
+        actions = appendIf(actions, action{&quot;WATCHLIST&quot;, &quot;watch/&quot; + resourcePath, resourceParams, namer, false}, allowWatchList)
+
+        actions = appendIf(actions, action{&quot;GET&quot;, itemPath, nameParams, namer, false}, isGetter)
+        if getSubpath {
+            actions = appendIf(actions, action{&quot;GET&quot;, itemPath + &quot;/{path:*}&quot;, proxyParams, namer, false}, isGetter)
+        }
+        actions = appendIf(actions, action{&quot;PUT&quot;, itemPath, nameParams, namer, false}, isUpdater)
+        actions = appendIf(actions, action{&quot;PATCH&quot;, itemPath, nameParams, namer, false}, isPatcher)
+        actions = appendIf(actions, action{&quot;DELETE&quot;, itemPath, nameParams, namer, false}, isGracefulDeleter)
+        actions = appendIf(actions, action{&quot;WATCH&quot;, &quot;watch/&quot; + itemPath, nameParams, namer, false}, isWatcher)
+        actions = appendIf(actions, action{&quot;CONNECT&quot;, itemPath, nameParams, namer, false}, isConnecter)
+        actions = appendIf(actions, action{&quot;CONNECT&quot;, itemPath + &quot;/{path:*}&quot;, proxyParams, namer, false}, isConnecter &amp;&amp; connectSubpath)
+    default:
+        ......
+        actions = appendIf(actions, action{&quot;LIST&quot;, resourcePath, resourceParams, namer, false}, isLister)
+        actions = appendIf(actions, action{&quot;POST&quot;, resourcePath, resourceParams, namer, false}, isCreater)
+        actions = appendIf(actions, action{&quot;DELETECOLLECTION&quot;, resourcePath, resourceParams, namer, false}, isCollectionDeleter)
+        actions = appendIf(actions, action{&quot;WATCHLIST&quot;, &quot;watch/&quot; + resourcePath, resourceParams, namer, false}, allowWatchList)
+
+        actions = appendIf(actions, action{&quot;GET&quot;, itemPath, nameParams, namer, false}, isGetter)
+        ......
+    }
+
+    // 3&#x3001;&#x6839;&#x636E; action &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; route
+    kubeVerbs := map[string]struct{}{}
+    reqScope := handlers.RequestScope{
+        Serializer:      a.group.Serializer,
+        ParameterCodec:  a.group.ParameterCodec,
+        Creater:         a.group.Creater,
+        Convertor:       a.group.Convertor,
+        ......
+    }
+    ......
+    // 4&#x3001;&#x4ECE; rest.Storage &#x5230; restful.Route &#x6620;&#x5C04;
+    // &#x4E3A;&#x6BCF;&#x4E2A;&#x64CD;&#x4F5C;&#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; handler
+    for _, action := range actions {
+        ......
+        verbOverrider, needOverride := storage.(StorageMetricsOverride)
+        switch action.Verb {
+        case &quot;GET&quot;: ......
+        case &quot;LIST&quot;:
+        case &quot;PUT&quot;:
+        case &quot;PATCH&quot;:
+        // &#x6B64;&#x5904;&#x4EE5; POST &#x64CD;&#x4F5C;&#x8FDB;&#x884C;&#x8BF4;&#x660E;
+        case &quot;POST&quot;: 
+            var handler restful.RouteFunction
+            // 5&#x3001;&#x521D;&#x59CB;&#x5316; handler
+            if isNamedCreater {
+                handler = restfulCreateNamedResource(namedCreater, reqScope, admit)
+            } else {
+                handler = restfulCreateResource(creater, reqScope, admit)
+            }
+            handler = metrics.InstrumentRouteFunc(action.Verb, group, version, resource, subresource, requestScope, metrics.APIServerComponent, handler)
+            article := GetArticleForNoun(kind, &quot; &quot;)
+            doc := &quot;create&quot; + article + kind
+            if isSubresource {
+                doc = &quot;create &quot; + subresource + &quot; of&quot; + article + kind
+            }
+            // 6&#x3001;route &#x4E0E; handler &#x8FDB;&#x884C;&#x7ED1;&#x5B9A;
+            route := ws.POST(action.Path).To(handler).
+                Doc(doc).
+                Param(ws.QueryParameter(&quot;pretty&quot;, &quot;If &apos;true&apos;, then the output is pretty printed.&quot;)).
+                Operation(&quot;create&quot;+namespaced+kind+strings.Title(subresource)+operationSuffix).
+                Produces(append(storageMeta.ProducesMIMETypes(action.Verb), mediaTypes...)...).
+                Returns(http.StatusOK, &quot;OK&quot;, producedObject).
+                Returns(http.StatusCreated, &quot;Created&quot;, producedObject).
+                Returns(http.StatusAccepted, &quot;Accepted&quot;, producedObject).
+                Reads(defaultVersionedObject).
+                Writes(producedObject)
+            if err := AddObjectParams(ws, route, versionedCreateOptions); err != nil {
+                return nil, err
+            }
+            addParams(route, action.Params)
+            // 7&#x3001;&#x6DFB;&#x52A0;&#x5230;&#x8DEF;&#x7531;&#x4E2D;
+            routes = append(routes, route)
+        case &quot;DELETE&quot;: 
+        case &quot;DELETECOLLECTION&quot;:
+        case &quot;WATCH&quot;:
+        case &quot;WATCHLIST&quot;:
+        case &quot;CONNECT&quot;:
+        default:
+    }
+    ......
+    return &amp;apiResource, nil
+}
+</code></pre><h5 id="restfulcreatenamedresource"><a name="restfulcreatenamedresource" class="anchor-navigation-ex-anchor" href="#restfulcreatenamedresource"><i class="fa fa-link" aria-hidden="true"></i></a>restfulCreateNamedResource</h5>
+<p><code>restfulCreateNamedResource</code> &#x662F; POST &#x64CD;&#x4F5C;&#x5BF9;&#x5E94;&#x7684; handler&#xFF0C;&#x6700;&#x7EC8;&#x4F1A;&#x8C03;&#x7528; <code>createHandler</code> &#x65B9;&#x6CD5;&#x5B8C;&#x6210;&#x3002;</p>
+<p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/endpoints/installer.go:1087</code></p>
+<pre class="language-"><code>func restfulCreateNamedResource(r rest.NamedCreater, scope handlers.RequestScope, admit admission.Interface) restful.RouteFunction {
+    return func(req *restful.Request, res *restful.Response) {
+        handlers.CreateNamedResource(r, &amp;scope, admit)(res.ResponseWriter, req.Request)
+    }
+}
+
+func CreateNamedResource(r rest.NamedCreater, scope *RequestScope, admission admission.Interface) http.HandlerFunc {
+    return createHandler(r, scope, admission, true)
+}
+</code></pre><h5 id="createhandler"><a name="createhandler" class="anchor-navigation-ex-anchor" href="#createhandler"><i class="fa fa-link" aria-hidden="true"></i></a>createHandler</h5>
+<p> <code>createHandler</code> &#x662F;&#x5C06;&#x6570;&#x636E;&#x5199;&#x5165;&#x5230;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5BF9;&#x4E8E;&#x8D44;&#x6E90;&#x7684;&#x64CD;&#x4F5C;&#x90FD;&#x6709;&#x76F8;&#x5173;&#x7684;&#x6743;&#x9650;&#x63A7;&#x5236;&#xFF0C;&#x5728; <code>createHandler</code>  &#x4E2D;&#x9996;&#x5148;&#x4F1A;&#x6267;&#x884C; <code>decoder</code> &#x548C; <code>admission</code> &#x64CD;&#x4F5C;&#xFF0C;&#x7136;&#x540E;&#x8C03;&#x7528; <code>create</code> &#x65B9;&#x6CD5;&#x5B8C;&#x6210; resource &#x7684;&#x521B;&#x5EFA;&#xFF0C;&#x5728; <code>create</code> &#x65B9;&#x6CD5;&#x4E2D;&#x4F1A;&#x8FDB;&#x884C; <code>validate</code> &#x4EE5;&#x53CA;&#x6700;&#x7EC8;&#x5C06;&#x6570;&#x636E;&#x4FDD;&#x5B58;&#x5230;&#x540E;&#x7AEF;&#x5B58;&#x50A8;&#x4E2D;&#x3002;<code>admit</code> &#x64CD;&#x4F5C;&#x5373;&#x6267;&#x884C; kube-apiserver &#x4E2D;&#x7684; admission-plugins&#xFF0C;admission-plugins &#x5728; <code>CreateKubeAPIServerConfig</code> &#x4E2D;&#x88AB;&#x521D;&#x59CB;&#x5316;&#x4E3A;&#x4E86; admissionChain&#xFF0C;&#x5176;&#x521D;&#x59CB;&#x5316;&#x7684;&#x8C03;&#x7528;&#x94FE;&#x4E3A; <code>CreateKubeAPIServerConfig --&gt; buildGenericConfig --&gt; s.Admission.ApplyTo --&gt; a.GenericAdmission.ApplyTo --&gt; a.Plugins.NewFromPlugins</code>&#xFF0C;&#x6700;&#x7EC8;&#x5728; <code>a.Plugins.NewFromPlugins</code> &#x4E2D;&#x5C06;&#x6240;&#x6709;&#x5DF2;&#x542F;&#x7528;&#x7684; plugins &#x5C01;&#x88C5;&#x4E3A; admissionChain&#xFF0C;&#x6B64;&#x5904;&#x8981;&#x6267;&#x884C;&#x7684; admit &#x64CD;&#x4F5C;&#x5373;&#x6267;&#x884C; admission-plugins &#x4E2D;&#x7684; admit &#x64CD;&#x4F5C;&#x3002;</p>
+<p><code>createHandler</code> &#x4E2D;&#x8C03;&#x7528;&#x7684; create &#x65B9;&#x6CD5;&#x662F;<code>genericregistry.Store</code> &#x5BF9;&#x8C61;&#x7684;&#x65B9;&#x6CD5;&#xFF0C;&#x5728;&#x6BCF;&#x4E2A; resource &#x521D;&#x59CB;&#x5316; RESTStorage &#x90FD;&#x4F1A;&#x5F15;&#x5165; <code>genericregistry.Store</code> &#x5BF9;&#x8C61;&#x3002;</p>
+<p><code>createHandler</code> &#x4E2D;&#x6240;&#x6709;&#x7684;&#x64CD;&#x4F5C;&#x5C31;&#x662F;&#x672C;&#x6587;&#x5F00;&#x5934;&#x63D0;&#x5230;&#x7684;&#x8BF7;&#x6C42;&#x6D41;&#x7A0B;&#xFF0C;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>v1beta1 &#x21D2; internal &#x21D2;    |    &#x21D2;       |    &#x21D2;  v1  &#x21D2; json/yaml &#x21D2; etcd
+                     admission    validation
+</code></pre><p><code>k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/endpoints/handlers/create.go:46</code></p>
+<pre class="language-"><code>func createHandler(r rest.NamedCreater, scope *RequestScope, admit admission.Interface, includeName bool) http.HandlerFunc {
+    return func(w http.ResponseWriter, req *http.Request) {
+        trace := utiltrace.New(&quot;Create&quot;, utiltrace.Field{&quot;url&quot;, req.URL.Path})
+        defer trace.LogIfLong(500 * time.Millisecond)
+        ......
+
+        gv := scope.Kind.GroupVersion()
+        // 1&#x3001;&#x5F97;&#x5230;&#x5408;&#x9002;&#x7684;SerializerInfo
+        s, err := negotiation.NegotiateInputSerializer(req, false, scope.Serializer)
+        if err != nil {
+            scope.err(err, w, req)
+            return
+        }
+        // 2&#x3001;&#x627E;&#x5230;&#x5408;&#x9002;&#x7684; decoder
+        decoder := scope.Serializer.DecoderToVersion(s.Serializer, scope.HubGroupVersion)
+
+        body, err := limitedReadBody(req, scope.MaxRequestBodyBytes)
+        if err != nil {
+            scope.err(err, w, req)
+            return
+        }
+
+        ......
+
+        defaultGVK := scope.Kind
+        original := r.New()
+        trace.Step(&quot;About to convert to expected version&quot;)
+        // 3&#x3001;decoder &#x89E3;&#x7801;
+        obj, gvk, err := decoder.Decode(body, &amp;defaultGVK, original)
+        ......
+
+        ae := request.AuditEventFrom(ctx)
+        admit = admission.WithAudit(admit, ae)
+        audit.LogRequestObject(ae, obj, scope.Resource, scope.Subresource, scope.Serializer)
+
+        userInfo, _ := request.UserFrom(ctx)
+
+
+        if len(name) == 0 {
+            _, name, _ = scope.Namer.ObjectName(obj)
+        }
+        // 4&#x3001;&#x6267;&#x884C; admit &#x64CD;&#x4F5C;&#xFF0C;&#x5373;&#x6267;&#x884C; kube-apiserver &#x542F;&#x52A8;&#x65F6;&#x52A0;&#x8F7D;&#x7684; admission-plugins&#xFF0C;
+        admissionAttributes := admission.NewAttributesRecord(......)
+        if mutatingAdmission, ok := admit.(admission.MutationInterface); ok &amp;&amp; mutatingAdmission.Handles(admission.Create) {
+            err = mutatingAdmission.Admit(ctx, admissionAttributes, scope)
+            if err != nil {
+                scope.err(err, w, req)
+                return
+            }
+        }
+
+        ......
+        // 5&#x3001;&#x6267;&#x884C; create &#x64CD;&#x4F5C;
+        result, err := finishRequest(timeout, func() (runtime.Object, error) {
+            return r.Create(
+                ctx,
+                name,
+                obj,
+                rest.AdmissionToValidateObjectFunc(admit, admissionAttributes, scope),
+                options,
+            )
+        })
+        ......
+    }
+}
+</code></pre><h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x5206;&#x6790; kube-apiserver &#x7684;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#xFF0C;kube-apiserver &#x4E2D;&#x5305;&#x542B;&#x4E09;&#x4E2A; server&#xFF0C;&#x5206;&#x522B;&#x4E3A; KubeAPIServer&#x3001;APIExtensionsServer &#x4EE5;&#x53CA; AggregatorServer&#xFF0C;&#x4E09;&#x4E2A; server &#x662F;&#x901A;&#x8FC7;&#x59D4;&#x6258;&#x6A21;&#x5F0F;&#x8FDE;&#x63A5;&#x5728;&#x4E00;&#x8D77;&#x7684;&#xFF0C;&#x521D;&#x59CB;&#x5316;&#x8FC7;&#x7A0B;&#x90FD;&#x662F;&#x7C7B;&#x4F3C;&#x7684;&#xFF0C;&#x9996;&#x5148;&#x4E3A;&#x6BCF;&#x4E2A; server &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684; config&#xFF0C;&#x7136;&#x540E;&#x521D;&#x59CB;&#x5316; http server&#xFF0C;http server &#x7684;&#x521D;&#x59CB;&#x5316;&#x8FC7;&#x7A0B;&#x4E3A;&#x9996;&#x5148;&#x521D;&#x59CB;&#x5316; <code>GoRestfulContainer</code>&#xFF0C;&#x7136;&#x540E;&#x5B89;&#x88C5; server &#x6240;&#x5305;&#x542B;&#x7684; API&#xFF0C;&#x5B89;&#x88C5; API &#x65F6;&#x9996;&#x5148;&#x4E3A;&#x6BCF;&#x4E2A; API Resource &#x521B;&#x5EFA;&#x5BF9;&#x5E94;&#x7684;&#x540E;&#x7AEF;&#x5B58;&#x50A8; RESTStorage&#xFF0C;&#x518D;&#x4E3A;&#x6BCF;&#x4E2A; API Resource &#x652F;&#x6301;&#x7684; verbs &#x6DFB;&#x52A0;&#x5BF9;&#x5E94;&#x7684; handler&#xFF0C;&#x5E76;&#x5C06; handler &#x6CE8;&#x518C;&#x5230; route &#x4E2D;&#xFF0C;&#x6700;&#x540E;&#x5C06; route &#x6CE8;&#x518C;&#x5230; webservice &#x4E2D;&#xFF0C;&#x542F;&#x52A8;&#x6D41;&#x7A0B;&#x4E2D; RESTFul API &#x7684;&#x5B9E;&#x73B0;&#x6D41;&#x7A0B;&#x662F;&#x5176;&#x6838;&#x5FC3;&#xFF0C;&#x81F3;&#x4E8E; kube-apiserver &#x4E2D;&#x8BA4;&#x8BC1;&#x9274;&#x6743;&#x7B49; filter &#x7684;&#x5B9E;&#x73B0;&#x3001;&#x591A;&#x7248;&#x672C;&#x8D44;&#x6E90;&#x8F6C;&#x6362;&#x3001;kubernetes service &#x7684;&#x5B9E;&#x73B0;&#x7B49;&#x4E00;&#x4E9B;&#x7EC6;&#x8282;&#x4F1A;&#x5728;&#x540E;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#x7EE7;&#x7EED;&#x8FDB;&#x884C;&#x5206;&#x6790;&#x3002;</p>
+<p>&#x53C2;&#x8003;&#xFF1A;</p>
+<p><a href="https://mp.weixin.qq.com/s/hTEWatYLhTnC5X0FBM2RWQ" target="_blank">https://mp.weixin.qq.com/s/hTEWatYLhTnC5X0FBM2RWQ</a></p>
+<p><a href="https://bbbmj.github.io/2019/04/13/Kubernetes/code-analytics/kube-apiserver/" target="_blank">https://bbbmj.github.io/2019/04/13/Kubernetes/code-analytics/kube-apiserver/</a></p>
+<p><a href="https://mp.weixin.qq.com/s/TQuqAAzBjeWHwKPJZ3iJhA" target="_blank">https://mp.weixin.qq.com/s/TQuqAAzBjeWHwKPJZ3iJhA</a></p>
+<p><a href="https://blog.openshift.com/kubernetes-deep-dive-api-server-part-1/" target="_blank">https://blog.openshift.com/kubernetes-deep-dive-api-server-part-1/</a></p>
+<p><a href="https://www.jianshu.com/p/daa4ff387a78" target="_blank">https://www.jianshu.com/p/daa4ff387a78</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2020-02-24 17:36:25
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: kubernetes">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="nodelifecycle_controller.html" class="navigation navigation-next " aria-label="Next page: node controller 源码分析">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"kube-apiserver 的设计与实现","date":"2020-02-24T17:03:30.000Z","tags":["kube-apiserver"],"type":"kube-apiserver","level":"1.2.1","depth":2,"next":{"title":"node controller 源码分析","level":"1.2.2","depth":2,"path":"kubernetes/nodelifecycle_controller.md","ref":"kubernetes/nodelifecycle_controller.md","articles":[]},"previous":{"title":"kubernetes","level":"1.2","depth":1,"path":"kubernetes/README.md","ref":"kubernetes/README.md","articles":[{"title":"kube-apiserver 的设计与实现","level":"1.2.1","depth":2,"path":"kubernetes/kube_apiserver.md","ref":"kubernetes/kube_apiserver.md","articles":[]},{"title":"node controller 源码分析","level":"1.2.2","depth":2,"path":"kubernetes/nodelifecycle_controller.md","ref":"kubernetes/nodelifecycle_controller.md","articles":[]},{"title":"job controller 源码分析","level":"1.2.3","depth":2,"path":"kubernetes/job_controller.md","ref":"kubernetes/job_controller.md","articles":[]},{"title":"garbage collector controller 源码分析","level":"1.2.4","depth":2,"path":"kubernetes/garbagecollector_controller.md","ref":"kubernetes/garbagecollector_controller.md","articles":[]},{"title":"daemonset controller 源码分析","level":"1.2.5","depth":2,"path":"kubernetes/daemonset_controller.md","ref":"kubernetes/daemonset_controller.md","articles":[]},{"title":"statefulset controller 源码分析","level":"1.2.6","depth":2,"path":"kubernetes/statefulset_controller.md","ref":"kubernetes/statefulset_controller.md","articles":[]},{"title":"deployment controller 源码分析","level":"1.2.7","depth":2,"path":"kubernetes/deployment_controller.md","ref":"kubernetes/deployment_controller.md","articles":[]},{"title":"replicaset controller 源码分析","level":"1.2.8","depth":2,"path":"kubernetes/replicaset_controller.md","ref":"kubernetes/replicaset_controller.md","articles":[]},{"title":"kube-scheduler 源码分析","level":"1.2.9","depth":2,"path":"kubernetes/kube_scheduler_process.md","ref":"kubernetes/kube_scheduler_process.md","articles":[]},{"title":"kube-scheduler predicates 与 priorities 调度算法源码分析","level":"1.2.10","depth":2,"path":"kubernetes/kube_scheduler_algorithm.md","ref":"kubernetes/kube_scheduler_algorithm.md","articles":[]},{"title":"kube-scheduler 优先级与抢占机制源码分析","level":"1.2.11","depth":2,"path":"kubernetes/kube_scheduler_preempt.md","ref":"kubernetes/kube_scheduler_preempt.md","articles":[]},{"title":"kubernetes service 原理解析","level":"1.2.12","depth":2,"path":"kubernetes/k8s_service_theory.md","ref":"kubernetes/k8s_service_theory.md","articles":[]},{"title":"kube-proxy 源码分析","level":"1.2.13","depth":2,"path":"kubernetes/kube_proxy_process.md","ref":"kubernetes/kube_proxy_process.md","articles":[]},{"title":"kube-proxy iptables 模式源码分析","level":"1.2.14","depth":2,"path":"kubernetes/kube_proxy_iptables.md","ref":"kubernetes/kube_proxy_iptables.md","articles":[]},{"title":"kube-proxy ipvs 模式源码分析","level":"1.2.15","depth":2,"path":"kubernetes/kube_proxy_ipvs.md","ref":"kubernetes/kube_proxy_ipvs.md","articles":[]},{"title":"kubelet 架构浅析","level":"1.2.16","depth":2,"path":"kubernetes/kubelet-modules.md","ref":"kubernetes/kubelet-modules.md","articles":[]},{"title":"kubelet 启动流程分析","level":"1.2.17","depth":2,"path":"kubernetes/kubelet_init.md","ref":"kubernetes/kubelet_init.md","articles":[]},{"title":"kubelet 创建 pod 的流程","level":"1.2.18","depth":2,"path":"kubernetes/kubelet_create_pod.md","ref":"kubernetes/kubelet_create_pod.md","articles":[]},{"title":"kubelet 状态上报的方式","level":"1.2.19","depth":2,"path":"kubernetes/node_status.md","ref":"kubernetes/node_status.md","articles":[]},{"title":"kubelet 中事件处理机制","level":"1.2.20","depth":2,"path":"kubernetes/k8s_events.md","ref":"kubernetes/k8s_events.md","articles":[]},{"title":"kubelet statusManager 源码分析","level":"1.2.21","depth":2,"path":"kubernetes/kubelet_status_manager.md","ref":"kubernetes/kubelet_status_manager.md","articles":[]},{"title":"kubernetes 中 Qos 的设计与实现","level":"1.2.22","depth":2,"path":"kubernetes/kubelet_qos.md","ref":"kubernetes/kubelet_qos.md","articles":[]},{"title":"kubelet 中垃圾回收机制的设计与实现","level":"1.2.23","depth":2,"path":"kubernetes/kubelet_garbage_collect.md","ref":"kubernetes/kubelet_garbage_collect.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"kubernetes/kube_apiserver.md","mtime":"2020-02-24T09:36:25.061Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2020-02-24T09:37:01.855Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+
