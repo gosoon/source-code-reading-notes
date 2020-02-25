@@ -18,7 +18,7 @@
 
 知乎：[田飞雨](https://www.zhihu.com/people/www.tianfeiyu.com)
 
-腾讯云：[田飞雨的专栏](https://cloud.tencent.com/developer/user/474918)
+腾讯云—云+社区：[田飞雨的专栏](https://cloud.tencent.com/developer/user/474918)
 
 微信公众号：田飞雨
 
