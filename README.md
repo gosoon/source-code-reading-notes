@@ -16,7 +16,7 @@
 
 简书：[田飞雨](https://www.jianshu.com/u/a004b422adae)
 
-知乎：[田飞雨](https://www.zhihu.com/people/www.tianfeiyu.com)
+知乎专栏：[kubernetes 源码分析](https://zhuanlan.zhihu.com/c_1195294063723929600)
 
 腾讯云—云+社区：[田飞雨的专栏](https://cloud.tencent.com/developer/user/474918)
 
