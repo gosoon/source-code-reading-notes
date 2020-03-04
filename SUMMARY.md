@@ -4,6 +4,7 @@
 
 * [kubernetes](kubernetes/README.md)
     * [kube-apiserver 的设计与实现](kubernetes/kube_apiserver.md)
+    * [kube-apiserver 中 apiserver service 的实现](kubernetes/apiserver_bootstrap_controller.md)
     * [node controller 源码分析](kubernetes/nodelifecycle_controller.md)
     * [job controller 源码分析](kubernetes/job_controller.md)
     * [garbage collector controller 源码分析](kubernetes/garbagecollector_controller.md)
