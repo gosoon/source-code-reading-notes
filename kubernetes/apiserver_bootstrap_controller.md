@@ -204,7 +204,7 @@ func (c *Controller) Start() {
 
 #### c.RunKubernetesNamespaces
 
-`c.RunKubernetesNamespaces` 主要功能时创建 kube-system 和 kube-public 命名空间，如果启用了 `NodeLease`  特性功能还会创建 kube-node-lease 命名空间，之后每隔一分钟检查一次。
+`c.RunKubernetesNamespaces` 主要功能是创建 kube-system 和 kube-public 命名空间，如果启用了 `NodeLease`  特性功能还会创建 kube-node-lease 命名空间，之后每隔一分钟检查一次。
 
 
 
