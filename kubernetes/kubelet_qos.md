@@ -53,7 +53,7 @@ BestEffort -> Burstable -> Guaranteed
 三种 Qos 在调度和底层表现上都不一样：
 
 - 1、在调度时调度器只会根据 request 值进行调度；
-- 2、二是当系统 OOM上时对于处理不同 OOMScore 的进程表现不同，OOMScore 是针对 memory 的，当宿主上 memory 不足时系统会优先 kill 掉 OOMScore 值低的进程，可以使用  `$ cat /proc/$PID/oom_score` 查看进程的 OOMScore。OOMScore 的取值范围为 [-1000, 1000]，`Guaranteed` pod 的默认值为 -998，`Burstable` pod 的值为 2~999，`BestEffort` pod 的值为 1000，也就是说当系统 OOM 时，首先会 kill 掉 `BestEffort` pod 的进程，若系统依然处于 OOM 状态，然后才会 kill 掉  `Burstable` pod，最后是 `Guaranteed` pod；
+- 2、二是当系统 OOM上时对于处理不同 OOMScore 的进程表现不同，OOMScore 是针对 memory 的，当宿主上 memory 不足时系统会优先 kill 掉 OOMScore 值高的进程，可以使用  `$ cat /proc/$PID/oom_score` 查看进程的 OOMScore。OOMScore 的取值范围为 [-1000, 1000]，`Guaranteed` pod 的默认值为 -998，`Burstable` pod 的值为 2~999，`BestEffort` pod 的值为 1000，也就是说当系统 OOM 时，首先会 kill 掉 `BestEffort` pod 的进程，若系统依然处于 OOM 状态，然后才会 kill 掉  `Burstable` pod，最后是 `Guaranteed` pod；
 - 3、三是 cgroup 的配置不同，kubelet 为会三种 Qos 分别创建对应的 QoS level cgroups，`Guaranteed` Pod Qos 的 cgroup level 会直接创建在 `RootCgroup/kubepods` 下，`Burstable` Pod Qos 的创建在 `RootCgroup/kubepods/burstable` 下，`BestEffort` Pod Qos 的创建在 `RootCgroup/kubepods/BestEffort` 下，上文已经说了  root cgroup 可以通过 `$ mount | grep cgroup`看到，在 cgroup 的每个子系统下都会创建 Qos level cgroups， 此外在对应的 QoS level cgroups 还会为 pod 创建 Pod level cgroups；
 
 
