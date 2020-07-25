@@ -1,6 +1,6 @@
 # 1、关于本书
 
-本书主要记录工作过程中阅读过的一些开源项目的源码，并加以自己的分析与注解，目前专注于 k8s 云原生实践，包括但不限于 docker、kubernetes、etcd、promethus、istio、knative、serverless 等相关云原生项目。
+本书主要记录工作过程中阅读过的一些开源项目的源码，并加以自己的分析与注解，目前专注于 k8s 云原生实践，包括但不限于 docker、kubernetes、etcd、prometheus、istio、knative、serverless 等相关云原生项目。
 
 
 
