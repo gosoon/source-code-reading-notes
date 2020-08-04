@@ -187,7 +187,7 @@ func (c *Controller) Start() {
     repairClusterIPs := servicecontroller.NewRepair(......)
     repairNodePorts := portallocatorcontroller.NewRepair(......)
 
-    // 3、首先运行一次 epairClusterIPs 和 repairNodePorts，即进行初始化
+    // 3、首先运行一次 repairClusterIPs 和 repairNodePorts，即进行初始化
     if err := repairClusterIPs.RunOnce(); err != nil {
         klog.Fatalf("Unable to perform initial IP allocation check: %v", err)
     }
