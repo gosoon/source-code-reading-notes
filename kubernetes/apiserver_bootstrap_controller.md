@@ -498,7 +498,7 @@ func (c *Repair) runOnce() error {
 
 
 
-#### repairNodePorts.RunUnti
+#### repairNodePorts.RunUntil
 
 repairNodePorts 主要是用来纠正 service 中 nodePort 的信息，保证所有的 ports 都基于 cluster 创建的，当没有与 cluster 同步时会触发告警，其最终是调用 `repairNodePorts.runOnce` 进行处理的，主要逻辑与 ClusterIP 的处理逻辑类似。
 
