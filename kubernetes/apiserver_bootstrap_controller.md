@@ -187,7 +187,7 @@ func (c *Controller) Start() {
     repairClusterIPs := servicecontroller.NewRepair(......)
     repairNodePorts := portallocatorcontroller.NewRepair(......)
 
-    // 3、首先运行一次 epairClusterIPs 和 repairNodePorts，即进行初始化
+    // 3、首先运行一次 repairClusterIPs 和 repairNodePorts，即进行初始化
     if err := repairClusterIPs.RunOnce(); err != nil {
         klog.Fatalf("Unable to perform initial IP allocation check: %v", err)
     }
@@ -498,7 +498,7 @@ func (c *Repair) runOnce() error {
 
 
 
-#### repairNodePorts.RunUnti
+#### repairNodePorts.RunUntil
 
 repairNodePorts 主要是用来纠正 service 中 nodePort 的信息，保证所有的 ports 都基于 cluster 创建的，当没有与 cluster 同步时会触发告警，其最终是调用 `repairNodePorts.runOnce` 进行处理的，主要逻辑与 ClusterIP 的处理逻辑类似。
 
