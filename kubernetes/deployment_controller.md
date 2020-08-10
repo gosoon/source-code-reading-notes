@@ -470,17 +470,20 @@ func calculateStatus(allRSs []*apps.ReplicaSet, newRS *apps.ReplicaSet, deployme
         CollisionCount:      deployment.Status.CollisionCount,
     }
 
+    // Copy conditions one by one so we won't mutate the original object.
     conditions := deployment.Status.Conditions
     for i := range conditions {
         status.Conditions = append(status.Conditions, conditions[i])
     }
 
-    conditions := deployment.Status.Conditions
-    for i := range conditions {
-        status.Conditions = append(status.Conditions, conditions[i])
+    if availableReplicas >= *(deployment.Spec.Replicas)-deploymentutil.MaxUnavailable(*deployment) {
+            minAvailability := deploymentutil.NewDeploymentCondition(apps.DeploymentAvailable, v1.ConditionTrue, deploymentutil.MinimumReplicasAvailable, "Deployment has minimum availability.")
+            deploymentutil.SetDeploymentCondition(&status, *minAvailability)
+    } else {
+            noMinAvailability := deploymentutil.NewDeploymentCondition(apps.DeploymentAvailable, v1.ConditionFalse, deploymentutil.MinimumReplicasUnavailable, "Deployment does not have minimum availability.")
+            deploymentutil.SetDeploymentCondition(&status, *noMinAvailability)
     }
 
-    ......
     return status
 }
 ```
