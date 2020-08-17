@@ -27,3 +27,5 @@
     * [kubelet statusManager 源码分析](kubernetes/kubelet_status_manager.md)
     * [kubernetes 中 Qos 的设计与实现](kubernetes/kubelet_qos.md)
     * [kubelet 中垃圾回收机制的设计与实现](kubernetes/kubelet_garbage_collect.md)
+* [knative](knative/README.md)
+    * [在 minkube 上部署 knative](knative/deploy_with_minkube.md)
