@@ -3,7 +3,7 @@
  * [安装 minkube](#安装-minkube)
  * [安装 istio](#安装-istio)
  * [安装 knative](#安装-knative)
-
+ * [检查 knative 服务状态](#检查-knative-服务状态)
 
 ### 安装 minkube
 
@@ -174,6 +174,39 @@ EOF
 $ curl https://storage.googleapis.com/knative-nightly/client/latest/kn-darwin-amd64
 $ cp kn-darwin-amd64 /usr/local/bin/kn
 ```
+
+### 检查 knative 服务状态
+
+knative 服务所启动的 pod 分别在 knative-serving 和 knative-eventing 两个 namespace 下，查看 pod 是否都已启动成功：
+
+```
+$ kubectl get pod -n knative-serving
+NAME                                READY   STATUS    RESTARTS   AGE
+activator-7fff689bcb-zt9pm          2/2     Running   2          22d
+autoscaler-5bcff95856-pr6nk         2/2     Running   1          22d
+autoscaler-hpa-75584dd678-fpk7w     2/2     Running   1          22d
+controller-bbdd78bc4-6cqm4          2/2     Running   1          22d
+istio-webhook-5f5794dcc4-sgzlj      2/2     Running   1          22d
+networking-istio-7d875675c7-gc55v   1/1     Running   0          22d
+storage-version-migration-f46wc     1/2     Running   2          22d
+webhook-68bb66b676-9xk4s            2/2     Running   7          22d
+
+$ kubectl get pod -n knative-eventing
+NAME                                     READY   STATUS      RESTARTS   AGE
+broker-controller-5587985664-rrhsj       1/1     Running     0          22d
+broker-filter-854c4dbd4d-ng75g           1/1     Running     2          22d
+broker-ingress-bd8dd9fb8-6zqv2           1/1     Running     2          22d
+eventing-controller-58db89b996-kbrsp     1/1     Running     0          22d
+eventing-webhook-7dc8cc7798-sspfm        1/1     Running     5          22d
+imc-controller-d88855db5-zj6h6           1/1     Running     0          22d
+imc-dispatcher-549db764cc-8lbcj          1/1     Running     0          22d
+mt-broker-controller-55b9857d8d-7hf6n    1/1     Running     0          22d
+pingsource-mt-adapter-6b465cffdc-gqgn5   1/1     Running     0          22d
+storage-version-migration-6mm74          0/1     Completed   0          22d
+v0.15.0-upgrade-5vr8z                    0/1     Completed   0          22d
+```
+
+
 
 
 
