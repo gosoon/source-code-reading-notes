@@ -6,9 +6,9 @@ type: "blkio cgroup"
 
 ---
 
-         * [blkio cgroup 基本功能](#blkio-cgroup-基本功能)
-         * [Linux 写文件流程](#linux-写文件流程)
-         * [为什么 cgroup v1 不支持非 Buffer IO 的限制](#为什么-cgroup-v1-不支持非-buffer-io-的限制)
+* [blkio cgroup 基本功能](#blkio-cgroup-基本功能)
+* [Linux 写文件流程](#linux-写文件流程)
+* [为什么 cgroup v1 不支持非 Buffer IO 的限制](#为什么-cgroup-v1-不支持非-buffer-io-的限制)
 
 ### blkio cgroup 基本功能
 
