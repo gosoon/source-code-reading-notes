@@ -53,7 +53,7 @@ Linux 中应用程序对文件读写时默认是以 Buffered I/O 的形式写入
 
 
 
-PageCache 写入磁盘的机制：
+PageCache 中脏页回写机制:
 
 （1）脏页太多，Page Cache 中的脏页比例达到一定阈值时回写，主要有下面两个参数来控制脏页比例：
 
