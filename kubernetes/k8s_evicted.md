@@ -189,7 +189,7 @@ const (
 )
 
 // 判断如果为 Evicted 状态的实例且 Pod 中容器数为 0 时直接删除 pod
-if strings.ToLower(status) == strings.ToLower(podEvictedStatus) && len(pod.Status.ContainerStatuses) == 0 {
+if strings.ToLower(pod.Status.Reason) == strings.ToLower(podEvictedStatus) && pod.Status.Phase == v1.PodFailed && len(pod.Status.ContainerStatuses) == 0 {
 
 }
 ```
