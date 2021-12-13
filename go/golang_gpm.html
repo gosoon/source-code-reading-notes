@@ -1,0 +1,1446 @@
+
+<!DOCTYPE HTML>
+<html lang="zh-hans" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Golang GPM 模型剖析 · 田飞雨</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="gosoon">
+        
+        
+    
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-base16-ateliersulphurpool.light.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-advanced-emoji/emoji-website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchors/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-ace/ace.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-emphasize/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-katex/katex.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-splitter/splitter.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-tbfed-pagefooter/footer.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.css">
+                
+            
+                
+                <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-sectionx/sectionx.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-local-video/video-js.min.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-anchor-navigation-ex/style/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-terminal/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-alerts/style.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-versions-select/plugin.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-theme-comscore/test.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    
+    
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="golang_bootstrap.html" />
+    
+
+    
+    <link rel="stylesheet" href="../gitbook/gitbook-plugin-chart/c3/c3.min.css">
+    <script src="../gitbook/gitbook-plugin-chart/c3/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-chart/c3/c3.min.js"></script>
+    
+
+    <script src="../gitbook/gitbook-plugin-graph/d3.min.js"></script>
+    <script src="../gitbook/gitbook-plugin-graph/function-plot.js"></script>    
+
+    
+        <link rel="shortcut icon" href='../favicon.ico' type="image/x-icon">
+    
+    
+        <link rel="bookmark" href='../favicon.ico' type="image/x-icon">
+    
+    
+    
+
+    <style>
+    @media only screen and (max-width: 640px) {
+        .book-header .hidden-mobile {
+            display: none;
+        }
+    }
+    </style>
+    <script>
+        window["gitbook-plugin-github-buttons"] = {"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"};
+    </script>
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="输入并搜索" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://blog.tianfeiyu.com" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../kubernetes/">
+            
+                <a href="../kubernetes/">
+            
+                    
+                        <b>1.2.</b>
+                    
+                    kubernetes
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="../kubernetes/kube_apiserver.html">
+            
+                <a href="../kubernetes/kube_apiserver.html">
+            
+                    
+                        <b>1.2.1.</b>
+                    
+                    kube-apiserver 的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="../kubernetes/apiserver_bootstrap_controller.html">
+            
+                <a href="../kubernetes/apiserver_bootstrap_controller.html">
+            
+                    
+                        <b>1.2.2.</b>
+                    
+                    kube-apiserver 中 apiserver service 的实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="../kubernetes/nodelifecycle_controller.html">
+            
+                <a href="../kubernetes/nodelifecycle_controller.html">
+            
+                    
+                        <b>1.2.3.</b>
+                    
+                    node controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="../kubernetes/job_controller.html">
+            
+                <a href="../kubernetes/job_controller.html">
+            
+                    
+                        <b>1.2.4.</b>
+                    
+                    job controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="../kubernetes/garbagecollector_controller.html">
+            
+                <a href="../kubernetes/garbagecollector_controller.html">
+            
+                    
+                        <b>1.2.5.</b>
+                    
+                    garbage collector controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="../kubernetes/daemonset_controller.html">
+            
+                <a href="../kubernetes/daemonset_controller.html">
+            
+                    
+                        <b>1.2.6.</b>
+                    
+                    daemonset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.7" data-path="../kubernetes/statefulset_controller.html">
+            
+                <a href="../kubernetes/statefulset_controller.html">
+            
+                    
+                        <b>1.2.7.</b>
+                    
+                    statefulset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.8" data-path="../kubernetes/deployment_controller.html">
+            
+                <a href="../kubernetes/deployment_controller.html">
+            
+                    
+                        <b>1.2.8.</b>
+                    
+                    deployment controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="../kubernetes/replicaset_controller.html">
+            
+                <a href="../kubernetes/replicaset_controller.html">
+            
+                    
+                        <b>1.2.9.</b>
+                    
+                    replicaset controller 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.10" data-path="../kubernetes/kube_scheduler_process.html">
+            
+                <a href="../kubernetes/kube_scheduler_process.html">
+            
+                    
+                        <b>1.2.10.</b>
+                    
+                    kube-scheduler 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.11" data-path="../kubernetes/kube_scheduler_algorithm.html">
+            
+                <a href="../kubernetes/kube_scheduler_algorithm.html">
+            
+                    
+                        <b>1.2.11.</b>
+                    
+                    kube-scheduler predicates 与 priorities 调度算法源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.12" data-path="../kubernetes/kube_scheduler_preempt.html">
+            
+                <a href="../kubernetes/kube_scheduler_preempt.html">
+            
+                    
+                        <b>1.2.12.</b>
+                    
+                    kube-scheduler 优先级与抢占机制源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.13" data-path="../kubernetes/k8s_service_theory.html">
+            
+                <a href="../kubernetes/k8s_service_theory.html">
+            
+                    
+                        <b>1.2.13.</b>
+                    
+                    kubernetes service 原理解析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.14" data-path="../kubernetes/kube_proxy_process.html">
+            
+                <a href="../kubernetes/kube_proxy_process.html">
+            
+                    
+                        <b>1.2.14.</b>
+                    
+                    kube-proxy 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.15" data-path="../kubernetes/kube_proxy_iptables.html">
+            
+                <a href="../kubernetes/kube_proxy_iptables.html">
+            
+                    
+                        <b>1.2.15.</b>
+                    
+                    kube-proxy iptables 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.16" data-path="../kubernetes/kube_proxy_ipvs.html">
+            
+                <a href="../kubernetes/kube_proxy_ipvs.html">
+            
+                    
+                        <b>1.2.16.</b>
+                    
+                    kube-proxy ipvs 模式源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.17" data-path="../kubernetes/kubelet-modules.html">
+            
+                <a href="../kubernetes/kubelet-modules.html">
+            
+                    
+                        <b>1.2.17.</b>
+                    
+                    kubelet 架构浅析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.18" data-path="../kubernetes/kubelet_init.html">
+            
+                <a href="../kubernetes/kubelet_init.html">
+            
+                    
+                        <b>1.2.18.</b>
+                    
+                    kubelet 启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.19" data-path="../kubernetes/kubelet_create_pod.html">
+            
+                <a href="../kubernetes/kubelet_create_pod.html">
+            
+                    
+                        <b>1.2.19.</b>
+                    
+                    kubelet 创建 pod 的流程
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.20" data-path="../kubernetes/node_status.html">
+            
+                <a href="../kubernetes/node_status.html">
+            
+                    
+                        <b>1.2.20.</b>
+                    
+                    kubelet 状态上报的方式
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.21" data-path="../kubernetes/k8s_events.html">
+            
+                <a href="../kubernetes/k8s_events.html">
+            
+                    
+                        <b>1.2.21.</b>
+                    
+                    kubelet 中事件处理机制
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.22" data-path="../kubernetes/kubelet_status_manager.html">
+            
+                <a href="../kubernetes/kubelet_status_manager.html">
+            
+                    
+                        <b>1.2.22.</b>
+                    
+                    kubelet statusManager 源码分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.23" data-path="../kubernetes/kubelet_qos.html">
+            
+                <a href="../kubernetes/kubelet_qos.html">
+            
+                    
+                        <b>1.2.23.</b>
+                    
+                    kubernetes 中 Qos 的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.24" data-path="../kubernetes/kubelet_garbage_collect.html">
+            
+                <a href="../kubernetes/kubelet_garbage_collect.html">
+            
+                    
+                        <b>1.2.24.</b>
+                    
+                    kubelet 中垃圾回收机制的设计与实现
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.25" data-path="../kubernetes/k8s_evicted.html">
+            
+                <a href="../kubernetes/k8s_evicted.html">
+            
+                    
+                        <b>1.2.25.</b>
+                    
+                    kubernetes 中 Evicted pod 是如何产生的
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../knative/">
+            
+                <a href="../knative/">
+            
+                    
+                        <b>1.3.</b>
+                    
+                    knative
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="../knative/deploy_with_minkube.html">
+            
+                <a href="../knative/deploy_with_minkube.html">
+            
+                    
+                        <b>1.3.1.</b>
+                    
+                    在 minkube 上部署 knative
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="../knative/knative_serving.html">
+            
+                <a href="../knative/knative_serving.html">
+            
+                    
+                        <b>1.3.2.</b>
+                    
+                    knative serving 组件分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../cgroup/">
+            
+                <a href="../cgroup/">
+            
+                    
+                        <b>1.4.</b>
+                    
+                    cgroup
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="../cgroup/blkio_cgroup.html">
+            
+                <a href="../cgroup/blkio_cgroup.html">
+            
+                    
+                        <b>1.4.1.</b>
+                    
+                    blkio cgroup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="../cgroup/pid_cgroup.html">
+            
+                <a href="../cgroup/pid_cgroup.html">
+            
+                    
+                        <b>1.4.2.</b>
+                    
+                    pid cgroup
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>1.5.</b>
+                    
+                    go
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.5.1" data-path="func_return_value_or_pointer.html">
+            
+                <a href="func_return_value_or_pointer.html">
+            
+                    
+                        <b>1.5.1.</b>
+                    
+                    golang 中函数使用值返回与指针返回的区别，底层原理分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2" data-path="golang_bootstrap.html">
+            
+                <a href="golang_bootstrap.html">
+            
+                    
+                        <b>1.5.2.</b>
+                    
+                    Golang 程序启动流程分析
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.5.3" data-path="golang_gpm.html">
+            
+                <a href="golang_gpm.html">
+            
+                    
+                        <b>1.5.3.</b>
+                    
+                    Golang GPM 模型剖析
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            本书使用 GitBook 发布
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Golang GPM 模型剖析</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <ul>
+<li><a href="#&#x7EBF;&#x7A0B;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x548C;&#x7528;&#x6237;&#x7EBF;&#x7A0B;&#x533A;&#x522B;">&#x7EBF;&#x7A0B;&#x3001;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x548C;&#x7528;&#x6237;&#x7EBF;&#x7A0B;&#x533A;&#x522B;</a></li>
+<li><a href="#golang-&#x4F7F;&#x7528;&#x534F;&#x7A0B;&#x7684;&#x539F;&#x56E0;">Golang &#x4F7F;&#x7528;&#x534F;&#x7A0B;&#x7684;&#x539F;&#x56E0;</a></li>
+<li><a href="#goroutine-&#x5728;&#x8FDB;&#x7A0B;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x4E2D;&#x7684;&#x5206;&#x5E03;">Goroutine &#x5728;&#x8FDB;&#x7A0B;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x4E2D;&#x7684;&#x5206;&#x5E03;</a></li>
+<li><a href="#gpm-&#x6A21;&#x578B;&#x5206;&#x6790;">GPM &#x6A21;&#x578B;&#x5206;&#x6790;</a><ul>
+<li><a href="#gpm-&#x751F;&#x547D;&#x5468;&#x671F;">GPM &#x751F;&#x547D;&#x5468;&#x671F;</a><ul>
+<li><a href="#1p-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;">1&#x3001;P &#x7684;&#x751F;&#x547D;&#x5468;&#x671F;</a></li>
+<li><a href="#2m-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;">2&#x3001;M &#x7684;&#x751F;&#x547D;&#x5468;&#x671F;</a></li>
+<li><a href="#3g-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;">3&#x3001;G &#x7684;&#x751F;&#x547D;&#x5468;&#x671F;</a></li>
+<li><a href="#4g0-&#x7684;&#x4F5C;&#x7528;">4&#x3001;g0 &#x7684;&#x4F5C;&#x7528;</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#&#x603B;&#x7ED3;">&#x603B;&#x7ED3;</a></li>
+</ul>
+<blockquote>
+<p>&#x672C;&#x6587;&#x4F7F;&#x7528; golang 1.17 &#x4EE3;&#x7801;&#xFF0C;&#x5982;&#x6709;&#x4EFB;&#x4F55;&#x95EE;&#x9898;&#xFF0C;&#x8FD8;&#x671B;&#x6307;&#x51FA;&#x3002;</p>
+</blockquote>
+<h3 id="&#x7EBF;&#x7A0B;&#x3001;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x548C;&#x7528;&#x6237;&#x7EBF;&#x7A0B;&#x533A;&#x522B;"><a name="&#x7EBF;&#x7A0B;&#x3001;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x548C;&#x7528;&#x6237;&#x7EBF;&#x7A0B;&#x533A;&#x522B;" class="anchor-navigation-ex-anchor" href="#&#x7EBF;&#x7A0B;&#x3001;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x548C;&#x7528;&#x6237;&#x7EBF;&#x7A0B;&#x533A;&#x522B;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x7EBF;&#x7A0B;&#x3001;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x548C;&#x7528;&#x6237;&#x7EBF;&#x7A0B;&#x533A;&#x522B;</h3>
+<ul>
+<li><p><strong>&#x7EBF;&#x7A0B;</strong>&#xFF1A;&#x4ECE;&#x5185;&#x6838;&#x89D2;&#x5EA6;&#x6765;&#x8BF4;&#x5E76;&#x6CA1;&#x6709;&#x7EBF;&#x7A0B;&#x8FD9;&#x4E2A;&#x6982;&#x5FF5;&#x3002;Linux &#x628A;&#x6240;&#x6709;&#x7684;&#x7EBF;&#x7A0B;&#x90FD;&#x5F53;&#x505A;&#x8FDB;&#x7A0B;&#x6765;&#x5B9E;&#x73B0;&#xFF0C;&#x5185;&#x6838;&#x4E5F;&#x6CA1;&#x6709;&#x7279;&#x522B;&#x7684;&#x8C03;&#x5EA6;&#x7B97;&#x6CD5;&#x6765;&#x5904;&#x7406;&#x7EBF;&#x7A0B;&#x3002;&#x7EBF;&#x7A0B;&#x4EC5;&#x4EC5;&#x88AB;&#x89C6;&#x4E3A;&#x4E00;&#x4E2A;&#x4E0E;&#x5176;&#x4ED6;&#x8FDB;&#x7A0B;&#x5171;&#x4EAB;&#x67D0;&#x4E9B;&#x8D44;&#x6E90;&#x7684;&#x8FDB;&#x7A0B;&#xFF0C;&#x548C;&#x8FDB;&#x7A0B;&#x4E00;&#x6837;&#xFF0C;&#x6BCF;&#x4E2A;&#x7EBF;&#x7A0B;&#x4E5F;&#x90FD;&#x662F;&#x6709;&#x81EA;&#x5DF1;&#x7684;<code>task_struct</code>&#xFF0C;&#x6240;&#x4EE5;&#x5728;&#x5185;&#x6838;&#x4E2D;&#xFF0C;&#x7EBF;&#x7A0B;&#x770B;&#x8D77;&#x6765;&#x5C31;&#x662F;&#x4E00;&#x4E2A;&#x666E;&#x901A;&#x7684;&#x8FDB;&#x7A0B;&#x3002;&#x7EBF;&#x7A0B;&#x4E5F;&#x88AB;&#x79F0;&#x4F5C;&#x8F7B;&#x91CF;&#x7EA7;&#x8FDB;&#x7A0B;&#xFF0C;&#x4E00;&#x4E2A;&#x8FDB;&#x7A0B;&#x53EF;&#x4EE5;&#x6709;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#xFF0C;&#x7EBF;&#x7A0B;&#x62E5;&#x6709;&#x81EA;&#x5DF1;&#x72EC;&#x7ACB;&#x7684;&#x6808;&#xFF0C;&#x5207;&#x6362;&#x4E5F;&#x7531;&#x64CD;&#x4F5C;&#x7CFB;&#x7EDF;&#x8C03;&#x5EA6;&#x3002;&#x5728; Linux &#x4E0A;&#x53EF;&#x4EE5;&#x901A;&#x8FC7; <code>pthread_create()</code> &#x65B9;&#x6CD5;&#x6216;&#x8005; <code>clone()</code> &#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x521B;&#x5EFA;&#xFF1B;</p>
+</li>
+<li><p><strong>&#x5185;&#x6838;&#x7EBF;&#x7A0B;</strong>&#xFF1A;&#x72EC;&#x7ACB;&#x8FD0;&#x884C;&#x5728;&#x5185;&#x6838;&#x7A7A;&#x95F4;&#x7684;&#x6807;&#x51C6;&#x8FDB;&#x7A0B;&#xFF0C;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x548C;&#x666E;&#x901A;&#x7EBF;&#x7A0B;&#x7684;&#x533A;&#x522B;&#x5728;&#x4E8E;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x6CA1;&#x6709;&#x72EC;&#x7ACB;&#x7684;&#x5730;&#x5740;&#x7A7A;&#x95F4;&#xFF1B;</p>
+</li>
+<li><p><strong>&#x7528;&#x6237;&#x7EBF;&#x7A0B;</strong>&#xFF1A;&#x4E5F;&#x88AB;&#x79F0;&#x4F5C;&#x534F;&#x7A0B;&#xFF0C;&#x662F;&#x4E00;&#x79CD;&#x57FA;&#x4E8E;&#x7EBF;&#x7A0B;&#x4E4B;&#x4E0A;&#xFF0C;&#x4F46;&#x53C8;&#x6BD4;&#x7EBF;&#x7A0B;&#x66F4;&#x52A0;&#x8F7B;&#x91CF;&#x7EA7;&#x7684;&#x5B58;&#x5728;&#xFF0C;&#x7531;&#x7528;&#x6237;&#x8FD0;&#x884C;&#x65F6;&#x6765;&#x7BA1;&#x7406;&#x7684;&#xFF0C;&#x64CD;&#x4F5C;&#x7CFB;&#x7EDF;&#x611F;&#x77E5;&#x4E0D;&#x5230;&#xFF0C;&#x5B83;&#x7684;&#x5207;&#x6362;&#x662F;&#x7531;&#x7528;&#x6237;&#x7A0B;&#x5E8F;&#x81EA;&#x5DF1;&#x63A7;&#x5236;&#x7684;&#xFF0C;&#x4F46;&#x7528;&#x6237;&#x7EBF;&#x7A0B;&#x4E5F;&#x662F;&#x7531;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x6765;&#x8FD0;&#x884C;&#x7684;&#x3002;Lua &#x548C; Python &#x4E2D;&#x7684;&#x534F;&#x7A0B;(coroutine)&#x3001;Golang &#x7684; goroutine &#x90FD;&#x5C5E;&#x4E8E;&#x7528;&#x6237;&#x7EA7;&#x7EBF;&#x7A0B;&#xFF1B;</p>
+</li>
+</ul>
+<p>&#x4E09;&#x8005;&#x7684;&#x5173;&#x7CFB;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><img src="https://cdn.tianfeiyu.com/%E7%94%A8%E6%88%B7%E7%BA%BF%E7%A8%8B%E4%B8%8E%E5%86%85%E6%A0%B8%E7%BA%BF%E7%A8%8B.png" alt=""></p>
+<p>&#x5728; Golang &#x4E2D; goroutine &#x4E0E;&#x7EBF;&#x7A0B;&#x7684;&#x5173;&#x7CFB;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><img src="https://cdn.tianfeiyu.com/goroutine%E4%B8%8E%E7%BA%BF%E7%A8%8B%E5%85%B3%E7%B3%BB.png" alt=""></p>
+<p>Golang &#x7A0B;&#x5E8F;&#x542F;&#x52A8;&#x65F6;&#x9996;&#x5148;&#x4F1A;&#x521B;&#x5EFA;&#x8FDB;&#x7A0B;&#xFF0C;&#x7136;&#x540E;&#x521B;&#x5EFA;&#x4E3B;&#x7EBF;&#x7A0B;&#xFF0C;&#x4E3B;&#x7EBF;&#x7A0B;&#x4F1A;&#x6267;&#x884C; runtime &#x521D;&#x59CB;&#x5316;&#x7684;&#x4E00;&#x4E9B;&#x4EE3;&#x7801;&#xFF0C;&#x5305;&#x62EC;&#x8C03;&#x5EA6;&#x5668;&#x7684;&#x521D;&#x59CB;&#x5316;&#xFF0C;&#x7136;&#x540E;&#x4F1A;&#x542F;&#x52A8;&#x8C03;&#x5EA6;&#x5668;&#xFF0C;&#x8C03;&#x5EA6;&#x5668;&#x4F1A;&#x4E0D;&#x65AD;&#x5BFB;&#x627E;&#x9700;&#x8981;&#x8FD0;&#x884C;&#x7684; goroutine &#x4E0E;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x7ED1;&#x5B9A;&#x8FD0;&#x884C;&#x3002;</p>
+<h3 id="golang-&#x4F7F;&#x7528;&#x534F;&#x7A0B;&#x7684;&#x539F;&#x56E0;"><a name="golang-&#x4F7F;&#x7528;&#x534F;&#x7A0B;&#x7684;&#x539F;&#x56E0;" class="anchor-navigation-ex-anchor" href="#golang-&#x4F7F;&#x7528;&#x534F;&#x7A0B;&#x7684;&#x539F;&#x56E0;"><i class="fa fa-link" aria-hidden="true"></i></a>Golang &#x4F7F;&#x7528;&#x534F;&#x7A0B;&#x7684;&#x539F;&#x56E0;</h3>
+<p>&#x64CD;&#x4F5C;&#x7CFB;&#x7EDF;&#x4E2D;&#x867D;&#x7136;&#x5DF2;&#x7ECF;&#x6709;&#x4E86;&#x591A;&#x7EBF;&#x7A0B;&#x3001;&#x591A;&#x8FDB;&#x7A0B;&#x6765;&#x89E3;&#x51B3;&#x9AD8;&#x5E76;&#x53D1;&#x7684;&#x95EE;&#x9898;&#xFF0C;&#x4F46;&#x662F;&#x5728;&#x5F53;&#x4ECA;&#x4E92;&#x8054;&#x7F51;&#x6D77;&#x91CF;&#x9AD8;&#x5E76;&#x53D1;&#x573A;&#x666F;&#x4E0B;&#xFF0C;&#x5BF9;&#x6027;&#x80FD;&#x7684;&#x8981;&#x6C42;&#x4E5F;&#x8D8A;&#x6765;&#x8D8A;&#x82DB;&#x523B;&#xFF0C;&#x5927;&#x91CF;&#x7684;&#x8FDB;&#x7A0B;/&#x7EBF;&#x7A0B;&#x4F1A;&#x51FA;&#x73B0;&#x5185;&#x5B58;&#x5360;&#x7528;&#x9AD8;&#x3001;CPU&#x6D88;&#x8017;&#x591A;&#x7684;&#x95EE;&#x9898;&#xFF0C;&#x5F88;&#x591A;&#x670D;&#x52A1;&#x7684;&#x6539;&#x9020;&#x4E0E;&#x91CD;&#x6784;&#x4E5F;&#x662F;&#x4E3A;&#x4E86;&#x964D;&#x672C;&#x589E;&#x6548;&#x3002;</p>
+<p>&#x4E00;&#x4E2A;&#x8FDB;&#x7A0B;&#x53EF;&#x4EE5;&#x5173;&#x8054;&#x591A;&#x4E2A;&#x7EBF;&#x7A0B;&#xFF0C;&#x7EBF;&#x7A0B;&#x4E4B;&#x95F4;&#x4F1A;&#x5171;&#x4EAB;&#x8FDB;&#x7A0B;&#x7684;&#x4E00;&#x4E9B;&#x8D44;&#x6E90;&#xFF0C;&#x6BD4;&#x5982;&#x5185;&#x5B58;&#x5730;&#x5740;&#x7A7A;&#x95F4;&#x3001;&#x6253;&#x5F00;&#x7684;&#x6587;&#x4EF6;&#x3001;&#x8FDB;&#x7A0B;&#x57FA;&#x7840;&#x4FE1;&#x606F;&#x7B49;&#xFF0C;&#x6BCF;&#x4E2A;&#x7EBF;&#x7A0B;&#x4E5F;&#x90FD;&#x4F1A;&#x6709;&#x81EA;&#x5DF1;&#x7684;&#x6808;&#x4EE5;&#x53CA;&#x5BC4;&#x5B58;&#x5668;&#x4FE1;&#x606F;&#x7B49;&#xFF0C;&#x7EBF;&#x7A0B;&#x76F8;&#x6BD4;&#x8FDB;&#x7A0B;&#x66F4;&#x52A0;&#x8F7B;&#x91CF;&#xFF0C;&#x800C;&#x534F;&#x7A0B;&#x76F8;&#x5BF9;&#x7EBF;&#x7A0B;&#x66F4;&#x52A0;&#x8F7B;&#x91CF;&#xFF0C;&#x591A;&#x4E2A;&#x534F;&#x7A0B;&#x4F1A;&#x5173;&#x8054;&#x5230;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#xFF0C;&#x534F;&#x7A0B;&#x4E4B;&#x95F4;&#x4F1A;&#x5171;&#x4EAB;&#x7EBF;&#x7A0B;&#x7684;&#x4E00;&#x4E9B;&#x4FE1;&#x606F;&#xFF0C;&#x6BCF;&#x4E2A;&#x534F;&#x7A0B;&#x4E5F;&#x4F1A;&#x6709;&#x81EA;&#x5DF1;&#x7684;&#x6808;&#x7A7A;&#x95F4;&#xFF0C;&#x6240;&#x4EE5;&#x4E5F;&#x4F1A;&#x66F4;&#x52A0;&#x8F7B;&#x91CF;&#x7EA7;&#x3002;&#x4ECE;&#x8FDB;&#x7A0B;&#x5230;&#x7EBF;&#x7A0B;&#x518D;&#x5230;&#x534F;&#x7A0B;&#xFF0C;&#x5176;&#x5B9E;&#x662F;&#x4E00;&#x4E2A;&#x4E0D;&#x65AD;&#x5171;&#x4EAB;&#xFF0C;&#x51CF;&#x5C11;&#x5207;&#x6362;&#x6210;&#x672C;&#x7684;&#x8FC7;&#x7A0B;&#x3002;</p>
+<p>Golang &#x4F7F;&#x7528;&#x534F;&#x7A0B;&#x4E3B;&#x8981;&#x6709;&#x4EE5;&#x4E0B;&#x51E0;&#x4E2A;&#x539F;&#x56E0;&#xFF1A;</p>
+<ul>
+<li><p>&#xFF08;1&#xFF09;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x521B;&#x5EFA;&#x4E0E;&#x5207;&#x6362;&#x592A;&#x91CD;&#x7684;&#x95EE;&#x9898;&#xFF1A;&#x521B;&#x5EFA;&#x548C;&#x5207;&#x6362;&#x90FD;&#x8981;&#x8FDB;&#x5165;&#x5230;&#x5185;&#x6838;&#x6001;&#xFF0C;&#x8FDB;&#x5165;&#x5230;&#x5185;&#x6838;&#x6001;&#x5F00;&#x9500;&#x8F83;&#x5927;&#xFF0C;&#x6027;&#x80FD;&#x4EE3;&#x4EF7;&#x5927;&#xFF0C;&#x800C;&#x534F;&#x7A0B;&#x5207;&#x6362;&#x4E0D;&#x9700;&#x8981;&#x8FDB;&#x5165;&#x5230;&#x5185;&#x6838;&#x6001;&#xFF1B;</p>
+</li>
+<li><p>&#xFF08;2&#xFF09;&#x7EBF;&#x7A0B;&#x5185;&#x5B58;&#x4F7F;&#x7528;&#x592A;&#x91CD;&#xFF1A;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#x9ED8;&#x8BA4;&#x6808;&#x5927;&#x5C0F;&#x4E3A;8M&#xFF0C;&#x800C;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7528;&#x6237;&#x7EBF;&#x7A0B;&#x5373; goroutine &#x53EA;&#x9700;&#x8981; 2K &#x5185;&#x5B58;&#xFF0C;&#x5F53; goroutine &#x6808;&#x4E0D;&#x591F;&#x7528;&#x65F6;&#x4E5F;&#x4F1A;&#x81EA;&#x52A8;&#x589E;&#x52A0;&#xFF1B;</p>
+</li>
+<li><p>&#xFF08;3&#xFF09;goroutine &#x7684;&#x8C03;&#x5EA6;&#x66F4;&#x7075;&#x6D3B;&#xFF0C;&#x6240;&#x6709;&#x534F;&#x7A0B;&#x7684;&#x8C03;&#x5EA6;&#x3001;&#x5207;&#x6362;&#x90FD;&#x53D1;&#x751F;&#x5728;&#x7528;&#x6237;&#x6001;&#xFF0C;&#x6CA1;&#x6709;&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;&#x7684;&#x5F00;&#x9500;&#xFF0C;&#x5373;&#x4F7F;&#x51FA;&#x73B0;&#x67D0;&#x4E2A;&#x534F;&#x7A0B;&#x8FD0;&#x884C;&#x963B;&#x585E;&#x65F6;&#xFF0C;&#x7EBF;&#x7A0B;&#x4E0A;&#x7684;&#x5176;&#x4ED6;&#x534F;&#x7A0B;&#x4E5F;&#x4F1A;&#x88AB;&#x8C03;&#x5EA6;&#x5230;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x4E0A;&#x8FD0;&#x884C;&#xFF1B;</p>
+</li>
+</ul>
+<h3 id="goroutine-&#x5728;&#x8FDB;&#x7A0B;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x4E2D;&#x7684;&#x5206;&#x5E03;"><a name="goroutine-&#x5728;&#x8FDB;&#x7A0B;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x4E2D;&#x7684;&#x5206;&#x5E03;" class="anchor-navigation-ex-anchor" href="#goroutine-&#x5728;&#x8FDB;&#x7A0B;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x4E2D;&#x7684;&#x5206;&#x5E03;"><i class="fa fa-link" aria-hidden="true"></i></a>Goroutine &#x5728;&#x8FDB;&#x7A0B;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x4E2D;&#x7684;&#x5206;&#x5E03;</h3>
+<p>&#x534F;&#x7A0B;&#x7684;&#x672C;&#x8D28;&#x5176;&#x5B9E;&#x5C31;&#x662F;&#x53EF;&#x4EE5;&#x88AB;&#x6682;&#x505C;&#x4EE5;&#x53CA;&#x53EF;&#x4EE5;&#x88AB;&#x6062;&#x590D;&#x8FD0;&#x884C;&#x7684;&#x51FD;&#x6570;&#xFF0C;&#x521B;&#x5EFA;&#x4E00;&#x4E2A; goroutine &#x65F6;&#x4F1A;&#x5728;&#x8FDB;&#x7A0B;&#x7684;&#x5806;&#x533A;&#x4E2D;&#x5206;&#x914D;&#x4E00;&#x6BB5;&#x7A7A;&#x95F4;&#xFF0C;&#x8FD9;&#x6BB5;&#x7A7A;&#x95F4;&#x662F;&#x7528;&#x6765;&#x4FDD;&#x5B58;&#x534F;&#x7A0B;&#x6808;&#x533A;&#x7684;&#xFF0C;&#x5F53;&#x9700;&#x8981;&#x6062;&#x590D;&#x534F;&#x7A0B;&#x7684;&#x8FD0;&#x884C;&#x65F6;&#x518D;&#x4ECE;&#x5806;&#x533A;&#x4E2D;&#x51FA;&#x6765;&#x590D;&#x5236;&#x51FA;&#x6765;&#x6062;&#x590D;&#x51FD;&#x6570;&#x8FD0;&#x884C;&#x65F6;&#x72B6;&#x6001;&#x3002;</p>
+<p><img src="https://cdn.tianfeiyu.com/goroutine%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E5%88%86%E5%B8%83.png" alt=""></p>
+<h3 id="gpm-&#x6A21;&#x578B;&#x5206;&#x6790;"><a name="gpm-&#x6A21;&#x578B;&#x5206;&#x6790;" class="anchor-navigation-ex-anchor" href="#gpm-&#x6A21;&#x578B;&#x5206;&#x6790;"><i class="fa fa-link" aria-hidden="true"></i></a>GPM &#x6A21;&#x578B;&#x5206;&#x6790;</h3>
+<p>&#x5728; Golang &#x4EE3;&#x7801;&#x7684;&#x5386;&#x53F2;&#x63D0;&#x4EA4;&#x8BB0;&#x5F55;&#x4E2D;&#x4F1A;&#x53D1;&#x73B0;&#x5F88;&#x591A;&#x4EE3;&#x7801;&#x90FD;&#x662F;&#x4ECE; C &#x7FFB;&#x8BD1;&#x5230; Go &#x7684;&#xFF0C;&#x5728; go 1.4 &#x524D; runtime &#x4E2D;&#x5927;&#x91CF;&#x4EE3;&#x7801;&#x662F;&#x7528; C &#x5B9E;&#x73B0;&#x7684;&#xFF0C;&#x6BD4;&#x5982;&#x5F53;&#x524D;&#x7248;&#x672C; <code>proc.go</code> &#x6587;&#x4EF6;&#x4E2D;&#x5B9E;&#x73B0;&#x7684;&#x5F88;&#x591A;&#x8C03;&#x5EA6;&#x76F8;&#x5173;&#x7684;&#x529F;&#x80FD;&#x6700;&#x5F00;&#x59CB;&#x90FD;&#x662F;&#x7528; C &#x5B9E;&#x73B0;&#x7684;&#xFF0C;&#x540E;&#x9762;&#x7528; Go &#x4EE3;&#x7801;&#x8FDB;&#x884C;&#x4E86;&#x7FFB;&#x8BD1;&#xFF0C;&#x5982;&#x679C;&#x9700;&#x8981;&#x4E86;&#x89E3; Golang &#x6700;&#x5F00;&#x59CB;&#x7684;&#x8BBE;&#x8BA1;&#x7EC6;&#x8282;&#x53EF;&#x4EE5;&#x7FFB;&#x9605;&#x6700;&#x65E9;&#x63D0;&#x4EA4;&#x7684; C &#x4EE3;&#x7801;&#x3002;</p>
+<pre class="language-"><code>commit b2cdf30eb6c4a76504956aaaad47df969274296b
+Author: Russ Cox <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>rsc@golang.org</span><span class="token punctuation">&gt;</span></span>
+Date:   Tue Nov 11 17:08:33 2014 -0500
+
+    [dev.cc] runtime: convert scheduler from C to Go
+
+
+
+commit 15ced2d00832dd9129b4ee0ac53b5367ade24c13
+Author: Russ Cox <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>rsc@golang.org</span><span class="token punctuation">&gt;</span></span>
+Date:   Tue Nov 11 17:06:22 2014 -0500
+
+    [dev.cc] runtime: convert assembly files for C to Go transition
+
+    The main change is that #include &quot;zasm_GOOS_GOARCH.h&quot;
+    is now #include &quot;go_asm.h&quot; and/or #include &quot;go_tls.h&quot;.
+
+    Also, because C StackGuard is now Go _StackGuard,
+    the assembly name changes from const_StackGuard to
+    const__StackGuard.
+
+    In asm_$GOARCH.s, add new function getg, formerly
+    implemented in C.
+</code></pre><p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x4ECB;&#x7ECD;&#x5F53;&#x524D;&#x8C03;&#x5EA6;&#x5668;&#x4E2D;&#x7684; GPM &#x6A21;&#x578B;&#xFF0C;&#x9996;&#x5148;&#x4E86;&#x89E3;&#x4E0B; GPM &#x6A21;&#x578B;&#x4E2D;&#x4E09;&#x4E2A;&#x7EC4;&#x4EF6;&#x7684;&#x4F5C;&#x7528;&#x4E0E;&#x8054;&#x7CFB;&#xFF1A;</p>
+<ul>
+<li>G: <strong>G</strong>oroutine&#xFF0C;&#x5373;&#x6211;&#x4EEC;&#x5728; Go &#x7A0B;&#x5E8F;&#x4E2D;&#x4F7F;&#x7528; <code>go</code> &#x5173;&#x952E;&#x5B57;&#x8FD0;&#x884C;&#x7684;&#x51FD;&#x6570;&#xFF1B;</li>
+<li>M: <strong>M</strong>achine&#xFF0C;&#x6216; worker thread&#xFF0C;&#x4EE3;&#x8868;&#x7CFB;&#x7EDF;&#x7EBF;&#x7A0B;&#xFF0C;M &#x662F; runtime &#x4E2D;&#x7684;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#xFF0C;&#x6BCF;&#x521B;&#x5EFA;&#x4E00;&#x4E2A; M &#x4F1A;&#x540C;&#x65F6;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7CFB;&#x7EDF;&#x7EBF;&#x7A0B;&#x5E76;&#x4E0E;&#x8BE5; M &#x8FDB;&#x884C;&#x7ED1;&#x5B9A;&#xFF1B;</li>
+<li>P: <strong>P</strong>rocessor&#xFF0C;&#x7C7B;&#x4F3C;&#x4E8E; CPU &#x6838;&#x5FC3;&#x7684;&#x6982;&#x5FF5;&#xFF0C;&#x53EA;&#x6709;&#x5F53; M &#x4E0E;&#x4E00;&#x4E2A; P &#x5173;&#x8054;&#x540E;&#x624D;&#x80FD;&#x6267;&#x884C; Go &#x4EE3;&#x7801;&#xFF1B;</li>
+</ul>
+<p>G &#x8FD0;&#x884C;&#x65F6;&#x9700;&#x8981;&#x4E0E; M &#x8FDB;&#x884C;&#x7ED1;&#x5B9A;&#xFF0C;M &#x9700;&#x8981;&#x4E0E; P &#x7ED1;&#x5B9A;&#xFF0C;M &#x5728;&#x6570;&#x91CF;&#x4E0A;&#x5E76;&#x4E0D;&#x4E0E; P &#x76F8;&#x7B49;&#xFF0C;&#x8FD9;&#x662F;&#x56E0;&#x4E3A; M &#x5728;&#x8FD0;&#x884C; G &#x65F6;&#x4F1A;&#x9677;&#x5165;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x6216;&#x8005;&#x56E0;&#x5176;&#x4ED6;&#x4E8B;&#x60C5;&#x4F1A;&#x88AB;&#x963B;&#x585E;&#xFF0C;M &#x4E0D;&#x591F;&#x7528;&#x65F6;&#x5728; runtime &#x4E2D;&#x4F1A;&#x521B;&#x5EFA;&#x65B0;&#x7684; M&#xFF0C;&#x56E0;&#x6B64;&#x968F;&#x7740;&#x7A0B;&#x5E8F;&#x7684;&#x6267;&#x884C;&#xFF0C;M &#x7684;&#x6570;&#x91CF;&#x53EF;&#x80FD;&#x589E;&#x957F;&#xFF0C;&#x800C; P &#x5728;&#x6CA1;&#x6709;&#x7528;&#x6237;&#x5E72;&#x9884;&#x7684;&#x60C5;&#x51B5;&#x4E0B;&#xFF0C;&#x5219;&#x4F1A;&#x4FDD;&#x6301;&#x4E0D;&#x53D8;&#xFF0C;G &#x7684;&#x6570;&#x91CF;&#x662F;&#x7531;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x51B3;&#x5B9A;&#x7684;&#x3002;</p>
+<p>GPM &#x4E09;&#x8005;&#x7684;&#x5173;&#x8054;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><img src="https://cdn.tianfeiyu.com/gpm.png" alt="9"></p>
+<ol>
+<li>&#x5168;&#x5C40;&#x961F;&#x5217;&#xFF1A;&#x5B58;&#x653E;&#x7B49;&#x5F85;&#x8FD0;&#x884C;&#x7684; G&#x3002;</li>
+<li>P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#xFF1A;&#x540C;&#x5168;&#x5C40;&#x961F;&#x5217;&#x7C7B;&#x4F3C;&#xFF0C;&#x5B58;&#x653E;&#x7684;&#x4E5F;&#x662F;&#x7B49;&#x5F85;&#x8FD0;&#x884C;&#x7684; G&#xFF0C;&#x5B58;&#x7684;&#x6570;&#x91CF;&#x6709;&#x9650;&#x3002;&#x65B0;&#x5EFA; G &#x65F6;&#xFF0C;G &#x4F18;&#x5148;&#x52A0;&#x5165;&#x5230; P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#xFF0C;&#x5982;&#x679C;&#x961F;&#x5217;&#x6EE1;&#x4E86;&#xFF0C;&#x5219;&#x4F1A;&#x628A;&#x672C;&#x5730;&#x961F;&#x5217;&#x4E2D;&#x4E00;&#x90E8;&#x5206; G &#x79FB;&#x52A8;&#x5230;&#x5168;&#x5C40;&#x961F;&#x5217;&#x3002;</li>
+<li>P &#x5217;&#x8868;&#xFF1A;&#x6240;&#x6709;&#x7684; P &#x90FD;&#x5728;&#x7A0B;&#x5E8F;&#x542F;&#x52A8;&#x65F6;&#x521B;&#x5EFA;&#xFF0C;&#x5E76;&#x4FDD;&#x5B58;&#x5728;&#x6570;&#x7EC4;&#x4E2D;&#xFF0C;&#x6700;&#x591A;&#x6709; <code>GOMAXPROCS</code>(&#x53EF;&#x914D;&#x7F6E;) &#x4E2A;&#x3002;</li>
+<li>M&#xFF1A;&#x7EBF;&#x7A0B;&#x60F3;&#x8FD0;&#x884C;&#x4EFB;&#x52A1;&#x5C31;&#x5F97;&#x83B7;&#x53D6; P&#xFF0C;&#x7136;&#x540E;&#x4ECE; P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#x83B7;&#x53D6; G&#xFF0C;P &#x961F;&#x5217;&#x4E3A;&#x7A7A;&#x65F6;&#xFF0C;M &#x4E5F;&#x4F1A;&#x5C1D;&#x8BD5;&#x4ECE;&#x5168;&#x5C40;&#x961F;&#x5217;&#x62FF;&#x4E00;&#x6279; G &#x653E;&#x5230; P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#xFF0C;&#x6216;&#x4ECE;&#x5176;&#x4ED6; P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#x5077;&#x4E00;&#x534A;&#x653E;&#x5230;&#x81EA;&#x5DF1; P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#xFF0C;M &#x8FD0;&#x884C; G&#xFF0C;G &#x6267;&#x884C;&#x4E4B;&#x540E;&#xFF0C;M &#x4F1A;&#x4ECE; P &#x83B7;&#x53D6;&#x4E0B;&#x4E00;&#x4E2A; G&#xFF0C;&#x4E0D;&#x65AD;&#x91CD;&#x590D;&#x4E0B;&#x53BB;&#x3002;</li>
+</ol>
+<h4 id="gpm-&#x751F;&#x547D;&#x5468;&#x671F;"><a name="gpm-&#x751F;&#x547D;&#x5468;&#x671F;" class="anchor-navigation-ex-anchor" href="#gpm-&#x751F;&#x547D;&#x5468;&#x671F;"><i class="fa fa-link" aria-hidden="true"></i></a>GPM &#x751F;&#x547D;&#x5468;&#x671F;</h4>
+<h5 id="1&#x3001;p-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;"><a name="1&#x3001;p-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;" class="anchor-navigation-ex-anchor" href="#1&#x3001;p-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;"><i class="fa fa-link" aria-hidden="true"></i></a>1&#x3001;P &#x7684;&#x751F;&#x547D;&#x5468;&#x671F;</h5>
+<p>P &#x5BF9;&#x8C61;&#x7684;&#x7ED3;&#x6784;&#x4F53;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>type p struct {
+    id          int32
+    status      uint32 // P &#x7684;&#x72B6;&#x6001;
+    link        puintptr
+    schedtick   uint32     // &#x88AB;&#x8C03;&#x5EA6;&#x6B21;&#x6570;
+    syscalltick uint32     // &#x6267;&#x884C;&#x8FC7;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x7684;&#x6B21;&#x6570;
+    sysmontick  sysmontick // sysmon &#x6700;&#x8FD1;&#x4E00;&#x6B21;&#x8FD0;&#x884C;&#x7684;&#x65F6;&#x95F4;
+    m           muintptr   // P &#x5173;&#x8054;&#x7684; M
+    mcache      *mcache    // &#x5C0F;&#x5BF9;&#x8C61;&#x7F13;&#x5B58;,&#x53EF;&#x4EE5;&#x65E0;&#x9501;&#x8BBF;&#x95EE;
+    pcache      pageCache  // &#x9875;&#x7F13;&#x5B58;,&#x53EF;&#x4EE5;&#x65E0;&#x9501;&#x8BBF;&#x95EE;
+    raceprocctx uintptr    // race&#x76F8;&#x5173;
+
+    // &#x4E0E; defer &#x76F8;&#x5173;
+    deferpool    [5][]*_defer 
+    deferpoolbuf [5][32]*_defer
+
+    // goroutine ids &#x7684;&#x7F13;&#x5B58;
+    goidcache    uint64
+    goidcacheend uint64
+
+    // P &#x672C;&#x5730; G &#x961F;&#x5217;,&#x53EF;&#x4EE5;&#x65E0;&#x9501;&#x8BBF;&#x95EE;
+    runqhead uint32     // &#x672C;&#x5730;&#x961F;&#x5217;&#x5934;
+    runqtail uint32     // &#x672C;&#x5730;&#x961F;&#x5C3E;
+    runq     [256]guintptr // &#x672C;&#x5730; G &#x961F;&#x5217;&#xFF0C;&#x4F7F;&#x7528;&#x6570;&#x7EC4;&#x5B9E;&#x73B0;&#x7684;&#x5FAA;&#x73AF;&#x961F;&#x5217;
+    runnext guintptr   // &#x5F85;&#x8FD0;&#x884C;&#x7684; G&#xFF0C;&#x4F18;&#x5148;&#x7EA7;&#x9AD8;&#x4E8E; runq
+
+    // &#x5DF2;&#x8FD0;&#x884C;&#x7ED3;&#x675F;&#x7684; G (&#x72B6;&#x6001;&#x4E3A; Gdead)&#x4F1A;&#x88AB;&#x4FDD;&#x5B58;&#x5728; gFree &#x4E2D;&#xFF0C;&#x65B9;&#x4FBF;&#x5B9E;&#x73B0;&#x5BF9; G &#x7684;&#x590D;&#x7528;
+    gFree struct {
+        gList
+        n int32
+    }
+
+    sudogcache []*sudog
+    sudogbuf   [128]*sudog
+
+    mspancache struct {
+        len int
+        buf [128]*mspan
+    }
+
+    tracebuf traceBufPtr
+    traceSweep bool
+    traceSwept, traceReclaimed uintptr
+
+    palloc persistentAlloc 
+    _ uint32 
+
+    timer0When uint64
+
+    timerModifiedEarliest uint64
+
+    // &#x4E0E; GC &#x76F8;&#x5173;&#x7684;
+    gcAssistTime         int64 
+    gcFractionalMarkTime int64 
+    gcMarkWorkerMode gcMarkWorkerMode
+    gcMarkWorkerStartTime int64
+    gcw gcWork
+    wbBuf wbBuf
+
+    ......
+
+    // &#x62A2;&#x5360;&#x6807;&#x8BB0;
+    preempt bool
+}
+</code></pre><p><strong>(1) &#x4E3A;&#x4EC0;&#x4E48;&#x9700;&#x8981; P ?</strong></p>
+<p>&#x5728; Golang 1.1 &#x7248;&#x672C;&#x4E4B;&#x524D;&#x8C03;&#x5EA6;&#x5668;&#x4E2D;&#x8FD8;&#x6CA1;&#x6709; P &#x7EC4;&#x4EF6;&#xFF0C;&#x6B64;&#x65F6;&#x8C03;&#x5EA6;&#x5668;&#x7684;&#x6027;&#x80FD;&#x8FD8;&#x6BD4;&#x8F83;&#x5DEE;&#xFF0C;&#x793E;&#x533A;&#x7684; Dmitry Vyukov &#x5927;&#x4F6C;&#x9488;&#x5BF9;&#x5F53;&#x524D;&#x8C03;&#x5EA6;&#x5668;&#x4E2D;&#x5B58;&#x5728;&#x7684;&#x95EE;&#x9898;&#x8FDB;&#x884C;&#x4E86;&#x603B;&#x7ED3;&#x5E76;&#x8BBE;&#x8BA1;&#x5F15;&#x5165; P &#x7EC4;&#x4EF6;&#x6765;&#x89E3;&#x51B3;&#x5F53;&#x524D;&#x9762;&#x4E34;&#x7684;&#x95EE;&#x9898;&#xFF08;<a href="https://docs.google.com/document/d/1TTj4T2JO42uD5ID9e89oa0sLKhJYD0Y_kqxDv3I3XMw/edit#heading=h.mmq8lm48qfcw" target="_blank"><strong>Scalable Go Scheduler Design Doc</strong></a>&#xFF09;&#xFF0C;&#x5E76;&#x5728; Go 1.1 &#x7248;&#x672C;&#x4E2D;&#x5F15;&#x5165;&#x4E86; P &#x7EC4;&#x4EF6;&#xFF0C;&#x5F15;&#x5165; P &#x7EC4;&#x4EF6;&#x540E;&#x4E0D;&#x4EC5;&#x89E3;&#x51B3;&#x4E86;&#x6587;&#x6863;&#x4E2D;&#x5217;&#x7684;&#x51E0;&#x4E2A;&#x95EE;&#x9898;&#xFF0C;&#x4E5F;&#x5F15;&#x5165;&#x4E86;&#x4E00;&#x4E9B;&#x5F88;&#x597D;&#x7684;&#x673A;&#x5236;&#x3002; </p>
+<p>&#x6587;&#x6863;&#x4E2D;&#x5217;&#x51FA;&#x4E86;&#x8C03;&#x5EA6;&#x5668;&#x5F53;&#x524D;&#x4E3B;&#x8981;&#x6709; 4 &#x4E2A;&#x95EE;&#x9898;&#xFF0C;&#x4E3B;&#x8981;&#x6709;&#xFF1A;</p>
+<ul>
+<li><p>1&#x3001;&#x5168;&#x5C40;&#x4E92;&#x65A5;&#x9501; (<code>sched.Lock</code>) &#x95EE;&#x9898;&#xFF1A;&#x793E;&#x533A;&#x5728;&#x6D4B;&#x8BD5;&#x4E2D;&#x53D1;&#x73B0; Golang &#x7A0B;&#x5E8F;&#x5728;&#x8FD0;&#x884C;&#x65F6;&#x6709; 14&#xFF05; &#x7684; CPU &#x4F7F;&#x7528;&#x7387;&#x6D88;&#x8017;&#x5728;&#x5BF9;&#x5168;&#x5C40;&#x9501;&#x7684;&#x5904;&#x7406;&#x4E0A;&#x3002;&#x6CA1;&#x6709; P &#x7EC4;&#x4EF6;&#x65F6;&#xFF0C;M &#x53EA;&#x80FD;&#x901A;&#x8FC7;&#x52A0;&#x4E92;&#x65A5;&#x9501;&#x4ECE;&#x5168;&#x5C40;&#x961F;&#x5217;&#x4E2D;&#x83B7;&#x53D6; G&#xFF0C;&#x5728;&#x52A0;&#x9501;&#x9636;&#x6BB5;&#x5BF9;&#x5176;&#x4ED6; goroutine &#x5904;&#x7406;&#x65F6;(&#x521B;&#x5EFA;&#xFF0C;&#x5B8C;&#x6210;&#xFF0C;&#x91CD;&#x65B0;&#x8C03;&#x5EA6;&#x7B49;)&#x4F1A;&#x5B58;&#x5728;&#x65F6;&#x5EF6;&#xFF1B;</p>
+<p>  &#x5728;&#x5F15;&#x5165; P &#x7EC4;&#x4EF6;&#x540E;&#xFF0C;P &#x5BF9;&#x8C61;&#x4E2D;&#x4F1A;&#x6709;&#x4E00;&#x4E2A;&#x961F;&#x5217;&#x6765;&#x4FDD;&#x5B58; G &#x5217;&#x8868;&#xFF0C;P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#x53EF;&#x4EE5;&#x89E3;&#x51B3;&#x65E7;&#x8C03;&#x5EA6;&#x5668;&#x4E2D;&#x5355;&#x4E00;&#x5168;&#x5C40;&#x9501;&#x7684;&#x95EE;&#x9898;&#xFF0C;&#x800C; G &#x961F;&#x5217;&#x4E5F;&#x88AB;&#x5206;&#x6210;&#x4E24;&#x7C7B;&#xFF0C;<code>sched</code> &#x4E2D;&#x7EE7;&#x7EED;&#x4FDD;&#x7559;&#x5168;&#x5C40; G &#x961F;&#x5217;&#xFF0C;&#x540C;&#x65F6;&#x6BCF;&#x4E2A; P &#x4E2D;&#x90FD;&#x4F1A;&#x6709;&#x4E00;&#x4E2A;&#x672C;&#x5730;&#x7684; G &#x961F;&#x5217;&#xFF0C;&#x6B64;&#x65F6; M &#x4F1A;&#x4F18;&#x5148;&#x8FD0;&#x884C; P &#x672C;&#x5730;&#x961F;&#x5217;&#x4E2D;&#x7684; G&#xFF0C;&#x8BBF;&#x95EE;&#x65F6;&#x4E5F;&#x4E0D;&#x9700;&#x8981;&#x52A0;&#x9501;&#x3002;</p>
+</li>
+</ul>
+<ul>
+<li><p>2&#x3001;G &#x5207;&#x6362;&#x95EE;&#x9898;&#xFF1A;M &#x9891;&#x7E41;&#x5207;&#x6362;&#x53EF;&#x8FD0;&#x884C;&#x7684; G &#x4F1A;&#x589E;&#x52A0;&#x5EF6;&#x8FDF;&#x548C;&#x5F00;&#x9500;&#xFF0C;&#x6BD4;&#x5982;&#x65B0;&#x5EFA;&#x7684; G &#x4F1A;&#x88AB;&#x88AB;&#x653E;&#x5230;&#x5168;&#x5C40;&#x961F;&#x5217;&#xFF0C;&#x800C;&#x4E0D;&#x662F;&#x5728; M &#x672C;&#x5730;&#x6267;&#x884C;&#xFF0C;&#x8FD9;&#x4F1A;&#x5BFC;&#x81F4;&#x4E0D;&#x5FC5;&#x8981;&#x7684;&#x5F00;&#x9500;&#x548C;&#x5EF6;&#x8FDF;&#xFF0C;&#x5E94;&#x8BE5;&#x4F18;&#x5148;&#x5728;&#x521B;&#x5EFA; G &#x7684; M &#x4E0A;&#x6267;&#x884C;&#x5C31;&#x53EF;&#x4EE5;&#xFF1B;</p>
+<p>  &#x5728;&#x5F15;&#x5165; P &#x7EC4;&#x4EF6;&#x540E;&#xFF0C;&#x65B0;&#x5EFA;&#x7684; G &#x4F1A;&#x4F18;&#x5148;&#x653E;&#x5728; G &#x5173;&#x8054; P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#x4E2D;&#x3002;</p>
+</li>
+</ul>
+<ul>
+<li><p>3&#x3001;M&#x7684;&#x5185;&#x5B58;&#x7F13;&#x5B58; (<code>M.mcache</code>) &#x95EE;&#x9898;&#xFF1A;&#x5728;&#x8FD8;&#x6CA1;&#x6709; P &#x7EC4;&#x4EF6;&#x7684;&#x7248;&#x672C;&#x4E2D;&#xFF0C;&#x6BCF;&#x4E2A; M &#x7ED3;&#x6784;&#x4F53;&#x90FD;&#x6709;&#x4E00;&#x4E2A; <code>mcache</code> &#x5B57;&#x6BB5;&#xFF0C;<code>mcache</code> &#x662F;&#x4E00;&#x4E2A;&#x5185;&#x5B58;&#x5206;&#x914D;&#x6C60;&#xFF0C;&#x5C0F;&#x5BF9;&#x8C61;&#x4F1A;&#x76F4;&#x63A5;&#x4ECE; <code>mcache</code> &#x4E2D;&#x8FDB;&#x884C;&#x5206;&#x914D;&#xFF0C;M &#x5728;&#x8FD0;&#x884C; G &#x65F6;&#xFF0C;G &#x9700;&#x8981;&#x7533;&#x8BF7;&#x5C0F;&#x5BF9;&#x8C61;&#x65F6;&#x4F1A;&#x76F4;&#x63A5;&#x4ECE; M &#x7684; <code>mcache</code> &#x4E2D;&#x8FDB;&#x884C;&#x5206;&#x914D;&#xFF0C;G &#x53EF;&#x4EE5;&#x8FDB;&#x884C;&#x65E0;&#x9501;&#x8BBF;&#x95EE;&#xFF0C;&#x56E0;&#x4E3A;&#x6BCF;&#x4E2A; M &#x540C;&#x4E00;&#x65F6;&#x95F4;&#x53EA;&#x4F1A;&#x8FD0;&#x884C;&#x4E00;&#x4E2A; G&#xFF0C;&#x4F46; runtime &#x4E2D;&#x6BCF;&#x4E2A;&#x65F6;&#x95F4;&#x53EA;&#x4F1A;&#x6709;&#x4E00;&#x90E8;&#x5206;&#x6D3B;&#x8DC3;&#x7684; M &#x5728;&#x8FD0;&#x884C; G&#xFF0C;&#x5176;&#x4ED6;&#x56E0;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x7B49;&#x963B;&#x585E;&#x7684; M &#x5176;&#x5B9E;&#x4E0D;&#x9700;&#x8981; <code>mcache</code> &#x7684;&#xFF0C;&#x8FD9;&#x90E8;&#x5206; <code>mcache</code> &#x662F;&#x88AB;&#x6D6A;&#x8D39;&#x7684;&#xFF0C;&#x6BCF;&#x4E2A; M &#x7684; <code>mcache</code> &#x5927;&#x6982;&#x6709; 2M &#x5927;&#x5C0F;&#x7684;&#x53EF;&#x7528;&#x5185;&#x5B58;&#xFF0C;&#x5F53;&#x6709;&#x4E0A;&#x5343;&#x4E2A;&#x5904;&#x4E8E;&#x963B;&#x585E;&#x72B6;&#x6001;&#x7684; M &#x65F6;&#xFF0C;&#x4F1A;&#x6709;&#x5927;&#x91CF;&#x7684;&#x5185;&#x5B58;&#x88AB;&#x6D88;&#x8017;&#x3002;&#x6B64;&#x5916;&#x8FD8;&#x6709;&#x8F83;&#x5DEE;&#x7684;&#x6570;&#x636E;&#x5C40;&#x90E8;&#x6027;&#x95EE;&#x9898;&#xFF0C;&#x8FD9;&#x662F;&#x6307; M &#x5728;&#x8FD0;&#x884C; G &#x65F6;&#x5BF9; G &#x6240;&#x9700;&#x8981;&#x7684;&#x5C0F;&#x5BF9;&#x8C61;&#x8FDB;&#x884C;&#x4E86;&#x7F13;&#x5B58;&#xFF0C;&#x540E;&#x9762; G &#x5982;&#x679C;&#x518D;&#x6B21;&#x8C03;&#x5EA6;&#x5230;&#x540C;&#x4E00;&#x4E2A; M &#x65F6;&#x90A3;&#x4E48;&#x53EF;&#x4EE5;&#x52A0;&#x901F;&#x8BBF;&#x95EE;&#xFF0C;&#x4F46;&#x5728;&#x5B9E;&#x9645;&#x573A;&#x666F;&#x4E2D; G &#x8C03;&#x5EA6;&#x5230;&#x540C;&#x4E00;&#x4E2A; M &#x7684;&#x6982;&#x7387;&#x4E0D;&#x9AD8;&#xFF0C;&#x6240;&#x4EE5;&#x6570;&#x636E;&#x5C40;&#x90E8;&#x6027;&#x4E0D;&#x592A;&#x597D;&#x3002;</p>
+<p>  &#x5728;&#x5F15;&#x5165;&#x4E86; P &#x7EC4;&#x4EF6;&#x540E;&#xFF0C;<code>mcache</code> &#x4ECE; M &#x8F6C;&#x79FB;&#x5230;&#x4E86; P &#xFF0C;P &#x4FDD;&#x5B58;&#x4E86; <code>mcache</code> &#x4E5F;&#x5C31;&#x610F;&#x5473;&#x7740;&#x4E0D;&#x5FC5;&#x4E3A;&#x6BCF;&#x4E00;&#x4E2A; M &#x90FD;&#x5206;&#x914D;        &#x4E00;&#x4E2A; <code>mcache</code>&#xFF0C;&#x907F;&#x514D;&#x4E86;&#x8FC7;&#x591A;&#x7684;&#x5185;&#x5B58;&#x6D88;&#x8017;&#x3002;&#x8FD9;&#x6837;&#x5728;&#x9AD8;&#x5E76;&#x53D1;&#x72B6;&#x6001;&#x4E0B;&#xFF0C;&#x6BCF;&#x4E2A; G &#x53EA;&#x6709;&#x5728;&#x8FD0;&#x884C;&#x7684;&#x65F6;&#x5019;&#x624D;&#x4F1A;&#x4F7F;&#x7528;&#x5230;&#x5185;&#x5B58;&#xFF0C;        &#x800C;&#x6BCF;&#x4E2A; G &#x4F1A;&#x7ED1;&#x5B9A;&#x4E00;&#x4E2A; P&#xFF0C;&#x6240;&#x4EE5;&#x53EA;&#x6709;&#x5F53;&#x524D;&#x8FD0;&#x884C;&#x7684; G &#x53EA;&#x4F1A;&#x5360;&#x7528;&#x4E00;&#x4E2A; <code>mcache</code>&#xFF0C;&#x5BF9;&#x4E8E; <code>mcache</code> &#x7684;&#x6570;&#x91CF;&#x5C31;&#x662F; P &#x7684;&#x6570;        &#x91CF;&#xFF0C;&#x540C;&#x65F6;&#x5E76;&#x53D1;&#x8BBF;&#x95EE;&#x65F6;&#x4E5F;&#x4E0D;&#x4F1A;&#x4EA7;&#x751F;&#x9501;&#x3002;</p>
+</li>
+</ul>
+<ul>
+<li><p>4&#x3001;&#x7EBF;&#x7A0B;&#x9891;&#x7E41;&#x963B;&#x585E;&#x4E0E;&#x5524;&#x9192;&#x95EE;&#x9898;&#xFF1A;&#x5728;&#x6700;&#x521D;&#x7684;&#x8C03;&#x5EA6;&#x5668;&#x4E2D;&#xFF0C;&#x901A;&#x8FC7; <code>runtime.GOMAXPROCS()</code> &#x9650;&#x5236;&#x7CFB;&#x7EDF;&#x7EBF;&#x7A0B;&#x7684;&#x6570;&#x91CF;&#xFF0C;&#x9ED8;&#x8BA4;&#x53EA;&#x5F00;&#x542F;&#x4E00;&#x4E2A;&#x7CFB;&#x7EDF;&#x7EBF;&#x7A0B;&#x3002;&#x5E76;&#x4E14;&#x7531;&#x4E8E; M &#x4F1A;&#x6267;&#x884C;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x7B49;&#x64CD;&#x4F5C;&#xFF0C;&#x5F53; M &#x963B;&#x585E;&#x540E;&#x4E0D;&#x4F1A;&#x65B0;&#x5EFA; M &#x6765;&#x6267;&#x884C;&#x5176;&#x4ED6;&#x7684;&#x4EFB;&#x52A1;&#x800C;&#x662F;&#x4F1A;&#x7B49;&#x5F85; M &#x5524;&#x9192;&#xFF0C;M &#x4F1A;&#x5728;&#x963B;&#x585E;&#x4E0E;&#x5524;&#x9192;&#x4E4B;&#x95F4;&#x9891;&#x7E41;&#x5207;&#x6362;&#x4F1A;&#x5BFC;&#x81F4;&#x989D;&#x5916;&#x7684;&#x5F00;&#x9500;&#xFF1B;</p>
+<p>  &#x5728;&#x65B0;&#x7684;&#x8C03;&#x5EA6;&#x5668;&#x4E2D;&#xFF0C;&#x5F53; M &#x5904;&#x4E8E;&#x7CFB;&#x7EDF;&#x8C03;&#x5EA6;&#x72B6;&#x6001;&#x65F6;&#x4F1A;&#x548C;&#x7ED1;&#x5B9A;&#x7684; P &#x89E3;&#x9664;&#x5173;&#x8054;&#xFF0C;&#x4F1A;&#x5524;&#x9192;&#x5DF2;&#x6709;&#x7684;&#x6216;&#x521B;&#x5EFA;&#x65B0;&#x7684; M &#x6765;&#x548C; P         &#x7ED1;&#x5B9A;&#x8FD0;&#x884C;&#x5176;&#x4ED6;&#x7684; G&#x3002;</p>
+</li>
+</ul>
+<p><strong>(2) P &#x7684;&#x65B0;&#x589E;&#x903B;&#x8F91;</strong></p>
+<p>P &#x7684;&#x6570;&#x91CF;&#x662F;&#x5728; runtime &#x542F;&#x52A8;&#x65F6;&#x521D;&#x59CB;&#x5316;&#x7684;&#xFF0C;&#x9ED8;&#x8BA4;&#x7B49;&#x4E8E; cpu &#x7684;&#x903B;&#x8F91;&#x6838;&#x6570;&#xFF0C;&#x5728;&#x7A0B;&#x5E8F;&#x542F;&#x52A8;&#x65F6;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;&#x73AF;&#x5883;&#x53D8;&#x91CF; <code>GOMAXPROCS</code> &#x6216;&#x8005; <code>runtime.GOMAXPROCS()</code> &#x65B9;&#x6CD5;&#x8FDB;&#x884C;&#x8BBE;&#x7F6E;&#xFF0C;&#x7A0B;&#x5E8F;&#x5728;&#x8FD0;&#x884C;&#x8FC7;&#x7A0B;&#x4E2D; P &#x7684;&#x6570;&#x91CF;&#x662F;&#x56FA;&#x5B9A;&#x4E0D;&#x53D8;&#x7684;&#x3002; </p>
+<p>&#x5728; IO &#x5BC6;&#x96C6;&#x578B;&#x573A;&#x666F;&#x4E0B;&#xFF0C;&#x53EF;&#x4EE5;&#x9002;&#x5F53;&#x8C03;&#x9AD8; P &#x7684;&#x6570;&#x91CF;&#xFF0C;&#x56E0;&#x4E3A; M &#x9700;&#x8981;&#x4E0E; P &#x7ED1;&#x5B9A;&#x624D;&#x80FD;&#x8FD0;&#x884C;&#xFF0C;&#x800C; M &#x5728;&#x6267;&#x884C; G &#x65F6;&#x67D0;&#x4E9B;&#x64CD;&#x4F5C;&#x4F1A;&#x9677;&#x5165;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#xFF0C;&#x6B64;&#x65F6;&#x4E0E; M &#x5173;&#x8054;&#x7684; P &#x5904;&#x4E8E;&#x7B49;&#x5F85;&#x72B6;&#x6001;&#xFF0C;&#x5982;&#x679C;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x4E00;&#x76F4;&#x4E0D;&#x8FD4;&#x56DE;&#x90A3;&#x4E48;&#x7B49;&#x5F85;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x8FD9;&#x6BB5;&#x65F6;&#x95F4;&#x7684; CPU &#x8D44;&#x6E90;&#x5176;&#x5B9E;&#x662F;&#x88AB;&#x6D6A;&#x8D39;&#x7684;&#xFF0C;&#x867D;&#x7136; runtime &#x4E2D;&#x6709; <code>sysmon</code> &#x76D1;&#x63A7;&#x7EBF;&#x7A0B;&#x53EF;&#x4EE5;&#x62A2;&#x5360; G&#xFF0C;&#x6B64;&#x5904;&#x5C31;&#x662F;&#x62A2;&#x5360;&#x4E0E; G &#x5173;&#x8054;&#x7684; P&#xFF0C;&#x8BA9; P &#x91CD;&#x65B0;&#x7ED1;&#x5B9A;&#x4E00;&#x4E2A; M &#x8FD0;&#x884C; G&#xFF0C;&#x4F46; <code>sysmon</code> &#x662F;&#x5468;&#x671F;&#x6027;&#x6267;&#x884C;&#x62A2;&#x5360;&#x7684;&#xFF0C;&#x5728; <code>sysmon</code> &#x7A33;&#x5B9A;&#x8FD0;&#x884C;&#x540E;&#x6BCF;&#x9694; 10ms &#x68C0;&#x67E5;&#x4E00;&#x6B21;&#x662F;&#x5426;&#x8981;&#x62A2;&#x5360; P&#xFF0C;&#x64CD;&#x4F5C;&#x7CFB;&#x7EDF;&#x4E2D;&#x5728; 10ms &#x5185;&#x53EF;&#x4EE5;&#x6267;&#x884C;&#x591A;&#x6B21;&#x7EBF;&#x7A0B;&#x5207;&#x6362;&#xFF0C;&#x5982;&#x679C; P &#x5904;&#x4E8E;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x72B6;&#x6001;&#x8FD8;&#x6709;&#x9700;&#x8981;&#x8FD0;&#x884C;&#x7684; G&#xFF0C;&#x8FD9;&#x90E8;&#x5206; G &#x5F97;&#x4E0D;&#x5230;&#x6267;&#x884C;&#x5176;&#x5B9E;CPU&#x8D44;&#x6E90;&#x662F;&#x88AB;&#x6D6A;&#x8D39;&#x7684;&#x3002;&#x5728;&#x4E00;&#x4E9B;&#x9879;&#x76EE;&#x4E2D;&#x80FD;&#x770B;&#x5230;&#x6709;&#x4FEE;&#x6539; P &#x6570;&#x91CF;&#x7684;&#x64CD;&#x4F5C;&#xFF0C;&#x5F00;&#x6E90;&#x6570;&#x636E;&#x5E93;&#x9879;&#x76EE;<a href="https://github.com/dgraph-io/dgraph/blob/master/dgraph/main.go" target="_blank">https://github.com/dgraph-io/dgraph </a>&#x4E2D;&#x5C06; <code>GOMAXPROCS</code> &#x8C03;&#x6574;&#x5230; 128 &#x6765;&#x589E;&#x52A0; IO &#x5904;&#x7406;&#x80FD;&#x529B;&#x3002;</p>
+<p><strong>(3) P &#x7684;&#x9500;&#x6BC1;&#x903B;&#x8F91;</strong></p>
+<p>&#x7A0B;&#x5E8F;&#x8FD0;&#x884C;&#x8FC7;&#x7A0B;&#x4E2D;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x8C03;&#x6574; <code>GOMAXPROC</code>&#xFF0C;&#x672A;&#x4F7F;&#x7528;&#x7684; P &#x4F1A;&#x653E;&#x5728;&#x8C03;&#x5EA6;&#x5668;&#x7684;&#x5168;&#x5C40;&#x961F;&#x5217; <code>schedt.pidle</code> &#xFF0C;&#x4E0D;&#x4F1A;&#x88AB;&#x9500;&#x6BC1;&#x3002;&#x82E5;&#x8C03;&#x5C0F;&#x4E86; <code>GOMAXPROC</code>&#xFF0C;&#x901A;&#x8FC7; <code>p.destroy()</code> &#x4F1A;&#x5C06;&#x591A;&#x4F59;&#x7684; P &#x5173;&#x8054;&#x7684;&#x8D44;&#x6E90;&#x56DE;&#x6536;&#x6389;&#x5E76;&#x4E14;&#x4F1A;&#x5C06; P &#x72B6;&#x6001;&#x8BBE;&#x7F6E;&#x4E3A;  <code>_Pdead</code>&#xFF0C;&#x6B64;&#x65F6;&#x53EF;&#x80FD;&#x8FD8;&#x6709;&#x4E0E; P &#x5173;&#x8054;&#x7684; M &#x6240;&#x4EE5; P &#x5BF9;&#x8C61;&#x4E0D;&#x4F1A;&#x88AB;&#x56DE;&#x6536;&#x3002;</p>
+<p><strong>(4) P &#x7684;&#x72B6;&#x6001;</strong></p>
+<table>
+<thead>
+<tr>
+<th>&#x72B6;&#x6001;</th>
+<th>&#x63CF;&#x8FF0;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_Pidle</code></td>
+<td>P &#x88AB;&#x521D;&#x59CB;&#x5316;&#x540E;&#x7684;&#x72B6;&#x6001;&#xFF0C;&#x6B64;&#x65F6;&#x8FD8;&#x6CA1;&#x6709;&#x8FD0;&#x884C;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x6216;&#x8005;&#x8C03;&#x5EA6;&#x5668;</td>
+</tr>
+<tr>
+<td><code>_Prunning</code></td>
+<td>P &#x88AB; M &#x7ED1;&#x5B9A;&#x5E76;&#x4E14;&#x8FD0;&#x884C;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x65F6;&#x7684;&#x72B6;&#x6001;</td>
+</tr>
+<tr>
+<td><code>_Psyscall</code></td>
+<td>&#x5F53; G &#x88AB;&#x6267;&#x884C;&#x65F6;&#x9700;&#x8981;&#x8FDB;&#x5165;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x65F6;&#xFF0C;P &#x4F1A;&#x88AB;&#x5173;&#x8054;&#x7684; M &#x8BBE;&#x7F6E;&#x4E3A;&#x8BE5;&#x72B6;&#x6001;</td>
+</tr>
+<tr>
+<td><code>_Pgcstop</code></td>
+<td>&#x5728;&#x7A0B;&#x5E8F;&#x8FD0;&#x884C;&#x4E2D;&#x53D1;&#x751F; GC &#x65F6;&#xFF0C;P &#x4F1A;&#x88AB;&#x5173;&#x8054;&#x7684; M &#x8BBE;&#x7F6E;&#x4E3A;&#x8BE5;&#x72B6;&#x6001;</td>
+</tr>
+<tr>
+<td><code>_Pdead</code></td>
+<td>&#x7A0B;&#x5E8F;&#x5728;&#x8FD0;&#x884C;&#x8FC7;&#x7A0B;&#x4E2D;&#x5982;&#x679C;&#x5C06; <code>GOMAXPROCS</code> &#x6570;&#x91CF;&#x51CF;&#x5C11;&#x65F6;&#xFF0C;&#x6B64;&#x65F6;&#x591A;&#x4F59;&#x7684; P &#x4F1A;&#x88AB;&#x8BBE;&#x7F6E;&#x4E3A; <code>_Pdead</code> &#x72B6;&#x6001;</td>
+</tr>
+</tbody>
+</table>
+<p><img src="https://cdn.tianfeiyu.com/P_Status.png" alt=""></p>
+<h5 id="2&#x3001;m-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;"><a name="2&#x3001;m-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;" class="anchor-navigation-ex-anchor" href="#2&#x3001;m-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;"><i class="fa fa-link" aria-hidden="true"></i></a>2&#x3001;M &#x7684;&#x751F;&#x547D;&#x5468;&#x671F;</h5>
+<p>M &#x5BF9;&#x8C61;&#x7684;&#x7684;&#x7ED3;&#x6784;&#x4F53;&#x4E3A;&#xFF1A;</p>
+<pre class="language-"><code>type m struct {
+    // g0 &#x8BB0;&#x5F55;&#x5DE5;&#x4F5C;&#x7EBF;&#x7A0B;&#xFF08;&#x4E5F;&#x5C31;&#x662F;&#x5185;&#x6838;&#x7EBF;&#x7A0B;&#xFF09;&#x4F7F;&#x7528;&#x7684;&#x6808;&#x4FE1;&#x606F;&#xFF0C;&#x5728;&#x6267;&#x884C;&#x8C03;&#x5EA6;&#x4EE3;&#x7801;&#x65F6;&#x9700;&#x8981;&#x4F7F;&#x7528;
+    g0      *g    
+
+    morebuf gobuf  // &#x5806;&#x6808;&#x6269;&#x5BB9;&#x4F7F;&#x7528;
+    ......
+
+    gsignal       *g   // &#x7528;&#x4E8E;&#x4FE1;&#x53F7;&#x5904;&#x7406;
+    ......
+
+    // &#x901A;&#x8FC7; tls (&#x7EBF;&#x7A0B;&#x672C;&#x5730;&#x5B58;&#x50A8;)&#x7ED3;&#x6784;&#x4F53;&#x5B9E;&#x73B0; m &#x4E0E;&#x5DE5;&#x4F5C;&#x7EBF;&#x7A0B;&#x7684;&#x7ED1;&#x5B9A;
+    tls           [tlsSlots]uintptr 
+
+    mstartfn      func()   // &#x8868;&#x793A;m&#x542F;&#x52A8;&#x65F6;&#x7ACB;&#x5373;&#x6267;&#x884C;&#x7684;&#x51FD;&#x6570;
+    curg          *g       // &#x6307;&#x5411;&#x6B63;&#x5728;&#x8FD0;&#x884C;&#x7684; goroutine &#x5BF9;&#x8C61;
+    caughtsig     guintptr 
+    p             puintptr // &#x5F53;&#x524D; m &#x7ED1;&#x5B9A;&#x7684; P
+    nextp         puintptr // &#x4E0B;&#x6B21;&#x8FD0;&#x884C;&#x65F6;&#x7684;P
+    oldp          puintptr // &#x5728;&#x6267;&#x884C;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x4E4B;&#x524D;&#x7ED1;&#x5B9A;&#x7684;P
+    id            int64         // m &#x7684;&#x552F;&#x4E00;id
+    mallocing     int32
+    throwing      int32
+    preemptoff    string // &#x662F;&#x5426;&#x8981;&#x4FDD;&#x6301; curg &#x59CB;&#x7EC8;&#x5728;&#x8FD9;&#x4E2A; m &#x4E0A;&#x8FD0;&#x884C;
+    locks         int32
+    dying         int32
+    profilehz     int32
+    spinning      bool // &#x4E3A; true &#x65F6;&#x8868;&#x793A;&#x5F53;&#x524D; m &#x5904;&#x4E8E;&#x81EA;&#x65CB;&#x72B6;&#x6001;&#xFF0C;&#x6B63;&#x5728;&#x4ECE;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x5077;&#x5DE5;&#x4F5C;
+    blocked       bool // m &#x6B63;&#x963B;&#x585E;&#x5728; note &#x4E0A;
+    newSigstack   bool 
+    printlock     int8
+    incgo         bool   // &#x662F;&#x5426;&#x5728;&#x6267;&#x884C; cgo &#x8C03;&#x7528;
+    freeWait      uint32 
+    fastrand      [2]uint32
+    needextram    bool
+    traceback     uint8
+
+    // cgo &#x8C03;&#x7528;&#x8BA1;&#x6570;
+    ncgocall      uint64      
+    ncgo          int32       
+    cgoCallersUse uint32      
+    cgoCallers    *cgoCallers 
+
+    // &#x6CA1;&#x6709; goroutine &#x9700;&#x8981;&#x8FD0;&#x884C;&#x65F6;&#xFF0C;&#x5DE5;&#x4F5C;&#x7EBF;&#x7A0B;&#x7761;&#x7720;&#x5728;&#x8FD9;&#x4E2A; park &#x6210;&#x5458;&#x4E0A;&#xFF0C;
+    // &#x5176;&#x5B83;&#x7EBF;&#x7A0B;&#x901A;&#x8FC7;&#x8FD9;&#x4E2A; park &#x5524;&#x9192;&#x8BE5;&#x5DE5;&#x4F5C;&#x7EBF;&#x7A0B;
+    doesPark      bool        
+    park          note
+
+    alllink       *m       // &#x8BB0;&#x5F55;&#x6240;&#x6709;&#x5DE5;&#x4F5C;&#x7EBF;&#x7A0B;&#x7684;&#x94FE;&#x8868;
+    ......
+
+    startingtrace bool
+    syscalltick   uint32   // &#x6267;&#x884C;&#x8FC7;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x7684;&#x6B21;&#x6570;
+    freelink      *m 
+
+    ......
+    preemptGen uint32   // &#x5B8C;&#x6210;&#x7684;&#x62A2;&#x5360;&#x4FE1;&#x53F7;&#x6570;&#x91CF;
+    ......
+}
+</code></pre><p><strong>(1) M &#x7684;&#x65B0;&#x5EFA;</strong></p>
+<p>M &#x662F; runtime &#x4E2D;&#x7684;&#x4E00;&#x4E2A;&#x5BF9;&#x8C61;&#xFF0C;&#x4EE3;&#x8868;&#x7EBF;&#x7A0B;&#xFF0C;&#x6BCF;&#x521B;&#x5EFA;&#x4E00;&#x4E2A; M &#x5BF9;&#x8C61;&#x540C;&#x65F6;&#x4F1A;&#x521B;&#x5EFA;&#x4E00;&#x4E2A;&#x7EBF;&#x7A0B;&#x4E0E; M &#x8FDB;&#x884C;&#x7ED1;&#x5B9A;&#xFF0C;&#x7EBF;&#x7A0B;&#x7684;&#x65B0;&#x5EFA;&#x662F;&#x901A;&#x8FC7;&#x6267;&#x884C; <code>clone()</code> &#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x521B;&#x5EFA;&#x51FA;&#x6765;&#x7684;&#x3002;runtime &#x4E2D;&#x5B9A;&#x4E49; M &#x7684;&#x6700;&#x5927;&#x6570;&#x91CF;&#x4E3A; 10000 &#x4E2A;&#xFF0C;&#x7528;&#x6237;&#x53EF;&#x4EE5;&#x901A;&#x8FC7;<code>debug.SetMaxThreads(n)</code> &#x8FDB;&#x884C;&#x8C03;&#x6574;&#x3002;</p>
+<p>&#x5728;&#x4EE5;&#x4E0B;&#x4E24;&#x79CD;&#x573A;&#x666F;&#x4E0B;&#x4F1A;&#x65B0;&#x5EFA; M&#xFF1A;</p>
+<ul>
+<li><p>1&#x3001;Golang &#x7A0B;&#x5E8F;&#x5728;&#x542F;&#x52A8;&#x65F6;&#x4F1A;&#x521B;&#x5EFA;&#x4E3B;&#x7EBF;&#x7A0B;&#xFF0C;&#x4E3B;&#x7EBF;&#x7A0B;&#x662F;&#x7B2C;&#x4E00;&#x4E2A; M &#x5373; M0&#xFF1B;</p>
+</li>
+<li><p>2&#x3001;&#x5F53;&#x6709;&#x65B0;&#x7684; G &#x521B;&#x5EFA;&#x6216;&#x8005;&#x6709; G &#x4ECE; <code>_Gwaiting</code> &#x8FDB;&#x5165; <code>_Grunning</code> &#x4E14;&#x8FD8;&#x6709;&#x7A7A;&#x95F2;&#x7684;P&#xFF0C;&#x6B64;&#x65F6;&#x4F1A;&#x8C03;&#x7528; <code>startm()</code>&#xFF0C;&#x9996;&#x5148;&#x4ECE;&#x5168;&#x5C40;&#x961F;&#x5217;&#xFF08; <code>sched.midle</code>&#xFF09;&#x83B7;&#x53D6;&#x4E00;&#x4E2A; M &#x548C;&#x7A7A;&#x95F2;&#x7684; P &#x7ED1;&#x5B9A;&#x6267;&#x884C; G&#xFF0C;&#x5982;&#x679C;&#x6CA1;&#x6709;&#x7A7A;&#x95F2;&#x7684; M &#x5219;&#x4F1A;&#x901A;&#x8FC7;<code>newm()</code> &#x521B;&#x5EFA; M&#xFF1B;</p>
+</li>
+</ul>
+<p><strong>(2) M &#x7684;&#x9500;&#x6BC1;</strong></p>
+<p>M &#x4E0D;&#x4F1A;&#x88AB;&#x9500;&#x6BC1;&#xFF0C;&#x5F53;&#x627E;&#x4E0D;&#x5230;&#x8981;&#x8FD0;&#x884C;&#x7684; G &#x6216;&#x8005;&#x7ED1;&#x5B9A;&#x4E0D;&#x5230;&#x7A7A;&#x95F2;&#x7684; P &#x65F6;&#xFF0C;&#x4F1A;&#x901A;&#x8FC7;&#x6267;&#x884C; <code>stopm()</code> &#x51FD;&#x6570;&#x8FDB;&#x5165;&#x5230;&#x7761;&#x7720;&#x72B6;&#x6001;&#xFF0C;&#x5728;&#x4EE5;&#x4E0B;&#x4E24;&#x79CD;&#x60C5;&#x51B5;&#x4E0B;&#x4F1A;&#x6267;&#x884C; <code>stopm()</code> &#x51FD;&#x6570;&#x8FDB;&#x5165;&#x5230;&#x7761;&#x7720;&#x72B6;&#x6001;&#xFF1A;</p>
+<ul>
+<li>1&#x3001;&#x5F53; M &#x7ED1;&#x5B9A;&#x7684; P &#x65E0;&#x53EF;&#x8FD0;&#x884C;&#x7684; G &#x4E14;&#x65E0;&#x6CD5;&#x4ECE;&#x5176;&#x5B83; P &#x7A83;&#x53D6;&#x53EF;&#x8FD0;&#x884C;&#x7684; G &#x65F6; M &#x4F1A;&#x5C1D;&#x8BD5;&#x5148;&#x8FDB;&#x5165;&#x81EA;&#x65CB;&#x72B6;&#x6001; (<code>spinning</code>) &#xFF0C;&#x53EA;&#x6709;&#x90E8;&#x5206; M &#x4F1A;&#x8FDB;&#x5165;&#x81EA;&#x65CB;&#x72B6;&#x6001;&#xFF0C;&#x5904;&#x4E8E;&#x81EA;&#x65CB;&#x72B6;&#x6001;&#x7684; M &#x6570;&#x91CF;&#x6700;&#x591A;&#x4E3A;&#x975E;&#x7A7A;&#x95F2;&#x72B6;&#x6001;&#x7684; P &#x6570;&#x91CF;&#x7684;&#x4E00;&#x534A;&#xFF08;<code>sched.nmspinning &lt; (procs- sched.npidle)/2</code>&#xFF09;&#xFF0C;&#x81EA;&#x65CB;&#x72B6;&#x6001;&#x7684; M &#x4F1A;&#x4ECE;&#x5176;&#x4ED6; P &#x7A83;&#x53D6;&#x53EF;&#x6267;&#x884C;&#x7684; G&#xFF0C;&#x5982;&#x679C; M &#x5728;&#x81EA;&#x65CB;&#x72B6;&#x6001;&#x672A;&#x7A83;&#x53D6;&#x5230; G &#x6216;&#x8005;&#x672A;&#x8FDB;&#x5165;&#x5230;&#x81EA;&#x65CB;&#x72B6;&#x6001;&#x5219;&#x4F1A;&#x76F4;&#x63A5;&#x8FDB;&#x5165;&#x5230;&#x7761;&#x7720;&#x8F6C;&#x6001;&#xFF1B;</li>
+<li>2&#x3001;&#x5F53; M &#x5173;&#x8054;&#x7684; G &#x8FDB;&#x5165;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x65F6;&#xFF0C;M &#x4F1A;&#x4E3B;&#x52A8;&#x548C;&#x5173;&#x8054;&#x7684; P &#x89E3;&#x7ED1; &#xFF0C;&#x5F53;  M &#x5173;&#x8054;&#x7684; G &#x6267;&#x884C; <code>exitsyscall()</code> &#x51FD;&#x6570;&#x9000;&#x51FA;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x65F6;&#xFF0C;M &#x4F1A;&#x627E;&#x4E00;&#x4E2A;&#x7A7A;&#x95F2;&#x7684; P &#x8FDB;&#x884C;&#x7ED1;&#x5B9A;&#xFF0C;&#x5982;&#x679C;&#x627E;&#x4E0D;&#x5230;&#x7A7A;&#x95F2;&#x7684; P &#x6B64;&#x65F6; M &#x4F1A;&#x8C03;&#x7528; <code>stopm()</code> &#x8FDB;&#x5165;&#x5230;&#x7761;&#x7720;&#x72B6;&#x6001;&#xFF1B;</li>
+</ul>
+<p>&#x5728; <code>stopm()</code> &#x51FD;&#x6570;&#x4E2D;&#x4F1A;&#x5C06;&#x7761;&#x7720;&#x7684; M &#x653E;&#x5230;&#x5168;&#x5C40;&#x7A7A;&#x95F2;&#x961F;&#x5217;&#xFF08;<code>sched.midle</code>&#xFF09;&#x4E2D;&#x3002;</p>
+<p><strong>(3) M &#x7684;&#x8FD0;&#x884C;</strong></p>
+<p>M &#x9700;&#x8981;&#x4E0E; P &#x5173;&#x8054;&#x624D;&#x80FD;&#x8FD0;&#x884C;&#xFF0C;&#x5E76;&#x4E14; M &#x4E0E; P &#x6709;&#x4EB2;&#x548C;&#x6027;&#xFF0C;&#x6BD4;&#x5982;&#x5728;&#x6267;&#x884C; <code>entersyscall()</code> &#x51FD;&#x6570;&#x8FDB;&#x5165;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x65F6;&#xFF0C;M &#x4F1A;&#x4E3B;&#x52A8;&#x4E0E;&#x5F53;&#x524D;&#x7684; P &#x89E3;&#x7ED1;&#xFF0C;M &#x4F1A;&#x5C06;&#x5F53;&#x524D;&#x7684; P &#x8BB0;&#x5F55;&#x5230; <code>m.oldp</code> &#x4E2D;&#xFF0C;&#x5728;&#x6267;&#x884C; <code>exitsyscall()</code> &#x51FD;&#x6570;&#x9000;&#x51FA;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;&#x65F6;&#xFF0C;M &#x4F1A;&#x4F18;&#x5148;&#x7ED1;&#x5B9A; <code>m.oldp</code> &#x4E2D;&#x7684; P&#x3002;</p>
+<p><strong>(4) M0 &#x7684;&#x4F5C;&#x7528;&#x4EE5;&#x53CA;&#x4E0E;&#x5176;&#x4ED6;&#x7EBF;&#x7A0B;&#x5173;&#x8054;&#x7684; M &#x533A;&#x522B;?</strong></p>
+<p>M0 &#x662F;&#x4E00;&#x4E2A;&#x5168;&#x5C40;&#x53D8;&#x91CF;&#xFF0C;&#x5728; <code>src/runtime/proc.go</code> &#x5B9A;&#x4E49;&#xFF0C;M0 &#x4E0D;&#x9700;&#x8981;&#x5728;&#x5806;&#x4E0A;&#x5206;&#x914D;&#x5185;&#x5B58;&#xFF0C;&#x5176;&#x4ED6; M &#x90FD;&#x662F;&#x901A;&#x8FC7; <code>new(m)</code> &#x521B;&#x5EFA;&#x51FA;&#x6765;&#x7684;&#x5BF9;&#x8C61;&#xFF0C;&#x5176;&#x5185;&#x5B58;&#x662F;&#x4ECE;&#x5806;&#x4E0A;&#x8FDB;&#x884C;&#x5206;&#x914D;&#x7684;&#xFF0C;M0 &#x8D1F;&#x8D23;&#x6267;&#x884C;&#x521D;&#x59CB;&#x5316;&#x64CD;&#x4F5C;&#x548C;&#x542F;&#x52A8;&#x7B2C;&#x4E00;&#x4E2A; G&#xFF0C;Golang &#x7A0B;&#x5E8F;&#x542F;&#x52A8;&#x65F6;&#x4F1A;&#x9996;&#x5148;&#x542F;&#x52A8; M0&#xFF0C;M0 &#x548C;&#x4E3B;&#x7EBF;&#x7A0B;&#x8FDB;&#x884C;&#x4E86;&#x7ED1;&#x5B9A;&#xFF0C;&#x5F53; M0 &#x542F;&#x52A8;&#x7B2C;&#x4E00;&#x4E2A; G &#x5373; main goroutine &#x540E;&#x529F;&#x80FD;&#x5C31;&#x548C;&#x5176;&#x4ED6;&#x7684; M &#x4E00;&#x6837;&#x4E86; &#x3002;</p>
+<p><strong>(5) &#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x9650;&#x5236; M &#x7684;&#x6570;&#x91CF;&#xFF1F;</strong></p>
+<p>Golang &#x5728; 1.2 &#x7248;&#x672C;&#x65F6;&#x6DFB;&#x52A0;&#x4E86;&#x5BF9; M &#x6570;&#x91CF;&#x7684;&#x9650;&#x5236; (<a href="https://github.com/golang/go/issues/4056" target="_blank">runtime: limit number of operating system threads</a>)&#xFF0C;M &#x9ED8;&#x8BA4;&#x7684;&#x6700;&#x5927;&#x6570;&#x91CF;&#x4E3A; 10000&#xFF0C;&#x5728; 1.17 &#x7248;&#x672C;&#x4E2D;&#x8C03;&#x5EA6;&#x5668;&#x521D;&#x59CB;&#x5316;&#x65F6;&#x5728; <code>schedinit()</code> &#x51FD;&#x6570;&#x4E2D;&#x8BBE;&#x7F6E;&#x4E86;&#x9ED8;&#x8BA4;&#x503C;&#xFF08;<code>sched.maxmcount = 10000</code>&#xFF09;&#x3002;</p>
+<p>&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x9650;&#x5236; M &#x7684;&#x6570;&#x91CF;&#xFF1F;&#x5728;&#x91CD;&#x6784;&#x8C03;&#x5EA6;&#x5668;&#x7684;&#x6587;&#x7AE0;&#x4E2D; <a href="https://docs.google.com/document/d/1TTj4T2JO42uD5ID9e89oa0sLKhJYD0Y_kqxDv3I3XMw/edit#heading=h.x125et1s6ve" target="_blank"><strong>Potential Further Improvements</strong></a> &#x4E00;&#x8282;&#xFF0C;Dmitry Vyukov &#x5927;&#x4F6C;&#x5DF2;&#x7ECF;&#x63D0;&#x5230;&#x8FC7;&#x8981;&#x9650;&#x5236; M &#x7684;&#x6570;&#x91CF;&#x4E86;&#xFF0C;&#x5728;&#x9AD8;&#x5E76;&#x53D1;&#x6216;&#x8005;&#x53CD;&#x590D;&#x4F1A;&#x521B;&#x5EFA;&#x5927;&#x91CF; goroutine &#x7684;&#x573A;&#x666F;&#x4E2D;&#xFF0C;&#x9700;&#x8981;&#x66F4;&#x591A;&#x7684;&#x7EBF;&#x7A0B;&#x53BB;&#x6267;&#x884C; goroutine&#xFF0C;&#x7EBF;&#x7A0B;&#x8FC7;&#x591A;&#x65F6;&#x4F1A;&#x8017;&#x5C3D;&#x7CFB;&#x7EDF;&#x8D44;&#x6E90;&#x6216;&#x8005;&#x89E6;&#x53D1;&#x7CFB;&#x7EDF;&#x7684;&#x9650;&#x5236;&#x5BFC;&#x81F4;&#x7A0B;&#x5E8F;&#x5F02;&#x5E38;&#xFF0C;&#x5185;&#x6838;&#x5728;&#x8C03;&#x5EA6;&#x5927;&#x91CF;&#x7EBF;&#x7A0B;&#x65F6;&#x4E5F;&#x8981;&#x6D88;&#x8017;&#x989D;&#x5916;&#x7684;&#x8D44;&#x6E90;&#xFF0C;&#x9650;&#x5236; M &#x7684;&#x6570;&#x91CF;&#x4E3B;&#x8981;&#x662F;&#x9632;&#x6B62;&#x7A0B;&#x5E8F;&#x4E0D;&#x5408;&#x7406;&#x7684;&#x4F7F;&#x7528;&#x3002;</p>
+<p>Linux &#x4E0A;&#x6BCF;&#x4E2A;&#x7EBF;&#x7A0B;&#x6808;&#x5927;&#x5C0F;&#x9ED8;&#x8BA4;&#x4E3A; 8M&#xFF0C;&#x5982;&#x679C;&#x521B;&#x5EFA; 10000 &#x4E2A;&#x7EBF;&#x7A0B;&#x9ED8;&#x8BA4;&#x9700;&#x8981; 78.125 G &#x5185;&#x5B58;&#xFF0C;&#x5BF9;&#x666E;&#x901A;&#x7A0B;&#x5E8F;&#x6765;&#x8BF4;&#x5185;&#x5B58;&#x4F7F;&#x7528;&#x91CF;&#x5DF2;&#x7ECF;&#x975E;&#x5E38;&#x5927;&#x4E86;&#xFF0C;&#x6B64;&#x5916;&#xFF0C;Linux &#x4E0A;&#x4E0B;&#x9762;&#x8FD9;&#x4E09;&#x4E2A;&#x5185;&#x6838;&#x53C2;&#x6570;&#x7684;&#x5927;&#x5C0F;&#x4E5F;&#x4F1A;&#x5F71;&#x54CD;&#x521B;&#x5EFA;&#x7EBF;&#x7A0B;&#x7684;&#x4E0A;&#x9650;&#xFF1A;</p>
+<ul>
+<li><strong>/proc/sys/kernel/threads-max</strong>&#xFF1A;&#x8868;&#x793A;&#x7CFB;&#x7EDF;&#x652F;&#x6301;&#x7684;&#x6700;&#x5927;&#x7EBF;&#x7A0B;&#x6570;&#xFF1B;</li>
+<li><strong>/proc/sys/kernel/pid_max</strong>&#xFF1A;&#x8868;&#x793A;&#x7CFB;&#x7EDF;&#x5168;&#x5C40;&#x7684; PID &#x53F7;&#x6570;&#x503C;&#x7684;&#x9650;&#x5236;&#xFF0C;&#x6BCF;&#x4E00;&#x4E2A;&#x8FDB;&#x7A0B;&#x6216;&#x7EBF;&#x7A0B;&#x90FD;&#x6709; ID&#xFF0C;ID &#x7684;&#x503C;&#x8D85;&#x8FC7;&#x8FD9;&#x4E2A;&#x6570;&#xFF0C;&#x8FDB;&#x7A0B;&#x6216;&#x7EBF;&#x7A0B;&#x5C31;&#x4F1A;&#x521B;&#x5EFA;&#x5931;&#x8D25;&#xFF1B;</li>
+<li><strong>/proc/sys/vm/max_map_count</strong>&#xFF1A;&#x8868;&#x793A;&#x9650;&#x5236;&#x4E00;&#x4E2A;&#x8FDB;&#x7A0B;&#x53EF;&#x4EE5;&#x62E5;&#x6709;&#x7684; VMA(&#x865A;&#x62DF;&#x5185;&#x5B58;&#x533A;&#x57DF;)&#x7684;&#x6570;&#x91CF;&#xFF1B;</li>
+</ul>
+<p><strong>(6) M &#x7684;&#x72B6;&#x6001;</strong></p>
+<p>&#x901A;&#x8FC7; M &#x7684;&#x65B0;&#x5EFA;&#x548C;&#x9500;&#x6BC1;&#x6D41;&#x7A0B;&#x7684;&#x5206;&#x6790;&#xFF0C;M &#x6709;&#x4E09;&#x79CD;&#x72B6;&#x6001;&#xFF1A;&#x8FD0;&#x884C;&#x3001;&#x81EA;&#x65CB;&#x3001;&#x7761;&#x7720;&#xFF0C;&#x8FD9;&#x4E09;&#x79CD;&#x72B6;&#x6001;&#x4E4B;&#x95F4;&#x7684;&#x8F6C;&#x6362;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<p><img src="https://cdn.tianfeiyu.com/M_Status.png" alt=""></p>
+<h5 id="3&#x3001;g-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;"><a name="3&#x3001;g-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;" class="anchor-navigation-ex-anchor" href="#3&#x3001;g-&#x7684;&#x751F;&#x547D;&#x5468;&#x671F;"><i class="fa fa-link" aria-hidden="true"></i></a>3&#x3001;G &#x7684;&#x751F;&#x547D;&#x5468;&#x671F;</h5>
+<p>G &#x7684;&#x7ED3;&#x6784;&#x4F53;&#x4FE1;&#x606F;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<pre class="language-"><code>type g struct {
+    // &#x5F53;&#x524D; Goroutine &#x7684;&#x6808;&#x5185;&#x5B58;&#x8303;&#x56F4;
+    stack       stack   
+    stackguard0 uintptr 
+    stackguard1 uintptr 
+
+    _panic    *_panic // &#x5F53;&#x524D; g &#x4E2D;&#x4E0E; panic &#x76F8;&#x5173;&#x7684;&#x5904;&#x7406;
+    _defer    *_defer // &#x5F53;&#x524D; g &#x4E2D;&#x4E0E; defer &#x76F8;&#x5173;&#x7684;&#x5904;&#x7406;
+    m         *m      // &#x7ED1;&#x5B9A;&#x7684; m
+
+    // &#x5B58;&#x50A8;&#x5F53;&#x524D; Goroutine &#x8C03;&#x5EA6;&#x76F8;&#x5173;&#x7684;&#x6570;&#x636E;&#xFF0C;&#x4E0A;&#x4E0B;&#x65B9;&#x5207;&#x6362;&#x65F6;&#x4F1A;&#x628A;&#x5F53;&#x524D;&#x4FE1;&#x606F;&#x4FDD;&#x5B58;&#x5230;&#x8FD9;&#x91CC;
+    sched     gobuf   
+
+        ......
+
+    param        unsafe.Pointer  // &#x5524;&#x9192;G&#x65F6;&#x4F20;&#x5165;&#x7684;&#x53C2;&#x6570;
+    atomicstatus uint32  // &#x5F53;&#x524D; G &#x7684;&#x72B6;&#x6001;
+    stackLock    uint32 
+    goid         int64   // &#x5F53;&#x524D; G &#x7684; ID
+    schedlink    guintptr
+    waitsince    int64      // G &#x963B;&#x585E;&#x65F6;&#x957F;
+    waitreason   waitReason // &#x963B;&#x585E;&#x539F;&#x56E0;
+
+    // &#x62A2;&#x5360;&#x6807;&#x8BB0;
+    preempt       bool 
+    preemptStop   bool 
+    preemptShrink bool 
+
+
+    asyncSafePoint bool
+    paniconfault bool 
+    gcscandone   bool 
+    throwsplit   bool 
+
+    // &#x8868;&#x793A;&#x662F;&#x5426;&#x6709;&#x672A;&#x52A0;&#x9501;&#x5B9A;&#x7684;channel&#x6307;&#x5411;&#x5230;&#x4E86;g &#x6808;
+    activeStackChans bool
+
+    // &#x8868;&#x793A;g &#x662F;&#x653E;&#x5728;chansend &#x8FD8;&#x662F; chanrecv&#xFF0C;&#x7528;&#x4E8E;&#x6808;&#x7684;&#x6536;&#x7F29;
+    parkingOnChan uint8
+
+    raceignore     int8     // ignore race detection events
+    sysblocktraced bool     // StartTrace has emitted EvGoInSyscall about this goroutine
+    tracking       bool     // whether we&apos;re tracking this G for sched latency statistics
+    trackingSeq    uint8    // used to decide whether to track this G
+    runnableStamp  int64    // timestamp of when the G last became runnable, only used when tracking
+    runnableTime   int64    // the amount of time spent runnable, cleared when running, only used when tracking
+    sysexitticks   int64    // cputicks when syscall has returned (for tracing)
+    traceseq       uint64   // trace event sequencer
+    tracelastp     puintptr // last P emitted an event for this goroutine
+    lockedm        muintptr
+    sig            uint32
+    writebuf       []byte
+    sigcode0       uintptr
+    sigcode1       uintptr
+    sigpc          uintptr
+    gopc           uintptr         // goroutine &#x5F53;&#x524D;&#x8FD0;&#x884C;&#x51FD;&#x6570;&#x7684; PC &#x503C;
+    ancestors      *[]ancestorInfo // ancestor information goroutine(s) that created this goroutine (only used if debug.tracebackancestors)
+    startpc        uintptr         // &#x89E6;&#x53D1;&#x8FD9;&#x4E2A; goroutine &#x7684;&#x51FD;&#x6570;&#x7684; PC &#x503C;
+    racectx        uintptr
+    waiting        *sudog         // sudog structures this g is waiting on (that have a valid elem ptr); in lock order
+    cgoCtxt        []uintptr      // cgo traceback context
+    labels         unsafe.Pointer // profiler labels
+    timer          *timer         // cached timer for time.Sleep
+    selectDone     uint32         // are we participating in a select and did someone win the race?
+
+    // GC &#x65F6;&#x5B58;&#x50A8;&#x5F53;&#x524D; Goroutine &#x8F85;&#x52A9;&#x6807;&#x8BB0;&#x7684;&#x5BF9;&#x8C61;&#x5B57;&#x8282;&#x6570;
+    gcAssistBytes int64
+}
+</code></pre><p><strong>(1) G &#x7684;&#x65B0;&#x5EFA;</strong></p>
+<p>&#x5728; Golang &#x7A0B;&#x5E8F;&#x542F;&#x52A8;&#x65F6;&#xFF0C;&#x4E3B;&#x7EBF;&#x7A0B;&#x4F1A;&#x521B;&#x5EFA;&#x7B2C;&#x4E00;&#x4E2A; goroutine &#x6765;&#x6267;&#x884C; main &#x51FD;&#x6570;&#xFF0C;&#x5728; main &#x51FD;&#x6570;&#x4E2D;&#x5982;&#x679C;&#x7528;&#x6237;&#x4F7F;&#x7528;&#x4E86; go &#x5173;&#x952E;&#x5B57;&#x4F1A;&#x521B;&#x5EFA;&#x65B0;&#x7684; goroutine &#xFF0C;&#x5728; goroutine &#x4E2D;&#x7528;&#x6237;&#x4E5F;&#x53EF;&#x4EE5;&#x4F7F;&#x7528; go &#x5173;&#x952E;&#x5B57;&#x7EE7;&#x7EED;&#x521B;&#x5EFA;&#x65B0;&#x7684; goroutine&#x3002;goroutine &#x7684;&#x521B;&#x5EFA;&#x90FD;&#x662F;&#x901A;&#x8FC7;&#x8C03;&#x7528; golang runtime &#x4E2D;&#x7684; <code>newproc()</code> &#x51FD;&#x6570;&#x6765;&#x5B8C;&#x6210;&#x7684;&#x3002;&#x6BCF;&#x4E2A; goroutine &#x5728;&#x65B0;&#x5EFA;&#x65F6;&#x4EC5;&#x4F1A;&#x5206;&#x914D; 2K &#x5927;&#x5C0F;&#xFF0C;&#x5728; runtime &#x4E2D;&#x6CA1;&#x6709;&#x8BBE;&#x7F6E; goroutine &#x7684;&#x6570;&#x91CF;&#x4E0A;&#x9650;&#x3002;goroutine &#x7684;&#x6570;&#x91CF;&#x53D7;&#x7CFB;&#x7EDF;&#x8D44;&#x6E90;&#x7684;&#x9650;&#x5236;(CPU&#x3001;&#x5185;&#x5B58;&#x3001;&#x6587;&#x4EF6;&#x63CF;&#x8FF0;&#x7B26;&#x7B49;)&#x3002;&#x5982;&#x679C; goroutine &#x4E2D;&#x53EA;&#x6709;&#x7B80;&#x5355;&#x7684;&#x903B;&#x8F91;&#xFF0C;&#x7406;&#x8BBA;&#x4E0A;&#x8D77;&#x591A;&#x5C11;&#x4E2A; goroutine &#x90FD;&#x662F;&#x6CA1;&#x6709;&#x95EE;&#x9898;&#x7684;&#xFF0C;&#x4F46; goroutine &#x91CC;&#x9762;&#x8981;&#x662F;&#x6709;&#x521B;&#x5EFA;&#x7F51;&#x7EDC;&#x8FDE;&#x63A5;&#x6216;&#x6253;&#x5F00;&#x6587;&#x4EF6;&#x7B49;&#x64CD;&#x4F5C;&#xFF0C;goroutine &#x8FC7;&#x591A;&#x53EF;&#x80FD;&#x4F1A;&#x51FA;&#x73B0; <strong>too many files open</strong> &#x6216; <strong>Resource temporarily unavailable</strong> &#x7B49;&#x62A5;&#x9519;&#x5BFC;&#x81F4;&#x7A0B;&#x5E8F;&#x6267;&#x884C;&#x5F02;&#x5E38;&#x3002;</p>
+<p>&#x65B0;&#x5EFA;&#x7684; G &#x4F1A;&#x901A;&#x8FC7; <code>runqput()</code> &#x51FD;&#x6570;&#x4F18;&#x5148;&#x88AB;&#x653E;&#x5165;&#x5230;&#x5F53;&#x524D; G &#x5173;&#x8054; P &#x7684; <code>runnext</code> &#x961F;&#x5217;&#x4E2D;&#xFF0C;P &#x7684; <code>runnext</code> &#x961F;&#x5217;&#x4E2D;&#x53EA;&#x4F1A;&#x4FDD;&#x5B58;&#x4E00;&#x4E2A; G&#xFF0C;&#x5982;&#x679C; <code>runnext</code> &#x961F;&#x5217;&#x4E2D;&#x5DF2;&#x7ECF;&#x6709; G&#xFF0C;&#x4F1A;&#x7528;&#x65B0;&#x5EFA;&#x7684; G &#x5C06;&#x5176;&#x66FF;&#x6362;&#x6389;&#xFF0C;&#x7136;&#x540E;&#x5C06; <code>runnext</code> &#x4E2D;&#x539F;&#x6765;&#x7684; G &#x653E;&#x5230; P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#x5373; <code>runq</code> &#x4E2D;&#xFF0C;&#x5982;&#x679C; P &#x7684;&#x672C;&#x5730;&#x961F;&#x5217;&#x6EE1;&#x4E86;&#xFF0C;&#x5219;&#x5C06; P &#x672C;&#x5730;&#x961F;&#x5217;&#x4E00;&#x534A;&#x7684; G &#x79FB;&#x52A8;&#x5230;&#x5168;&#x5C40;&#x961F;&#x5217; <code>sched.runq</code> &#x4E2D;&#x3002;&#x6B64;&#x5904;&#x5C06;&#x65B0;&#x5EFA;&#x7684; G &#x9996;&#x5148;&#x79FB;&#x52A8;&#x5230; P &#x7684; <code>runnext</code> &#x4E2D;&#x4E3B;&#x8981;&#x662F;&#x4E3A;&#x4E86;&#x63D0;&#x9AD8;&#x6027;&#x80FD;&#xFF0C;<code>runnext</code> &#x662F; P &#x5B8C;&#x5168;&#x79C1;&#x6709;&#x7684;&#x961F;&#x5217;&#xFF0C;&#x5982;&#x679C;&#x5C06; G &#x653E;&#x5728; P &#x672C;&#x5730;&#x961F;&#x5217; <code>runq</code> &#x4E2D;&#xFF0C; <code>runq</code> &#x961F;&#x5217;&#x4E2D;&#x7684; G &#x53EF;&#x80FD;&#x56E0;&#x5176;&#x4ED6; M &#x7684;&#x7A83;&#x53D6;&#x53D1;&#x751F;&#x4E86;&#x53D8;&#x5316;&#xFF0C;&#x6BCF;&#x4E00;&#x6B21;&#x4ECE; P &#x672C;&#x5730;&#x961F;&#x5217;&#x83B7;&#x53D6; G &#x65F6;&#x90FD;&#x9700;&#x8981;&#x6267;&#x884C; <code>atomic.LoadAcq</code> &#x548C; <code>atomic.CasRel</code> &#x539F;&#x5B50;&#x64CD;&#x4F5C;&#xFF0C;&#x8FD9;&#x4F1A;&#x5E26;&#x6765;&#x989D;&#x5916;&#x7684;&#x5F00;&#x9500;&#x3002;</p>
+<p><strong>(2) G &#x7684;&#x9500;&#x6BC1;</strong></p>
+<p>G &#x5728;&#x9000;&#x51FA;&#x65F6;&#x4F1A;&#x6267;&#x884C; <code>goexit()</code> &#x51FD;&#x6570;&#xFF0C;G &#x7684;&#x72B6;&#x6001;&#x4F1A;&#x4ECE; <code>_Grunning</code> &#x8F6C;&#x6362;&#x4E3A; <code>_Gdead</code>&#xFF0C;&#x4F46; G &#x5BF9;&#x8C61;&#x5E76;&#x4E0D;&#x4F1A;&#x88AB;&#x76F4;&#x63A5;&#x91CA;&#x653E; &#xFF0C;&#x800C;&#x662F;&#x4F1A;&#x901A;&#x8FC7; <code>gfput()</code> &#x88AB;&#x653E;&#x5165;&#x5230;&#x6240;&#x5173;&#x8054; P &#x672C;&#x5730;&#x6216;&#x8005;&#x5168;&#x5C40;&#x7684;&#x95F2;&#x7F6E;&#x5217;&#x8868; <code>gFree</code> &#x4E2D;&#x4EE5;&#x4FBF;&#x590D;&#x7528;&#xFF0C;&#x4F18;&#x5148;&#x653E;&#x5165;&#x5230; P &#x672C;&#x5730;&#x961F;&#x5217;&#x4E2D;&#xFF0C;&#x5982;&#x679C; P &#x672C;&#x5730;&#x961F;&#x5217;&#x4E2D; <code>gFree</code> &#x8D85;&#x8FC7; 64 &#x4E2A;&#xFF0C;&#x4EC5;&#x4F1A;&#x5728; P &#x672C;&#x5730;&#x961F;&#x5217;&#x4E2D;&#x4FDD;&#x5B58; 32 &#x4E2A;&#xFF0C;&#x628A;&#x8D85;&#x8FC7;&#x7684; G &#x90FD;&#x653E;&#x5165;&#x5230;&#x5168;&#x5C40;&#x95F2;&#x7F6E;&#x961F;&#x5217; <code>sched.gFree</code> &#x4E2D;&#x3002;</p>
+<p><strong>(3) G &#x7684; &#x8FD0;&#x884C;</strong></p>
+<p>G &#x4E0E; M &#x7ED1;&#x5B9A;&#x624D;&#x80FD;&#x8FD0;&#x884C;&#xFF0C;&#x800C; M &#x9700;&#x8981;&#x4E0E; P &#x7ED1;&#x5B9A;&#x624D;&#x80FD;&#x8FD0;&#x884C;&#xFF0C;&#x6240;&#x4EE5;&#x7406;&#x8BBA;&#x4E0A;&#x540C;&#x4E00;&#x65F6;&#x95F4;&#x8FD0;&#x884C; G &#x7684;&#x6570;&#x91CF;&#x7B49;&#x4E8E; P &#x7684;&#x6570;&#x91CF;&#xFF0C;M &#x4E0D;&#x4FDD;&#x7559; G &#x7684;&#x72B6;&#x6001;&#xFF0C;G &#x4F1A;&#x5C06;&#x72B6;&#x6001;&#x4FDD;&#x7559;&#x5728;&#x5176; <code>gobuf</code> &#x5B57;&#x6BB5;&#xFF0C;&#x56E0;&#x6B64; G &#x53EF;&#x4EE5;&#x8DE8; M &#x8FDB;&#x884C;&#x8C03;&#x5EA6;&#x3002;M &#x5728;&#x627E;&#x5230;&#x9700;&#x8981;&#x8FD0;&#x884C;&#x7684; G &#x540E;&#xFF0C;&#x4F1A;&#x901A;&#x8FC7;&#x6C47;&#x7F16;&#x51FD;&#x6570; <code>gogo()</code> &#x4ECE; g0 &#x6808;&#x5207;&#x6362;&#x5230;&#x7528;&#x6237; G &#x7684;&#x6808;&#x8FD0;&#x884C;&#x3002;</p>
+<p><strong>(4) G &#x6709;&#x54EA;&#x4E9B;&#x72B6;&#x6001;&#xFF1F;</strong></p>
+<p>G &#x7684;&#x72B6;&#x6001;&#x5728; <code>src/runtime/runtime2.go</code> &#x6587;&#x4EF6;&#x4E2D;&#x5B9A;&#x4E49;&#x4E86;&#xFF0C;&#x4E3B;&#x8981;&#x5206;&#x4E3A;&#x4E09;&#x79CD;&#xFF0C;&#x4E00;&#x4E2A;&#x662F; goroutine &#x6B63;&#x5E38;&#x8FD0;&#x884C;&#x65F6;&#x7684;&#x51E0;&#x4E2A;&#x72B6;&#x6001;&#xFF0C;&#x7136;&#x540E;&#x662F;&#x4E0E; GC &#x6709;&#x5173;&#x7684;&#x72B6;&#x6001;&#x7684;&#xFF0C;&#x5176;&#x4F59;&#x51E0;&#x4E2A;&#x72B6;&#x6001;&#x662F;&#x672A;&#x4F7F;&#x7528;&#x7684;&#x3002;</p>
+<p>&#x6BCF;&#x79CD;&#x8F6C;&#x6001;&#x7684;&#x4F5C;&#x7528;&#x4EE5;&#x53CA;&#x72B6;&#x6001;&#x4E4B;&#x95F4;&#x7684;&#x8F6C;&#x6362;&#x5173;&#x7CFB;&#x5982;&#x4E0B;&#x6240;&#x793A;&#xFF1A;</p>
+<table>
+<thead>
+<tr>
+<th>&#x72B6;&#x6001;</th>
+<th>&#x63CF;&#x8FF0;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_Gidle</code></td>
+<td>&#x521A;&#x521A;&#x88AB;&#x521B;&#x5EFA;&#x5E76;&#x4E14;&#x8FD8;&#x6CA1;&#x6709;&#x88AB;&#x521D;&#x59CB;&#x5316;</td>
+</tr>
+<tr>
+<td><code>_Grunnable</code></td>
+<td>&#x6CA1;&#x6709;&#x6267;&#x884C;&#x4EE3;&#x7801;&#xFF0C;&#x6CA1;&#x6709;&#x6808;&#x7684;&#x6240;&#x6709;&#x6743;&#xFF0C;&#x5B58;&#x50A8;&#x5728;&#x8FD0;&#x884C;&#x961F;&#x5217;&#x4E2D;</td>
+</tr>
+<tr>
+<td><code>_Grunning</code></td>
+<td>&#x53EF;&#x4EE5;&#x6267;&#x884C;&#x4EE3;&#x7801;&#xFF0C;&#x62E5;&#x6709;&#x6808;&#x7684;&#x6240;&#x6709;&#x6743;&#xFF0C;&#x5DF2;&#x7ECF;&#x7ED1;&#x5B9A;&#x4E86; M &#x548C; P</td>
+</tr>
+<tr>
+<td><code>_Gsyscall</code></td>
+<td>&#x6B63;&#x5728;&#x6267;&#x884C;&#x7CFB;&#x7EDF;&#x8C03;&#x7528;</td>
+</tr>
+<tr>
+<td><code>_Gwaiting</code></td>
+<td>&#x7531;&#x4E8E;&#x8FD0;&#x884C;&#x65F6;&#x800C;&#x88AB;&#x963B;&#x585E;&#xFF0C;&#x6CA1;&#x6709;&#x6267;&#x884C;&#x7528;&#x6237;&#x4EE3;&#x7801;&#x5E76;&#x4E14;&#x4E0D;&#x5728;&#x8FD0;&#x884C;&#x961F;&#x5217;&#x4E0A;</td>
+</tr>
+<tr>
+<td><code>_Gdead</code></td>
+<td>&#x8FD0;&#x884C;&#x5B8C;&#x6210;&#x5904;&#x4E8E;&#x9000;&#x51FA;&#x72B6;&#x6001;</td>
+</tr>
+<tr>
+<td><code>_Gcopystack</code></td>
+<td>&#x6808;&#x6B63;&#x5728;&#x88AB;&#x62F7;&#x8D1D;</td>
+</tr>
+<tr>
+<td><code>_Gpreempted</code></td>
+<td>&#x7531;&#x4E8E;&#x62A2;&#x5360;&#x800C;&#x88AB;&#x963B;&#x585E;&#xFF0C;&#x7B49;&#x5F85;&#x5524;&#x9192;</td>
+</tr>
+<tr>
+<td><code>_Gscan</code></td>
+<td>GC &#x6B63;&#x5728;&#x626B;&#x63CF;&#x6808;&#x7A7A;&#x95F4;</td>
+</tr>
+</tbody>
+</table>
+<p><img src="https://cdn.tianfeiyu.com/G_Status.png" alt=""></p>
+<h5 id="4&#x3001;g0-&#x7684;&#x4F5C;&#x7528;"><a name="4&#x3001;g0-&#x7684;&#x4F5C;&#x7528;" class="anchor-navigation-ex-anchor" href="#4&#x3001;g0-&#x7684;&#x4F5C;&#x7528;"><i class="fa fa-link" aria-hidden="true"></i></a>4&#x3001;g0 &#x7684;&#x4F5C;&#x7528;</h5>
+<pre class="language-"><code>type m struct {
+    g0      *g     // goroutine with scheduling stack
+    ......
+}
+</code></pre><p>&#x5728; runtime &#x4E2D;&#x6709;&#x4E24;&#x79CD; g0&#xFF0C;&#x4E00;&#x4E2A;&#x662F; m0 &#x5173;&#x8054;&#x7684; g0&#xFF0C;&#x53E6;&#x4E00;&#x79CD;&#x662F;&#x5176;&#x4ED6; m &#x5173;&#x8054;&#x7684; g0&#xFF0C;m0 &#x5173;&#x8054;&#x7684; g0 &#x662F;&#x4EE5;&#x5168;&#x5C40;&#x53D8;&#x91CF;&#x7684;&#x65B9;&#x5F0F;&#x5B9A;&#x4E49;&#x7684;&#xFF0C;&#x5176;&#x5185;&#x5B58;&#x7A7A;&#x95F4;&#x662F;&#x5728;&#x7CFB;&#x7EDF;&#x7684;&#x6808;&#x4E0A;&#x8FDB;&#x884C;&#x5206;&#x914D;&#x7684;&#xFF0C;&#x5927;&#x5C0F;&#x4E3A; 64K - 104 &#x5B57;&#x8282;&#xFF0C;&#x5176;&#x4ED6; m &#x5173;&#x8054;&#x7684; g0 &#x662F;&#x5728;&#x5806;&#x4E0A;&#x5206;&#x914D;&#x7684;&#x6808;&#xFF0C;&#x9ED8;&#x8BA4;&#x4E3A; 8K&#x3002;</p>
+<p><code>src/runtime/proc.go#1879</code></p>
+<pre class="language-"><code>    if iscgo || mStackIsSystemAllocated() {
+        mp.g0 = malg(-1)
+    } else {
+        // sys.StackGuardMultiplier &#x5728; linux &#x7CFB;&#x7EDF;&#x4E0A;&#x503C;&#x4E3A; 1
+        mp.g0 = malg(8192 * sys.StackGuardMultiplier) 
+    }
+</code></pre><p>&#x6BCF;&#x6B21;&#x542F;&#x52A8;&#x4E00;&#x4E2A; M &#x65F6;&#xFF0C;&#x521B;&#x5EFA;&#x7684;&#x7B2C;&#x4E00;&#x4E2A; goroutine &#x5C31;&#x662F; g0&#xFF0C;&#x6BCF;&#x4E2A; M &#x90FD;&#x4F1A;&#x6709;&#x81EA;&#x5DF1;&#x7684; g0&#xFF0C;g0 &#x4E3B;&#x8981;&#x7528;&#x6765;&#x8BB0;&#x5F55;&#x5DE5;&#x4F5C;&#x7EBF;&#x7A0B;&#x4F7F;&#x7528;&#x7684;&#x6808;&#x4FE1;&#x606F;&#xFF0C;&#x4EC5;&#x7528;&#x4E8E;&#x8D1F;&#x8D23;&#x8C03;&#x5EA6;&#xFF0C;&#x5728;&#x6267;&#x884C;&#x8C03;&#x5EA6;&#x4EE3;&#x7801;&#x65F6;&#x9700;&#x8981;&#x4F7F;&#x7528;&#x8FD9;&#x4E2A;&#x6808;&#x3002;&#x6267;&#x884C;&#x7528;&#x6237; goroutine &#x4EE3;&#x7801;&#x65F6;&#xFF0C;&#x4F7F;&#x7528;&#x7528;&#x6237; goroutine &#x7684;&#x6808;&#xFF0C;&#x8C03;&#x5EA6;&#x65F6;&#x4F1A;&#x53D1;&#x751F;&#x6808;&#x7684;&#x5207;&#x6362;&#x3002;</p>
+<p><img src="https://cdn.tianfeiyu.com/g0_g.png" alt=""></p>
+<p>&#x5728; runtime &#x4EE3;&#x7801;&#x4E2D;&#x5F88;&#x591A;&#x51FD;&#x6570;&#x5728;&#x6267;&#x884C;&#x65F6;&#x90FD;&#x4F1A;&#x901A;&#x8FC7; <code>systemstack()</code> &#x51FD;&#x6570;&#x5C01;&#x88C5;&#x8C03;&#x7528;&#xFF0C;<code>systemstack()</code> &#x51FD;&#x6570;&#x7684;&#x4F5C;&#x7528;&#x662F;&#x5207;&#x6362;&#x5230; g0 &#x6808;&#xFF0C;&#x7136;&#x540E;&#x6267;&#x884C;&#x5BF9;&#x5E94;&#x7684;&#x51FD;&#x6570;&#x6700;&#x540E;&#x518D;&#x5207;&#x6362;&#x56DE;&#x539F;&#x6765;&#x7684;&#x6808;&#x5E76;&#x8FD4;&#x56DE;&#xFF0C;&#x4E3A;&#x4EC0;&#x4E48;&#x8FD9;&#x4E9B;&#x4EE3;&#x7801;&#x9700;&#x8981;&#x5728; g0 &#x6808;&#x4E0A;&#x8FD0;&#x884C;&#xFF1F;&#x539F;&#x5219;&#x4E0A;&#x53EA;&#x8981;&#x67D0;&#x51FD;&#x6570;&#x6709; <code>nosplit</code> &#x8FD9;&#x4E2A;&#x7CFB;&#x7EDF;&#x6CE8;&#x89E3;&#x5C31;&#x9700;&#x8981;&#x5728; g0 &#x6808;&#x4E0A;&#x6267;&#x884C;&#xFF0C;&#x56E0;&#x4E3A;&#x52A0;&#x4E86; <code>nosplit</code> &#x7F16;&#x8BD1;&#x5668;&#x5728;&#x7F16;&#x8BD1;&#x65F6;&#x4E0D;&#x4F1A;&#x5728;&#x51FD;&#x6570;&#x524D;&#x9762;&#x63D2;&#x5165;&#x68C0;&#x67E5;&#x6808;&#x6EA2;&#x51FA;&#x7684;&#x4EE3;&#x7801;&#xFF0C;&#x8FD9;&#x4E9B;&#x51FD;&#x6570;&#x5728;&#x6267;&#x884C;&#x65F6;&#x6709;&#x53EF;&#x80FD;&#x4F1A;&#x5BFC;&#x81F4;&#x6808;&#x6EA2;&#x51FA;&#xFF0C;&#x800C; g0 &#x6808;&#x6BD4;&#x8F83;&#x5927;&#xFF0C;&#x5728;&#x7F16;&#x8BD1;&#x65F6;&#x5982;&#x679C;&#x5BF9;runtime&#x4E2D;&#x6BCF;&#x4E2A;&#x51FD;&#x6570;&#x90FD;&#x505A;&#x6808;&#x6EA2;&#x51FA;&#x68C0;&#x67E5;&#x4F1A;&#x5F71;&#x54CD;&#x6548;&#x7387;&#xFF0C;&#x6240;&#x4EE5;&#x624D;&#x4F1A;&#x5207;&#x5230; g0 &#x6808;&#x3002; </p>
+<h3 id="&#x603B;&#x7ED3;"><a name="&#x603B;&#x7ED3;" class="anchor-navigation-ex-anchor" href="#&#x603B;&#x7ED3;"><i class="fa fa-link" aria-hidden="true"></i></a>&#x603B;&#x7ED3;</h3>
+<p>&#x672C;&#x6587;&#x4E3B;&#x8981;&#x5206;&#x6790;&#x4E86; Golang GPM &#x7684;&#x6A21;&#x578B;&#xFF0C;&#x5728;&#x9605;&#x8BFB; runtime &#x4EE3;&#x7801;&#x7684;&#x8FC7;&#x7A0B;&#x4E2D;&#x53D1;&#x73B0;&#x4EE3;&#x7801;&#x4E2D;&#x6709;&#x5F88;&#x591A;&#x7EC6;&#x8282;&#x9700;&#x8981;&#x82B1;&#x5927;&#x91CF;&#x65F6;&#x95F4;&#x5206;&#x6790;&#xFF0C;&#x6587;&#x4E2D;&#x4EC5;&#x5BF9;&#x5176;&#x5927;&#x6846;&#x67B6;&#x505A;&#x4E86;&#x4E00;&#x4E9B;&#x7B80;&#x5355;&#x7684;&#x8BF4;&#x660E;&#xFF0C;&#x4E5F;&#x6709;&#x90E8;&#x5206;&#x7EC6;&#x8282;&#x987A;&#x4FBF;&#x88AB;&#x5E26;&#x5165;&#xFF0C;&#x5728;&#x540E;&#x9762;&#x7684;&#x6587;&#x7AE0;&#x4E2D;&#xFF0C;&#x4F1A;&#x5BF9;&#x8BB8;&#x591A;&#x7EC6;&#x8282;&#x518D;&#x6B21;&#x8FDB;&#x884C;&#x5206;&#x6790;&#x3002;</p>
+<p>&#x53C2;&#x8003;&#xFF1A;</p>
+<p><a href="https://docs.google.com/document/d/1TTj4T2JO42uD5ID9e89oa0sLKhJYD0Y_kqxDv3I3XMw/edit" target="_blank">https://docs.google.com/document/d/1TTj4T2JO42uD5ID9e89oa0sLKhJYD0Y_kqxDv3I3XMw/edit</a> (<strong>Scalable Go Scheduler Design Doc</strong>)
+<a href="https://docs.google.com/document/d/1flyIICFZV_kMfypiaghcZx0BLIC-aIooSALo1S6ZJIY/edit" target="_blank">https://docs.google.com/document/d/1flyIICFZV_kMfypiaghcZx0BLIC-aIooSALo1S6ZJIY/edit</a> (<strong>dev.cc branch plan</strong>)
+<a href="https://learnku.com/articles/41728" target="_blank">https://learnku.com/articles/41728</a>
+<a href="https://yizhi.ren/2019/06/03/goscheduler/" target="_blank">https://yizhi.ren/2019/06/03/goscheduler/</a>
+<a href="https://colobu.com/2020/12/20/threads-in-go-runtime/" target="_blank">https://colobu.com/2020/12/20/threads-in-go-runtime/</a>
+<a href="https://golang.design/under-the-hood/zh-cn/part2runtime/ch06sched/mpg/" target="_blank">https://golang.design/under-the-hood/zh-cn/part2runtime/ch06sched/mpg/</a>
+<a href="https://github.com/golang/go/wiki/DesignDocuments" target="_blank">https://github.com/golang/go/wiki/DesignDocuments</a>
+<a href="https://github.com/golang/proposal" target="_blank">https://github.com/golang/proposal</a>
+<a href="http://www1.cs.columbia.edu/~aho/cs6998/reports/12-12-11_DeshpandeSponslerWeiss_GO.pdf" target="_blank">http://www1.cs.columbia.edu/~aho/cs6998/reports/12-12-11_DeshpandeSponslerWeiss_GO.pdf</a>
+<a href="https://zhuanlan.zhihu.com/p/339837580" target="_blank">https://zhuanlan.zhihu.com/p/339837580</a>
+<a href="https://www.jianshu.com/p/67b0cb8e8bdc" target="_blank">https://www.jianshu.com/p/67b0cb8e8bdc</a>
+<a href="https://golang.design/go-questions/sched/gpm/" target="_blank">https://golang.design/go-questions/sched/gpm/</a>
+<a href="https://github.com/MrYueQ/go-under-the-hood/blob/master/content/4-sched/exec.md" target="_blank">https://github.com/MrYueQ/go-under-the-hood/blob/master/content/4-sched/exec.md</a>
+<a href="https://hjlarry.github.io/docs/go/goroutine/" target="_blank">https://hjlarry.github.io/docs/go/goroutine/</a>
+<a href="https://www.jianshu.com/p/1a50330adf1b" target="_blank">https://www.jianshu.com/p/1a50330adf1b</a></p>
+<footer class="page-footer"><span class="copyright">Copyright &#xA9; tianfeiyu 2019 all right reserved&#xFF0C;powered by Gitbook</span><span class="footer-modification">&#x8BE5;&#x6587;&#x4EF6;&#x4FEE;&#x8BA2;&#x65F6;&#x95F4;&#xFF1A;
+2021-12-13 10:23:22
+</span></footer> <link rel="stylesheet" type="text/css" href="https://storage.googleapis.com/app.klipse.tech/css/codemirror.css"> <script>     window.klipse_settings = {         selector: ".language-klipse, .lang-eval-clojure",         selector_eval_js: ".lang-eval-js",         selector_eval_python_client: ".lang-eval-python",         selector_eval_php: ".lang-eval-php",         selector_eval_scheme: ".lang-eval-scheme",         selector_eval_ruby: ".lang-eval-ruby",         selector_reagent: ".lang-reagent",        selector_google_charts: ".lang-google-chart",        selector_es2017: ".lang-eval-es2017",        selector_jsx: ".lang-eval-jsx",        selector_transpile_jsx: ".lang-transpile-jsx",        selector_render_jsx: ".lang-render-jsx",        selector_react: ".lang-react",        selector_eval_markdown: ".lang-render-markdown",        selector_eval_lambdaway: ".lang-render-lambdaway",        selector_eval_cpp: ".lang-eval-cpp",        selector_eval_html: ".lang-render-html",        selector_sql: ".lang-eval-sql",        selector_brainfuck: "lang-eval-brainfuck",        selector_js: ".lang-transpile-cljs"    }; </script> <script src="https://storage.googleapis.com/app.klipse.tech/plugin/js/klipse_plugin.js"></script>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="golang_bootstrap.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Golang 程序启动流程分析">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Golang GPM 模型剖析","date":"2021-12-12T20:31:30.000Z","tags":["golang runtime","GPM"],"type":"golang GPM","level":"1.5.3","depth":2,"previous":{"title":"Golang 程序启动流程分析","level":"1.5.2","depth":2,"path":"go/golang_bootstrap.md","ref":"go/golang_bootstrap.md","articles":[]},"dir":"ltr"},"config":{"plugins":["theme-comscore","-lunr","-search","-highlight","-livereload","search-plus@^0.0.11","simple-page-toc@^0.1.1","github@^2.0.0","github-buttons@2.1.0","edit-link@^2.0.2","prism@^2.1.0","prism-themes@^0.0.2","advanced-emoji@^0.2.1","anchors@^0.7.1","include-codeblock@^3.0.2","ace@^0.3.2","emphasize@^1.1.0","katex@^1.1.3","splitter@^0.0.8","mermaid-gb3@2.1.0","tbfed-pagefooter@^0.0.1","expandable-chapters-small@^0.1.7","sectionx@^3.1.0","local-video@^1.0.1","sitemap-general@^0.1.1","anchor-navigation-ex@0.1.8","favicon@^0.0.2","todo@^0.1.3","3-ba@^0.9.0","terminal@^0.3.2","alerts@^0.2.0","include-csv@^0.1.0","puml@^1.0.1","musicxml@^1.0.2","klipse@^1.2.0","versions-select@^0.1.1","-sharing","sharing-plus@^0.0.2","graph@^0.1.0","chart@^0.2.0"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"tbfed-pagefooter":{"copyright":"Copyright © tianfeiyu 2019","modify_label":"该文件修订时间：","modify_format":"YYYY-MM-DD HH:mm:ss"},"prism":{"css":["prism-themes/themes/prism-base16-ateliersulphurpool.light.css"]},"include-csv":{},"disqus":{"shortName":"gitbookuse"},"emphasize":{},"ace":{},"github":{"url":"https://github.com/gosoon/source-code-reading-notes"},"puml":{},"simple-page-toc":{"maxDepth":3,"skipFirstH1":true},"todo":{},"splitter":{},"sharing-plus":{"qq":false,"all":["facebook","google","twitter","instapaper","linkedin","pocket","stumbleupon"],"douban":false,"facebook":true,"weibo":false,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":true,"messenger":false,"line":false,"vk":false,"pocket":true,"google":false,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":false},"versions-select":{"type":"branches"},"graph":{},"sitemap-general":{"prefix":"https://blog.tianfeiyu.com"},"katex":{},"fontsettings":{"theme":"white","family":"sans","size":2},"rss":{"title":"田飞雨","description":"源码分析相关的文章，主要是专注云原生实践","author":"gosoon","site_url":"https://blog.tianfeiyu.com","managingEditor":"","webMaster":"","categories":["gitbook"]},"musicxml":{},"sectionx":{"tag":"b"},"mermaid-gb3":{},"anchor-navigation-ex":{"isRewritePageTitle":false,"tocLevel1Icon":"fa fa-hand-o-right","tocLevel2Icon":"fa fa-hand-o-right","tocLevel3Icon":"fa fa-hand-o-right"},"favicon":{"shortcut":"favicon.ico","bookmark":"favicon.ico"},"theme-comscore":{},"prism-themes":{},"alerts":{},"github-buttons":{"repo":"gosoon/source-code-reading-notes","types":["star"],"size":"large"},"3-ba":{"configuration":"auto","token":"ff100361cdce95dd4c8fb96b4009f7bc"},"expandable-chapters-small":{},"local-video":{},"klipse":{"myConfigKey":"it's the default value"},"advanced-emoji":{"embedEmojis":false},"include-codeblock":{"check":false,"edit":true,"fixlang":false,"lang":"","template":"ace","theme":"chrome","unindent":true},"sharing":{"qq":false,"all":["facebook","google","twitter","weibo","instapaper","linkedin","pocket","stumbleupon","qq","qzone"],"douban":false,"facebook":false,"weibo":true,"instapaper":false,"whatsapp":false,"hatenaBookmark":false,"twitter":false,"messenger":false,"line":false,"vk":false,"pocket":false,"google":true,"viber":false,"stumbleupon":false,"qzone":false,"linkedin":true},"terminal":{"copyButtons":true,"fade":false,"style":"flat"},"edit-link":{"label":"Edit This Page","base":"https://github.com/gosoon/source-code-reading-notes/edit/master"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"anchors":{},"chart":{"type":"c3"},"search-plus":{}},"theme":"default","author":"gosoon","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"田飞雨","language":"zh-hans","output.name":"site","links":{"sidebar":{"Home":"https://blog.tianfeiyu.com"}},"gitbook":"3.2.3","description":"源码分析相关的文章，主要是专注 k8s 云原生实践"},"file":{"path":"go/golang_gpm.md","mtime":"2021-12-13T02:23:22.607Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-12-13T02:24:22.850Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github-buttons/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-ace/ace.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-splitter/splitter.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters-small/expandable-chapters-small.js"></script>
+        
+    
+        
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sectionx/sectionx.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-local-video/video.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-3-ba/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-terminal/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-alerts/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/osmd.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/musicxml.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-musicxml/promise.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-versions-select/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing-plus/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-theme-comscore/test.js"></script>
+        
+    
+
+    <script src="../gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

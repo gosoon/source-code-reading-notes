@@ -38,3 +38,4 @@
 * [go](go/README.md)
     * [golang 中函数使用值返回与指针返回的区别，底层原理分析](go/func_return_value_or_pointer.md)
     * [Golang 程序启动流程分析](go/golang_bootstrap.md)
+    * [Golang GPM 模型剖析](go/golang_gpm.md)
