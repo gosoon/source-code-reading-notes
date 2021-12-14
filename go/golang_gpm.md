@@ -73,7 +73,7 @@ Golang 使用协程主要有以下几个原因：
 
 协程的本质其实就是可以被暂停以及可以被恢复运行的函数，创建一个 goroutine 时会在进程的堆区中分配一段空间，这段空间是用来保存协程栈区的，当需要恢复协程的运行时再从堆区中出来复制出来恢复函数运行时状态。
 
-![](https://cdn.tianfeiyu.com/goroutine%E5%86%85%E5%AD%98%E7%A9%BA%E9%97%B4%E5%88%86%E5%B8%83.png)
+![](https://cdn.tianfeiyu.com/goroutine_heap.png)
 
 ### GPM 模型分析
 
