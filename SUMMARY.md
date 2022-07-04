@@ -28,6 +28,7 @@
     * [kubernetes 中 Qos 的设计与实现](kubernetes/kubelet_qos.md)
     * [kubelet 中垃圾回收机制的设计与实现](kubernetes/kubelet_garbage_collect.md)
     * [kubernetes 中 Evicted pod 是如何产生的](kubernetes/k8s_evicted.md)
+    * [Kubernetes 中 Descheduler 组件的使用与扩展](kubernetes/kubernetes_descheduler.md)
 * [knative](knative/README.md)
     * [在 minkube 上部署 knative](knative/deploy_with_minkube.md)
     * [knative serving 组件分析](knative/knative_serving.md)
